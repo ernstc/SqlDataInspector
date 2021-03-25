@@ -1,0 +1,142 @@
+<html>
+
+<head>
+    <!-- JQUERY PLACEHOLDER -->
+    <!-- ICONS CSS PLACEHOLDER -->
+    <!-- CSS PLACEHOLDER -->
+    <link rel="stylesheet" href="fabric-icons-inline.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <div id="app">
+        <div id="header">
+            <h1 id="databaseName">Database Name</h1>
+            <div id="status">Loading...</div>
+        </div>
+        <div id="navigation">
+            <div id="tables">
+                <h2>Table <span id="tablesCount" class="count"></span></h2>
+                <div class="table">
+                    <div class="table-header">
+                        <div class="col1">Name</div>
+                        <div class="col2">Schema</div>
+                    </div>
+                    <!--<div class="table-data">
+                        <div class="col1"><i class="ms-Icon ms-Icon--Table"></i> Award</div>
+                        <div class="col2">Schema</div>
+                    </div>-->
+                </div>
+            </div>
+            <div id="columns">
+                <h2>Columns <span id="columnsCount" class="count"></span></h2>
+                <div class="table">
+                    <div class="table-header">
+                        <div class="col1">Name</div>
+                        <div class="col2">Type</div>
+                    </div>
+                    <!--<div class="table-data">
+                        <div class="col1"><i class="ms-Icon ms-Icon--Column"></i> colName</div>
+                        <div class="col2">colType</div>
+                    </div>-->
+                </div>
+            </div>
+            <div id="values">
+                <h2>Distinct Values <span id="valuesCount" class="count"></span></h2>
+                <div class="table">
+                    <!--<div class="table-data">
+                        <div class="col1">value</div>
+                    </div>-->
+                </div>
+            </div>
+        </div>
+        <div id="filters">
+            <div id="filtersArea">
+                <h2>Filter <span class="sub">(WHERE clause)</span></h2>
+                <div>
+                    <textarea id="txtFilter" spellcheck="false" autocomplete="off" autocorrect="off"></textarea>
+                </div>
+            </div>
+            <div id="filterActions">
+                <div class="controls">
+                    <div>
+                        <input id="autofilter" type="checkbox" checked value="1" /> <label for="autofilter">Auto filter</label>
+                    </div>
+                    <div>
+                        <button id="btnApplyFilter" class="default">Apply</button>
+                    </div>
+                    <div>
+                        <button id="btnRemoveFilter">Remove</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="dataRows">
+            <div class="table">
+                <!--<div class="table-header">
+                    <div class="col">Name1</div>
+                    <div class="col">Name2</div>
+                    <div class="col">Name3</div>
+                    <div class="col">Name4</div>
+                    <div class="col">Name1</div>
+                    <div class="col">Name2</div>
+                    <div class="col">Name3</div>
+                    <div class="col">Name4</div>
+                    <div class="col">Name1</div>
+                    <div class="col">Name2</div>
+                    <div class="col">Name3</div>
+                    <div class="col">Name4</div>
+                </div>
+                <div class="table-data">
+                    <div class="col">Col1</div>
+                    <div class="col">Col2</div>
+                    <div class="col">Col3</div>
+                    <div class="col">Col4</div>
+                    <div class="col">Col1</div>
+                    <div class="col">Col2</div>
+                    <div class="col">Col3</div>
+                    <div class="col">Col4</div>
+                    <div class="col">Col1</div>
+                    <div class="col">Col2</div>
+                    <div class="col">Col3</div>
+                    <div class="col">Col4</div>
+                </div>-->
+            </div>
+        </div>
+        <div id="statusBar">
+            <div class="copyright">&copy; 2005-2021 Ernesto Cianciotta</div>
+            <div class="info">Rows: <span id="rowsCount">0</span></div>
+        </div>
+        <div id="overlay" class="hidden"></div>
+        <div id="dialogs">
+            <div id="dialogViewRecord" class="dialog hidden">
+                <div class="title">
+                    <h1>View Record</h1>
+                    <button class="close">Close</button>
+                </div>                
+                <div class="body">
+                    <div class="header">
+                        Table: <span>[schemaName].[tableName]</span>
+                    </div>
+                    <div class="details">
+                        <div class="table">
+                            <!--<div class="table-header">
+                                <div class="col1">Column</div>
+                                <div class="col2">Value</div>
+                            </div>
+                            <div class="table-data">
+                                <div class="col1">Col1</div>
+                                <div class="col2">Value1</div>
+                            </div>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="loadingOverlay"></div>
+        <div id="loading"></div>
+    </div>
+    <!-- INDEX.JS PLACEHOLDER -->
+</body>
+
+</html>
