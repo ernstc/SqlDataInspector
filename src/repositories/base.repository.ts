@@ -2,12 +2,19 @@ import { connection, dataprotocol, DataProviderType, QueryProvider, SimpleExecut
 import { Provider } from "../models/provider.enum";
 
 
-export const runQuery = <T>(provider: Provider, connectionId: string, query: string): Promise<T[]> => new Promise((resolve, reject) =>
-    connection.getUriForConnection(connectionId).then(connectionUri => {
+export const runQuery = async <T>(provider: Provider, connectionId: string, query: string): Promise<T[]> => {
+    try {
+        const connectionUri = await connection.getUriForConnection(connectionId);
         const queryProvider: QueryProvider = dataprotocol.getProvider(provider, DataProviderType.QueryProvider);
-        queryProvider.runQueryAndReturn(connectionUri, query).then(result => resolve(mapResult(result)));
-    })
-);
+        const result = await queryProvider.runQueryAndReturn(connectionUri, query);
+        return mapResult(result) as T[];
+    }
+    catch (e) {
+        return [] as T[];
+    }
+};
+
+
 
 const mapResult = <T>(result: SimpleExecuteResult): T[] => result.rows.map(element => {
     const item: any = {};
