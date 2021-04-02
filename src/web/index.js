@@ -99,11 +99,11 @@
             //showErrors(e.data);
 
             renderTables(e.data.tables);
-            renderColumns(e.data.columns);
-            renderValues(e.data.values);
+            renderColumns(e.data.columns, e.data.table);
+            renderValues(e.data.values, e.data.column, e.data.table);
 
             if (e.data.rowsHeader != undefined) {
-                renderRows(e.data.rowsHeader, e.data.rows, e.data.count);
+                renderRows(e.data.rowsHeader, e.data.rows, e.data.count, e.data.table);
             }
 
             hideLoading();
@@ -191,7 +191,7 @@
     };
 
 
-    function renderColumns(columns) {
+    function renderColumns(columns, table) {
         if (columns) {
             $columnsCount.innerText = `(${columns.length})`;
             renderCollection(columns,
@@ -212,7 +212,7 @@
     };
 
 
-    function renderValues(values) {
+    function renderValues(values, column, table) {
         $valuesCount.innerText = values && values.length ? `(${values.length})` : '';
         if (values) {
             renderCollection(values,
@@ -224,9 +224,14 @@
                         .dblclick(valueDblClicked);
 
                     $(`<div class="col"></div>`)
-                        .text(value == null ? '[NULL]' : value)
+                        .text(
+                            value == null ? '[NULL]' : 
+                            value == '' ? '[Empty string]' :
+                            value == 0 && column.Type == 'bit' ? 'False' :
+                            value == 1 && column.Type == 'bit' ? 'True' :
+                            value)
                         .appendTo(element);
-
+                    
                     return element;
                 }
             );
@@ -234,7 +239,7 @@
     };
 
 
-    function renderRows(rowsHeader, rows, rowsCount) {
+    function renderRows(rowsHeader, rows, rowsCount, table) {
         $rowsCount.innerText = rowsCount;
         renderCollection(rows,
             $('#dataRows .table'),
@@ -423,7 +428,7 @@
                         .click(detailRowClicked);
 
                 $(`<div class="col2"></div>`)
-                    .text(row[1])
+                    .text(row[1] == null ? 'NULL' : row[1])
                     .appendTo(element);
 
                 return element;

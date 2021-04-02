@@ -23,6 +23,8 @@ interface IOutgoingMessage {
     values?: any[];
     rows?: any[];
     rowsHeader?: any[];
+    table?: DatabaseTable;
+    column?: DatabaseColumn;
 }
 
 
@@ -105,7 +107,8 @@ const loadColumns = async(webview: DashboardWebview, connectionId: string, table
     webview.postMessage(<IOutgoingMessage>{
         status: Status.RenderingData,
         //errors: null,
-        columns: dbColumns
+        columns: dbColumns,
+        table: table
     });
 }
 
@@ -115,7 +118,9 @@ const loadValues = async (webview: DashboardWebview, connectionId: string, table
     webview.postMessage(<IOutgoingMessage>{
         status: Status.RenderingData,
         //errors: dbValues.errors,
-        values: dbValues
+        values: dbValues,
+        table: table,
+        column: column
     });
 }
 
@@ -144,6 +149,7 @@ const loadRows = async (webview: DashboardWebview, connectionId: string, table: 
         //errors: dbRows.errors,
         rowsHeader: columns,
         rows: values,
-        count: dbRows.count
+        count: dbRows.count,
+        table: table
     });
 }
