@@ -1,4 +1,4 @@
-![GitHub All Releases](https://img.shields.io/github/downloads/ernstc/SqlDataInspector/total)
+[![build](https://github.com/ernstc/SqlDataInspector/actions/workflows/build.yml/badge.svg)](https://github.com/ernstc/SqlDataInspector/actions/workflows/build.yml) ![GitHub All Releases](https://img.shields.io/github/downloads/ernstc/SqlDataInspector/total)
 
 # SQL Data Inspector
 
