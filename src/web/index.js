@@ -26,6 +26,7 @@
     $autofilter = document.getElementById('autofilter');
     $('#btnApplyFilter').click(btnApplyFilterClicked);
     $('#btnRemoveFilter').click(btnRemoveFilterClicked);
+    $txtFilter.click(txtFilterClicked);
 
 
     // VSCode API for interacting with the extension back-end
@@ -77,6 +78,19 @@
         $(document).keydown(function(e) {
             if (ctrlDown && (e.keyCode == cKey)) {
                 // Document catch Ctrl+C
+
+                let isTxtFilterFocused = $txtFilter.hasClass('focused');
+
+                if (isTxtFilterFocused) {
+                    var textArea = $txtFilter.get(0);
+                    var text =textArea.value;
+                    var indexStart=textArea.selectionStart;
+                    var indexEnd=textArea.selectionEnd;
+                    textToCopy = text.substring(indexStart, indexEnd);
+                }
+
+                console.log('text to copy = \'' + textToCopy + '\'');
+
                 sendMessage({
                     'command': 'copyText',
                     'item': textToCopy == null ? 'NULL' : textToCopy
@@ -100,9 +114,12 @@
 
             renderTables(e.data.tables);
             renderColumns(e.data.columns, e.data.table);
-            renderValues(e.data.values, e.data.column, e.data.table);
+            
+            if (e.data.values) {
+                renderValues(e.data.values, e.data.column, e.data.table);
+            }
 
-            if (e.data.rowsHeader != undefined) {
+            if (e.data.rows) {
                 renderRows(e.data.rowsHeader, e.data.rows, e.data.count, e.data.table);
             }
 
@@ -158,7 +175,7 @@
 
     function renderCollection(collection, $container, $headerFunc, $elementFunc) {
         let items = [];
-        if ($headerFunc != undefined) {
+        if ($headerFunc != undefined && collection.length > 0) {
             items.push($headerFunc(collection));
         }
         collection.forEach(collectionItem => {
@@ -277,6 +294,11 @@
     let selectedValue;
 
 
+    function txtFilterClicked() {
+        setFocus('#txtFilter');
+    }
+
+
     function tableClicked() {
         setFocus('#tables');
         $('#tables .table .selected').removeClass('selected');
@@ -388,6 +410,7 @@
 
     function applyFilter() {
         if (selectedColumn) {
+            showLoading();
             sendMessage({
                 'command': 'loadValues',
                 'item': selectedColumn
@@ -455,7 +478,12 @@
             filter += "([" + selectedColumn.Name + "] IS " + ((val == null || val == "[NULL]") ? "NULL" : "NOT NULL") + ")";
         }
         else {
-            switch (selectedColumn.Type) {
+            let type = selectedColumn.Type;
+            if (type.indexOf(':') > 0) {
+                type = type.split(':')[1];
+            }
+
+            switch (type) {
                 case "uniqueidentifier":
                     {
                         val = "N'{" + val + "}'";

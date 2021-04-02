@@ -63,11 +63,12 @@ export const getMssqlDbColumns = async (
     const query = `
         SELECT  
             syscolumns.name, 
-            systypes.name AS type
+            CASE WHEN ut.xtype = ut.xusertype THEN ut.name ELSE ut.name + ':' + st.name END AS type
         FROM
             syscolumns INNER JOIN
             sysobjects ON syscolumns.id = sysobjects.id INNER JOIN
-            systypes ON syscolumns.xusertype = systypes.xusertype
+            systypes ut ON syscolumns.xusertype = ut.xusertype INNER JOIN
+			systypes st ON ut.xtype = st.xusertype
         WHERE
             (sysobjects.name = N'${table.Name}') 
             and (schema_Name(sysobjects.uid) = N'${table.Schema}')
@@ -143,6 +144,6 @@ export const getMssqlDbTableRows = async (
 
     return {
         rows: dbRowsResult,
-        count: dbCountResult[0].count
+        count: dbCountResult.length > 0 ? dbCountResult[0].count : 0
     };
 };
