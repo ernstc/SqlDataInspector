@@ -2,7 +2,7 @@
 
 # SQL Data Inspector
 
-This is an Azure Data Studio extension that let you inspect the data stored in tables and columns with just few clicks.
+This extension makes it easy to inspect data with just a few clicks.
 
 ![Example of dashboard](https://raw.githubusercontent.com/ernstc/SqlDataInspector/main/images/screen1.png)
 
@@ -12,7 +12,7 @@ This is an Azure Data Studio extension that let you inspect the data stored in t
 * Shows the list of columns of the selected table.
 * Shows all the distinct values of the selected column.
 * Shows a snapshot of the first 10 rows of the selected tables.
-* A "Filter" section let you edit the WHERE clause that will be applied to each query that retrieves data.
+* You can edit the WHERE clause that will be applied to each query that retrieves data.
 * By double clicking on a distinct value, a filter on that value is automatically added in the "Filters" section.
 * By double clicking on a row in the table snapshot, it shows a dialog with a detailed record of the row.
 * Each selectable element can be copied with CTRL+C.
