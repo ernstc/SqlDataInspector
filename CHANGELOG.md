@@ -6,6 +6,17 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ---
 
+## April 2021 Release (version 0.1.2)
+
+Bug fixing release
+
+### Fixes
+
+* CTRL+C now works in the filter text area.
+* Fixed issues that were blocking the UI when the filter is not valid.
+
+---
+
 ## April 2021 Release (version 0.1.1)
 
 Bug fixing release

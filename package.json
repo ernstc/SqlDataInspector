@@ -1,8 +1,8 @@
 {
 	"name": "sql-data-inspector",
 	"displayName": "SQL Data Inspector",
-	"description": "This extension simplify the inspection of data stored in tables and columns to just few clicks.",
-	"version": "0.1.1",
+	"description": "This extension makes it easy to inspect data with just a few clicks.",
+	"version": "0.1.2",
 	"publisher": "ernstc",
 	"license": "MIT",
 	"icon": "images/icon.png",
@@ -29,7 +29,7 @@
 			{
 				"id": "sql-data-inspector-panel",
 				"title": "SQL Data Inspector",
-				"description": "This extension simplify the inspection of data stored in tables and columns to just few clicks.",
+				"description": "This extension makes it easy to inspect data with just a few clicks.",
 				"container": {
 					"webview-container": "diagram-panel"
 				}
