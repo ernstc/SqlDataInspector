@@ -127,10 +127,11 @@ export const getMssqlDbTableRows = async (
     filter: string
 ) => {
     
+    const snapshotSize = 20;
     const whereExpression = filter ? 'WHERE ' + filter : '';
 
     const queryRows = `
-        SELECT TOP(10) * 
+        SELECT TOP(${snapshotSize}) * 
         FROM [${table.Schema}].[${table.Name}]
         ${whereExpression}`;
 
