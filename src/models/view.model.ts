@@ -10,7 +10,7 @@ export class ViewModel {
     values?: string[];
     rows?: DatabaseTableRow[];
     rowsCount?: number;
-    rowsHeader?: string[];
+    rowsColumnsName?: string[];
     filter?: string;
     autoApply?: boolean;
     showRecordDetails?: boolean;

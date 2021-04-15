@@ -117,9 +117,8 @@
     // Message handler
     //*********************************************************** */
 
-    window.addEventListener('message', (e) => {
+    window.addEventListener('message', async (e) => {
         if (e && e.data) {
-
             setStatus(e.data.status);
 
             if (e.data.viewModel) {
@@ -133,13 +132,13 @@
                     renderTables(e.data.tables);
                 }
                 if (e.data.columns != undefined) {
-                    renderColumns(e.data.columns);
+                    await renderColumns(e.data.columns);
                 }
                 if (e.data.values != undefined) {
                     renderValues(e.data.values, e.data.column);
                 }
                 if (e.data.rows != undefined) {
-                    renderRows(e.data.rowsHeader, e.data.rows, e.data.count);
+                    renderRows(e.data.rowsColumnsName, e.data.rows, e.data.count);
                 }    
             }
 
@@ -194,13 +193,14 @@
     //*********************************************************** */
 
     let _columns;
+    let _rowsColumns;
     let _selectedTable;
     let _selectedColumn;
     let _selectedValue;
     let _selectedRow;
 
 
-    function applyViewModel(vm) {
+    async function applyViewModel(vm) {
 
         if ('columns' in vm) _columns = vm.columns;
 
@@ -223,7 +223,7 @@
         }
         
         if (vm.columns != undefined) {
-            renderColumns(vm.columns, vm.selectedColumnIndex);
+            await renderColumns(vm.columns, vm.selectedColumnIndex);
         }
         
         if (vm.values != undefined) {
@@ -232,7 +232,7 @@
         
         if (vm.rows != undefined) {
             renderRows(
-                vm.rowsHeader, vm.rows, vm.rowsCount, 
+                vm.rowsColumnsName, vm.rows, vm.rowsCount, 
                 vm.selectedRowRowIndex, vm.selectedRowColumnIndex
                 );
         }
@@ -271,6 +271,15 @@
     };
 
 
+    function renderValue(value, columnType) {
+        return value == null ? '[NULL]' : 
+               value == '' ? '[Empty string]' :
+               value == 0 && columnType == 'bit' ? 'False' :
+               value == 1 && columnType == 'bit' ? 'True' :
+               value;
+    }
+
+
     function renderTables(tables, selectedIndex) {
         $tablesCount.innerText = `(${tables.length})`;
         renderCollection(tables,
@@ -291,8 +300,8 @@
     };
 
 
-    function renderColumns(columns, selectedIndex) {
-        _columns = [...columns];
+    async function renderColumns(columns, selectedIndex) {
+        _columns = columns;
         $columnsCount.innerText = `(${columns.length})`;
         renderCollection(columns,
             $('#columns .table'),
@@ -323,12 +332,7 @@
                     .dblclick(valueDblClicked);
 
                 $(`<div class="col"></div>`)
-                    .text(
-                        value == null ? '[NULL]' : 
-                        value == '' ? '[Empty string]' :
-                        value == 0 && column.Type == 'bit' ? 'False' :
-                        value == 1 && column.Type == 'bit' ? 'True' :
-                        value)
+                    .text(renderValue(value, column.Type))
                     .appendTo(element);
                 
                 return element;
@@ -338,14 +342,15 @@
     };
 
 
-    function renderRows(rowsHeader, rows, rowsCount, selectedRowIndex, selectedColumnIndex) {
+    function renderRows(rowsColumnsName, rows, rowsCount, selectedRowIndex, selectedColumnIndex) {
         $rowsCount.innerText = rowsCount ? `(${rowsCount})` : '';
-
+        _rowsColumns = [];
+        rowsColumnsName.forEach(name => _rowsColumns.push(_columns.filter(c => c.Name == name)[0]));
         renderCollection(rows,
             $('#dataRows .table'),
             () => {
                 let header = $(`<div class="table-header"></div>`);
-                rowsHeader.forEach(name => {
+                rowsColumnsName.forEach(name => {
                     header.append(`<div class="col">${name}</div>`);
                 });
                 return header;
@@ -358,7 +363,7 @@
                 row.Values.forEach((value, index) => {
                     $(`<div class="col"></div>`)
                         .toggleClass('cell-selected', rowIndex == selectedRowIndex && index == selectedColumnIndex)
-                        .text(value == null ? 'NULL' : value)
+                        .text(renderValue(value, _rowsColumns[index].Type))
                         .data('cell-value', value)
                         .data('cell-index', index)
                         .click(rowCellClicked)
@@ -398,19 +403,15 @@
         $('#tables .table .selected').removeClass('selected');
         let selectedItem = $(this).addClass('selected');
         _selectedTable = selectedItem.data('item');
+        _selectedColumn = undefined;
+        _selectedValue = undefined;
+        _selectedRow = undefined;
         showLoading();
         updateViewModel({
-            'selectedTableIndex': selectedItem.data('item-index'),
-            'selectedColumnIndex': null,
-            'selectedValueIndex': null,
-            'selectedRowRowIndex': null,
-            'selectedRowColumnIndex': null
+            'selectedTableIndex': selectedItem.data('item-index')
         });
         sendMessage({
-            'command': 'loadColumns'
-        });
-        sendMessage({
-            'command': 'loadRows'
+            'command': 'loadColumns|loadRows'
         });
         renderValues([]);
         textToCopy = `[${_selectedTable.Schema}].[${_selectedTable.Name}]`;
@@ -422,10 +423,10 @@
         $('#columns .table .selected').removeClass('selected');
         let selectedItem = $(this).addClass('selected');
         _selectedColumn = selectedItem.data('item');
+        _selectedValue = undefined;
         showLoading();
         updateViewModel({
             'selectedColumnIndex': selectedItem.data('item-index'),
-            'selectedValueIndex': null
         });
         sendMessage({
             'command': 'loadValues'
@@ -482,8 +483,8 @@
     function showDatabaseTableRow(row) {
         setFocus('#dialogViewRecord');
         let data = [];
-        for (let i = 0; i < _columns.length; i++) {
-            data.push([_columns[i].Name, row.Values[i]]);
+        for (let i = 0; i < _rowsColumns.length; i++) {
+            data.push([_rowsColumns[i], row.Values[i]]);
         }
         showDetailDialog(data);
     }
@@ -505,10 +506,7 @@
         $txtFilter.val('');
         txtFilterChanged();
         updateViewModel({
-            'filter': '',
-            'selectedValueIndex': null,
-            'selectedRowRowIndex': null,
-            'selectedRowColumnIndex': null
+            'filter': ''
         });
         if ($autofilter.get(0).checked) {
             applyFilter();
@@ -517,6 +515,8 @@
 
 
     function applyFilter() {
+        _selectedValue = undefined;
+        _selectedRow = undefined;
         updateViewModel({
             'selectedValueIndex': null,
             'selectedRowRowIndex': null,
@@ -542,6 +542,7 @@
         hideDetailDialog();        
     });
 
+
     function showDetailDialog(data) {
         textToCopy = undefined;
         $overlay.removeClass('hidden');
@@ -554,22 +555,23 @@
                     <div class="col2">Value</div>
                 </div>`),
             (row) => {
+                let column = row[0];
+                let value = row[1];
                 let element = 
                     $(`<div class="table-data">
-                        <div class="col1">${row[0]}</div>
+                        <div class="col1">${column.Name}</div>
                     </div>`)
                         .data('cell-value', row[1])
                         .click(detailRowClicked);
 
                 $(`<div class="col2"></div>`)
-                    .text(row[1] == null ? 'NULL' : row[1])
+                    .text(renderValue(value, column.Type))
                     .appendTo(element);
 
                 return element;
             }
         );
         $('#dialogViewRecord').removeClass('hidden');
-
         updateViewModel({
             'showRecordDetails': true
         });
