@@ -1,6 +1,5 @@
 import * as azdata from "azdata";
 import * as vscode from 'vscode';
-import { visualizationPanelName } from "../constants";
 import { DatabaseTable } from './../models/database-table.model';
 import { DatabaseColumn } from "../models/database-column.model";
 import { DatabaseTableRow } from "../models/database-table-row.model";
@@ -31,102 +30,10 @@ interface IOutgoingMessage {
 }
 
 
-export const VisualizationController = (context: vscode.ExtensionContext) => {
-    azdata.dashboard.registerWebviewProvider(
-        visualizationPanelName,
-        renderDashboardWebviewContent
-    );
-}
 
-
-export const VisualizationPanelController = async (webview: vscode.Webview, connection: azdata.connection.Connection) => {
+export const VisualizationController = async (webview: vscode.Webview, connection: azdata.connection.Connection) => {
     await renderWebviewContent(webview, connection);
 }
-
-
-const renderDashboardWebviewContent = async (webview: azdata.DashboardWebview) => {
-    webview.html = loadWebView();
-    if (webview.connection.options.database) {
-
-        webview.postMessage({
-            status: Status.GettingTableData,
-        });
-
-        const databaseName = webview.connection.options.database;
-
-        const connections = await azdata.connection.getActiveConnections();
-        const connectionId =
-            connections.find(c => c.options.database == databaseName)?.connectionId ??
-            webview.connection.connectionId;
-
-        const dbTables = await getMssqlDbTables(connectionId);
-
-        webview.postMessage({
-            status: Status.RenderingData,
-            //errors: undefined,
-            databaseName: databaseName,
-            tables: dbTables
-        });
-
-        let viewModel = new ViewModel();
-
-        webview.onMessage(async (data: IIncomingMessage) => {
-            switch (data.command) {
-                case 'viewIsReady': {
-                    setViewModel(webview, viewModel);
-                    break;
-                }
-                case 'viewUpdated': {
-                    if (data.viewModel) {
-                        viewModel = data.viewModel;
-                    }
-                    break;
-                }
-                /*
-                case 'selectedTable': {
-                    if (data.viewModel) {
-                        viewModel = data.viewModel;
-                    }
-                    break;
-                }
-                case 'selectedColumn': {
-                    if (data.viewModel) {
-                        viewModel = data.viewModel;
-                    }
-                    break;
-                }
-                */
-
-                case 'loadColumns': {
-                    await loadColumns(connectionId, webview, viewModel);
-                    break;
-                }
-                case 'loadValues': {
-                    await loadValues(connectionId, webview, viewModel);
-                    break;
-                }
-                case 'loadRows': {
-                    await loadRows(connectionId, webview, viewModel);
-                    break;
-                }
-                /*     
-                case 'changedFilter': {
-                    filter = data.item;
-                    break;
-                }
-                */
-                case 'copyText': {
-                    vscode.env.clipboard.writeText(data.item);
-                }
-            }
-        });
-    }
-    else {
-        webview.postMessage({
-            status: Status.NoDatabase,
-        });
-    }
-};
 
 
 const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.connection.Connection) => {

@@ -44,16 +44,6 @@
 				"command": "sql-data-inspector.inspect-data",
 				"title": "Inspect data"
 			}
-		],
-		"dashboard.tabs": [
-			{
-				"id": "sql-data-inspector-panel",
-				"title": "SQL Data Inspector",
-				"description": "This extension makes it easy to inspect data with just a few clicks.",
-				"container": {
-					"webview-container": "diagram-panel"
-				}
-			}
 		]
 	},
 	"scripts": {

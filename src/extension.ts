@@ -2,7 +2,7 @@ import { Database } from './models/database.model';
 
 import * as vscode from 'vscode';
 import * as azdata from 'azdata';
-import { VisualizationController, VisualizationPanelController } from './controllers/visualization.controller';
+import { VisualizationController } from './controllers/visualization.controller';
 
 export const activate = (context: vscode.ExtensionContext) => {
 
@@ -34,11 +34,9 @@ export const activate = (context: vscode.ExtensionContext) => {
             );
 
             // And set its HTML content
-            await VisualizationPanelController(panel.webview, connection);
+            await VisualizationController(panel.webview, connection);
         }
     }));
-
-    return VisualizationController(context);
 }
 
 export const deactivate = () => { };

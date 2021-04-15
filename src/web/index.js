@@ -339,7 +339,6 @@
 
 
     function renderRows(rowsHeader, rows, rowsCount, selectedRowIndex, selectedColumnIndex) {
-        //$rowsCount.innerText = rowsCount;
         $rowsCount.innerText = rowsCount ? `(${rowsCount})` : '';
 
         renderCollection(rows,
