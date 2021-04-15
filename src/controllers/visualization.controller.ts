@@ -1,16 +1,19 @@
-import { DatabaseTable } from './../models/database-table.model';
-import { dashboard, DashboardWebview, connection } from "azdata";
-import { loadWebView } from "../web.loader";
+import * as azdata from "azdata";
+import * as vscode from 'vscode';
 import { visualizationPanelName } from "../constants";
+import { DatabaseTable } from './../models/database-table.model';
+import { loadWebView } from "../web.loader";
 import { Status } from "../models/status.enum";
 import { getMssqlDbTables, getMssqlDbColumns, getMssqlDbColumnValues, getMssqlDbTableRows } from "../repositories/mssql.repository";
 import { DatabaseColumn } from "../models/database-column.model";
-import * as vscode from 'vscode';
+import { ViewModel } from "../models/view.model";
 
 
 interface IIncomingMessage {
     command: string;
-    item: any;
+    item?: any;
+    itemIndex?: number;
+    viewModel?: ViewModel;
 }
 
 
@@ -28,105 +31,217 @@ interface IOutgoingMessage {
 }
 
 
-export const VisualizationController = () => {
-    let counterHtml = loadWebView();
-
-    dashboard.registerWebviewProvider(
+export const VisualizationController = (context: vscode.ExtensionContext) => {
+    azdata.dashboard.registerWebviewProvider(
         visualizationPanelName,
-        async (webview: DashboardWebview) => {
-            webview.html = counterHtml;
-            if (webview.connection.options.database) {
-
-                webview.postMessage({
-                    status: Status.GettingTableData,
-                });
-
-                const connections = await connection.getActiveConnections();
-                const databaseName = webview.connection.options.database;
-                const connectionId =
-                    connections.find(c => c.options.database == databaseName)?.connectionId ??
-                    webview.connection.connectionId;
-
-                const dbTables = await getMssqlDbTables(connectionId);
-
-                webview.postMessage({
-                    status: Status.RenderingData,
-                    //errors: undefined,
-                    databaseName: databaseName,
-                    tables: dbTables
-                });
-
-                let selectedTable: DatabaseTable;
-                let selectedColumn: DatabaseColumn;
-                let filter: string;
-
-                webview.onMessage(async (data: IIncomingMessage) => {
-                    switch (data.command) {
-                        case 'selectedTable': {
-                            selectedTable = data.item;
-                            break;
-                        }
-                        case 'selectedColumn': {
-                            selectedColumn = data.item;
-                            break;
-                        }
-                        case 'loadColumns': {
-                            await loadColumns(webview, connectionId, selectedTable); 
-                            break;
-                        }
-                        case 'loadValues': {
-                            await loadValues(webview, connectionId, selectedTable, selectedColumn, filter); 
-                            break;
-                        }
-                        case 'loadRows': {
-                            await loadRows(webview, connectionId, selectedTable, filter); 
-                            break;
-                        }
-                        case 'changedFilter': {
-                            filter = data.item;
-                            break;
-                        }
-                        case 'copyText': {
-                            vscode.env.clipboard.writeText(data.item);
-                        }
-                    }
-                });
-            } 
-            else {
-                webview.postMessage({
-                    status: Status.NoDatabase,
-                });
-            }
-        }
+        renderDashboardWebviewContent
     );
 }
 
 
-const loadColumns = async(webview: DashboardWebview, connectionId: string, table: DatabaseTable) => {
-    const dbColumns = await getMssqlDbColumns(connectionId, table);
-    webview.postMessage(<IOutgoingMessage>{
-        status: Status.RenderingData,
-        //errors: null,
-        columns: dbColumns,
-        table: table
-    });
+export const VisualizationPanelController = async (webview: vscode.Webview, connection: azdata.connection.Connection) => {
+    await renderWebviewContent(webview, connection);
 }
 
 
-const loadValues = async (webview: DashboardWebview, connectionId: string, table: DatabaseTable, column: DatabaseColumn, filter: string) => {
-    const dbValues = await getMssqlDbColumnValues(connectionId, table, column, filter);
+const renderDashboardWebviewContent = async (webview: azdata.DashboardWebview) => {
+    webview.html = loadWebView();
+    if (webview.connection.options.database) {
+
+        webview.postMessage({
+            status: Status.GettingTableData,
+        });
+
+        const databaseName = webview.connection.options.database;
+
+        const connections = await azdata.connection.getActiveConnections();
+        const connectionId =
+            connections.find(c => c.options.database == databaseName)?.connectionId ??
+            webview.connection.connectionId;
+
+        const dbTables = await getMssqlDbTables(connectionId);
+
+        webview.postMessage({
+            status: Status.RenderingData,
+            //errors: undefined,
+            databaseName: databaseName,
+            tables: dbTables
+        });
+
+        let viewModel = new ViewModel();
+
+        webview.onMessage(async (data: IIncomingMessage) => {
+            switch (data.command) {
+                case 'viewIsReady': {
+                    setViewModel(webview, viewModel);
+                    break;
+                }
+                case 'viewUpdated': {
+                    if (data.viewModel) {
+                        viewModel = data.viewModel;
+                    }
+                    break;
+                }
+                /*
+                case 'selectedTable': {
+                    if (data.viewModel) {
+                        viewModel = data.viewModel;
+                    }
+                    break;
+                }
+                case 'selectedColumn': {
+                    if (data.viewModel) {
+                        viewModel = data.viewModel;
+                    }
+                    break;
+                }
+                */
+                
+                case 'loadColumns': {
+                    await loadColumns(connectionId, webview, viewModel); 
+                    break;
+                }
+                case 'loadValues': {
+                    await loadValues(connectionId, webview, viewModel); 
+                    break;
+                }
+                case 'loadRows': {
+                    await loadRows(connectionId, webview, viewModel);
+                    break;
+                }
+                /*     
+                case 'changedFilter': {
+                    filter = data.item;
+                    break;
+                }
+                */
+                case 'copyText': {
+                    vscode.env.clipboard.writeText(data.item);
+                }
+            }
+        });
+    } 
+    else {
+        webview.postMessage({
+            status: Status.NoDatabase,
+        });
+    }
+};
+
+
+const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.connection.Connection) => {
+    webview.html = loadWebView();
+    if (connection.options.database) {
+
+        const databaseName = connection.options.database;
+        const connectionId = connection.connectionId;
+
+        /*webview.postMessage({
+            databaseName: databaseName
+        });*/
+
+        let viewModel = new ViewModel();
+        viewModel.databaseName = databaseName;
+
+        webview.onDidReceiveMessage(async (data: IIncomingMessage) => {
+            switch (data.command) {
+                case 'viewIsReady': {
+                    setViewModel(webview, viewModel);
+                    break;
+                }
+                case 'viewUpdated': {
+                    updateViewModel(viewModel, data.viewModel);
+                    break;
+                }
+                case 'loadTables': {
+                    await loadTables(connectionId, webview, viewModel); 
+                    break;
+                }
+                case 'loadColumns': {
+                    await loadColumns(connectionId, webview, viewModel); 
+                    break;
+                }
+                case 'loadValues': {
+                    await loadValues(connectionId, webview, viewModel); 
+                    break;
+                }
+                case 'loadRows': {
+                    await loadRows(connectionId, webview, viewModel); 
+                    break;
+                }
+                case 'copyText': {
+                    vscode.env.clipboard.writeText(data.item);
+                    break;
+                }
+            }
+        });
+    } 
+    else {
+        webview.postMessage({
+            status: Status.NoDatabase,
+        });
+    }
+};
+
+
+const setViewModel = async (webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+    webview.postMessage({
+        viewModel: viewModel
+    });
+};
+
+
+const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
+    if (vmUpdates) {
+        if (vmUpdates.filter != undefined) viewModel.filter = vmUpdates.filter;
+        if (vmUpdates.selectedColumnIndex != undefined) viewModel.selectedColumnIndex = vmUpdates.selectedColumnIndex;
+        if (vmUpdates.selectedRowRowIndex != undefined) viewModel.selectedRowRowIndex = vmUpdates.selectedRowRowIndex;
+        if (vmUpdates.selectedTableIndex != undefined) viewModel.selectedTableIndex = vmUpdates.selectedTableIndex;
+        if (vmUpdates.selectedValueIndex != undefined) viewModel.selectedValueIndex = vmUpdates.selectedValueIndex;
+        if (vmUpdates.autoApply != undefined) viewModel.autoApply = vmUpdates.autoApply;
+    }
+};
+
+
+const loadTables = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+    webview.postMessage({
+        status: Status.GettingTableData,
+    });
+    viewModel.tables = await getMssqlDbTables(connectionId);
+    webview.postMessage({
+        status: Status.RenderingData,
+        tables: viewModel.tables
+    });
+};
+
+
+const loadColumns = async(connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+    const table = viewModel.selectedTable!;
+    viewModel.columns = await getMssqlDbColumns(connectionId, table);
     webview.postMessage(<IOutgoingMessage>{
         status: Status.RenderingData,
-        //errors: dbValues.errors,
-        values: dbValues,
+        columns: viewModel.columns,
+        table: table
+    });
+};
+
+
+const loadValues = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+    const table = viewModel.selectedTable!;
+    const column = viewModel.selectedColumn!;
+    viewModel.values = await getMssqlDbColumnValues(connectionId, table, column, viewModel.filter!);
+    webview.postMessage(<IOutgoingMessage>{
+        status: Status.RenderingData,
+        values: viewModel.values,
         table: table,
         column: column
     });
-}
+};
 
 
-const loadRows = async (webview: DashboardWebview, connectionId: string, table: DatabaseTable, filter: string) => {
-    const dbRows = await getMssqlDbTableRows(connectionId, table, filter);
+const loadRows = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+    const table = viewModel.selectedTable!;
+    const dbRows = await getMssqlDbTableRows(connectionId, table, viewModel.filter!);
     let columns: string[] = [];
 
     if (dbRows.count > 0) {
@@ -144,12 +259,15 @@ const loadRows = async (webview: DashboardWebview, connectionId: string, table: 
         values.push(rowValues);
     });
 
+    viewModel.rowsHeader = columns;
+    viewModel.rows = values;
+    viewModel.rowsCount = dbRows.count;
+
     webview.postMessage(<IOutgoingMessage>{
         status: Status.RenderingData,
-        //errors: dbRows.errors,
         rowsHeader: columns,
         rows: values,
         count: dbRows.count,
         table: table
     });
-}
+};

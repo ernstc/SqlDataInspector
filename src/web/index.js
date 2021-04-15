@@ -52,6 +52,14 @@
     }
 
 
+    function updateViewModel(vm) {
+        sendMessage({
+            'command': 'viewUpdated',
+            'viewModel': vm
+        });
+    }
+
+
     // Clipboard handler
     //*********************************************************** */
 
@@ -97,30 +105,41 @@
                 });
             }
         });
+
+        sendMessage({
+            'command': 'viewIsReady'
+        });
     });
+
 
 
     // Message handler
     //*********************************************************** */
 
     window.addEventListener('message', (e) => {
-        if (e.data) {
-            if (e.data.databaseName) {
-                $databaseName.innerText = e.data.databaseName;
-            }
+        console.log('received message:');
+        if (e && e.data) {
+
+            console.log('... processing message');
+            console.log(JSON.stringify(e.data));
 
             setStatus(e.data.status);
-            //showErrors(e.data);
 
-            renderTables(e.data.tables);
-            renderColumns(e.data.columns, e.data.table);
-            
-            if (e.data.values) {
-                renderValues(e.data.values, e.data.column, e.data.table);
+            if (e.data.viewModel) {
+                applyViewModel(e.data.viewModel);
             }
-
-            if (e.data.rows) {
-                renderRows(e.data.rowsHeader, e.data.rows, e.data.count, e.data.table);
+            else  {
+                if (e.data.databaseName) {
+                    $databaseName.innerText = e.data.databaseName;
+                }                
+                renderTables(e.data.tables);
+                renderColumns(e.data.columns, e.data.table);
+                if (e.data.values) {
+                    renderValues(e.data.values, e.data.column, e.data.table);
+                }
+                if (e.data.rows) {
+                    renderRows(e.data.rowsHeader, e.data.rows, e.data.count, e.data.table);
+                }    
             }
 
             hideLoading();
@@ -170,24 +189,75 @@
     }
 
 
+    // ViewModel
+    //*********************************************************** */
+
+    function applyViewModel(vm) {
+        if (vm.databaseName != undefined) {
+            $databaseName.innerText = vm.databaseName;
+        }
+
+        if (vm.tables != undefined) {
+            renderTables(vm.tables, vm.selectedTableIndex);
+        }
+        else {
+            sendMessage({
+                'command': 'loadTables',
+                'item': selectedTable
+            });
+        }
+        
+        if (vm.columns != undefined) {
+            let selectedTable = vm.tables[vm.selectedTableIndex];
+            renderColumns(vm.columns, selectedTable, vm.selectedColumnIndex);
+        }
+        
+        if (vm.values != undefined) {
+            let selectedTable = vm.tables[vm.selectedTableIndex];
+            let selectedColumn = vm.columns[vm.selectedColumnIndex];            
+            renderValues(vm.values, selectedColumn, selectedTable, vm.selectedValueIndex);
+        }
+        
+        if (vm.rows != undefined) {
+            let selectedTable = vm.tables[vm.selectedTableIndex];
+            renderRows(
+                vm.rowsHeader, vm.rows, vm.rowsCount, 
+                selectedTable,
+                vm.selectedRowRowIndex, vm.selectedRowColumnIndex
+                );
+        }
+        
+        if (vm.filter != undefined) {
+            $txtFilter.val(vm.filter);
+        }
+        
+        if (vm.autoApply != undefined) {
+            $autofilter.get(0).checked = vm.autoApply;
+        }
+    }
+
+
     // Renders
     //*********************************************************** */
 
-    function renderCollection(collection, $container, $headerFunc, $elementFunc) {
+    function renderCollection(collection, $container, $headerFunc, $elementFunc, selectedIndex) {
         let items = [];
         if ($headerFunc != undefined && collection.length > 0) {
             items.push($headerFunc(collection));
         }
-        collection.forEach(collectionItem => {
+        collection.forEach((collectionItem, index) => {
             items.push(
-                $elementFunc(collectionItem).data('item', collectionItem)
+                $elementFunc(collectionItem)
+                    .data('item', collectionItem)
+                    .data('item-index', index)
+                    .toggleClass('selected', selectedIndex == index)
             );
         });
         $container.empty().append(items);
     };
 
 
-    function renderTables(tables) {
+    function renderTables(tables, selectedIndex) {
         if (tables) {
             $tablesCount.innerText = `(${tables.length})`;
             renderCollection(tables,
@@ -202,13 +272,14 @@
                         <div class="col1"><i class="ms-Icon ms-Icon--Table"></i> ${table.Name}</div>
                         <div class="col2">${table.Schema}</div>
                     </div>`)
-                        .click(tableClicked)
+                        .click(tableClicked),
+                selectedIndex
             );
         }
     };
 
 
-    function renderColumns(columns, table) {
+    function renderColumns(columns, table, selectedIndex) {
         if (columns) {
             $columnsCount.innerText = `(${columns.length})`;
             renderCollection(columns,
@@ -223,13 +294,14 @@
                         <div class="col1"><i class="ms-Icon ms-Icon--Column"></i> ${column.Name}</div>
                         <div class="col2">${column.Type}</div>
                     </div>`)
-                        .click(columnClicked)
+                        .click(columnClicked),
+                selectedIndex
             );
         }
     };
 
 
-    function renderValues(values, column, table) {
+    function renderValues(values, column, table, selectedIndex) {
         $valuesCount.innerText = values && values.length ? `(${values.length})` : '';
         if (values) {
             renderCollection(values,
@@ -250,13 +322,14 @@
                         .appendTo(element);
                     
                     return element;
-                }
+                },
+                selectedIndex
             );
         }
     };
 
 
-    function renderRows(rowsHeader, rows, rowsCount, table) {
+    function renderRows(rowsHeader, rows, rowsCount, table, selectedRowIndex, selectedColumnIndex) {
         $rowsCount.innerText = rowsCount;
         renderCollection(rows,
             $('#dataRows .table'),
@@ -273,15 +346,17 @@
                     .click(rowClicked)
                     .dblclick(rowDblClicked);
 
-                row.forEach(value => {
+                row.forEach((value, index) => {
                     $(`<div class="col"></div>`)
                         .text(value == null ? 'NULL' : value)
                         .data('cell-value', value)
+                        .data('cell-index', index)
                         .click(rowCellClicked)
                         .appendTo(element);
                 });
                 return element;
-            }
+            },
+            selectedRowIndex
         );
     };
 
@@ -292,6 +367,7 @@
     let selectedTable;
     let selectedColumn;
     let selectedValue;
+    let selectedRow;
 
 
     function txtFilterClicked() {
@@ -302,19 +378,17 @@
     function tableClicked() {
         setFocus('#tables');
         $('#tables .table .selected').removeClass('selected');
-        selectedTable = $(this).addClass('selected').data('item');
+        let selectedItem = $(this).addClass('selected');
+        selectedTable = selectedItem.data('item');
         showLoading();
-        sendMessage({
-            'command': 'selectedTable',
-            'item': selectedTable
+        updateViewModel({
+            'selectedTableIndex': selectedItem.data('item-index')
         });
         sendMessage({
-            'command': 'loadColumns',
-            'item': selectedTable
+            'command': 'loadColumns'
         });
         sendMessage({
-            'command': 'loadRows',
-            'item': selectedTable
+            'command': 'loadRows'
         });
         renderValues([]);
         textToCopy = `[${selectedTable.Schema}].[${selectedTable.Name}]`;
@@ -324,15 +398,14 @@
     function columnClicked() {
         setFocus('#columns');
         $('#columns .table .selected').removeClass('selected');
-        selectedColumn = $(this).addClass('selected').data('item');
+        let selectedItem = $(this).addClass('selected');
+        selectedColumn = selectedItem.data('item');
         showLoading();
-        sendMessage({
-            'command': 'selectedColumn',
-            'item': selectedColumn
+        updateViewModel({
+            'selectedColumnIndex': selectedItem.data('item-index')
         });
         sendMessage({
-            'command': 'loadValues',
-            'item': selectedColumn
+            'command': 'loadValues'
         });
         textToCopy = `[${selectedColumn.Name}]`;
     }
@@ -341,8 +414,12 @@
     function valueClicked() {
         setFocus('#values');
         $('#values .table .selected').removeClass('selected');
-        selectedValue = $(this).addClass('selected').data('item');
+        let selectedItem = $(this).addClass('selected');
+        selectedValue = selectedItem.data('item');
         textToCopy = selectedValue;
+        updateViewModel({
+            'selectedValueIndex': selectedItem.data('item-index')
+        });
     }
 
 
@@ -355,6 +432,11 @@
         setFocus('#dataRows');
         $('#dataRows .table .selected').removeClass('selected');
         $(this).addClass('selected');
+        let selectedItem = $(this).addClass('selected');
+        selectedRow = selectedItem.data('item');
+        updateViewModel({
+            'selectedRowRowIndex': selectedItem.data('item-index')
+        });
     }
 
 
@@ -362,6 +444,9 @@
         $('#dataRows .table .cell-selected').removeClass('cell-selected');
         let cellValue = $(this).addClass('cell-selected').data('cell-value');
         textToCopy = cellValue;
+        updateViewModel({
+            'selectedRowColumnIndex': cellValue.data('cell-index')
+        });
     }
 
 
@@ -417,8 +502,7 @@
             });
         }
         sendMessage({
-            'command': 'loadRows',
-            'item': selectedTable
+            'command': 'loadRows'
         });
     }
 
