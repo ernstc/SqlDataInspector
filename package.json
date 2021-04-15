@@ -2,7 +2,7 @@
 	"name": "sql-data-inspector",
 	"displayName": "SQL Data Inspector",
 	"description": "This extension makes it easy to inspect data with just a few clicks.",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"publisher": "ernstc",
 	"license": "MIT",
 	"icon": "images/icon.png",
@@ -21,10 +21,30 @@
 		"Other"
 	],
 	"activationEvents": [
-		"*"
+		"onCommand:sql-data-inspector.inspect-data"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+        "menus": {
+			"objectExplorer/item/context": [
+				{
+					"command": "sql-data-inspector.inspect-data",
+					"when": "connectionProvider == MSSQL && nodeType && nodeType == Database",
+                    "group": "data"
+				},
+                {
+					"command": "sql-data-inspector.inspect-data",
+					"when": "connectionProvider == MSSQL && nodeType && nodeType == Server",
+                    "group": "data"
+				}
+			]
+		},
+        "commands": [
+			{
+				"command": "sql-data-inspector.inspect-data",
+				"title": "Inspect data"
+			}
+		],
 		"dashboard.tabs": [
 			{
 				"id": "sql-data-inspector-panel",
