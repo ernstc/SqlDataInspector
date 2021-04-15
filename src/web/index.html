@@ -60,7 +60,7 @@
             <div id="filterActions">
                 <div class="controls">
                     <div>
-                        <input id="autofilter" type="checkbox" checked value="1" /> <label for="autofilter">Auto filter</label>
+                        <input id="autofilter" type="checkbox" value="1" /> <label for="autofilter">Auto filter</label>
                     </div>
                     <div>
                         <button id="btnApplyFilter" class="default">Apply</button>
@@ -72,6 +72,7 @@
             </div>
         </div>
         <div id="dataRows">
+            <h2>Rows <span id="rowsCount" class="count"></span></h2>
             <div class="table">
                 <!--<div class="table-header">
                     <div class="col">Name1</div>
@@ -103,10 +104,6 @@
                 </div>-->
             </div>
         </div>
-        <div id="statusBar">
-            <div class="copyright">&copy; 2005-2021 Ernesto Cianciotta</div>
-            <div class="info">Rows: <span id="rowsCount">0</span></div>
-        </div>
         <div id="overlay" class="hidden"></div>
         <div id="dialogs">
             <div id="dialogViewRecord" class="dialog hidden">
@@ -116,7 +113,7 @@
                 </div>                
                 <div class="body">
                     <div class="header">
-                        Table: <span>[schemaName].[tableName]</span>
+                        Table: <span><!--[schemaName].[tableName]--></span>
                     </div>
                     <div class="details">
                         <div class="table">

@@ -1,0 +1,25 @@
+:root {
+    --vscode-input-background: gray;
+    --vscode-input-foreground: black;
+    --vscode-input-border: gray;
+    --vscode-checkbox-background: white;
+    --vscode-checkbox-foreground: black;
+    --vscode-checkbox-border: gray;
+    --vscode-button-secondaryBackground: orange;
+    --vscode-button-secondaryForeground: black;
+    --vscode-button-secondaryHoverBackground: yellow;
+    --vscode-panel-border: gray;
+    --vscode-sideBar-background: lightgray;
+    --vscode-sideBar-foreground: black;
+    --vscode-titleBar-activeBackground: #a3c9ec;
+    --vscode-titleBar-inactiveBackground: royalblue;
+    --vscode-list-hoverBackground: lightgreen;
+    --vscode-list-hoverForeground: black;
+    --vscode-list-focusBackground: green;
+    --vscode-list-focusForeground: white;
+    --vscode-list-activeSelectionBackground: darkgreen;
+    --vscode-list-activeSelectionForeground: white;
+    --vscode-editor-background: white;
+    --vscode-foreground: black;
+    --vscode-window-activeBorder: purple;
+}

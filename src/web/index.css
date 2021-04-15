@@ -285,11 +285,13 @@ label {
   margin-top: 6px;
 }
 #dataRows {
-  flex-grow: 3;
+  flex-grow: 4;
   position: relative;
 }
+#dataRows h2 {
+  padding: 8px;
+}
 #dataRows .table {
-  top: 0;
   overflow-x: auto;
 }
 #dataRows .table .col {
@@ -342,10 +344,10 @@ label {
 }
 #dialogViewRecord {
   position: absolute;
-  top: 25%;
+  top: 15%;
   left: 20%;
   width: 60%;
-  height: 50%;
+  height: 70%;
   margin: 0 auto;
 }
 #dialogViewRecord .table {
