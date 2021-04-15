@@ -2,17 +2,17 @@ import * as azdata from "azdata";
 import * as vscode from 'vscode';
 import { visualizationPanelName } from "../constants";
 import { DatabaseTable } from './../models/database-table.model';
+import { DatabaseColumn } from "../models/database-column.model";
+import { DatabaseTableRow } from "../models/database-table-row.model";
 import { loadWebView } from "../web.loader";
 import { Status } from "../models/status.enum";
 import { getMssqlDbTables, getMssqlDbColumns, getMssqlDbColumnValues, getMssqlDbTableRows } from "../repositories/mssql.repository";
-import { DatabaseColumn } from "../models/database-column.model";
 import { ViewModel } from "../models/view.model";
 
 
 interface IIncomingMessage {
     command: string;
     item?: any;
-    itemIndex?: number;
     viewModel?: ViewModel;
 }
 
@@ -21,11 +21,11 @@ interface IOutgoingMessage {
     status?: string;
     errors?: any[];
     databaseName?: string;
-    tables?: any[];
-    columns?: any[];
-    values?: any[];
-    rows?: any[];
-    rowsHeader?: any[];
+    tables?: DatabaseTable[];
+    columns?: DatabaseColumn[];
+    values?: string[];
+    rows?: DatabaseTableRow[];
+    rowsHeader?: string[];
     table?: DatabaseTable;
     column?: DatabaseColumn;
 }
@@ -96,13 +96,13 @@ const renderDashboardWebviewContent = async (webview: azdata.DashboardWebview) =
                     break;
                 }
                 */
-                
+
                 case 'loadColumns': {
-                    await loadColumns(connectionId, webview, viewModel); 
+                    await loadColumns(connectionId, webview, viewModel);
                     break;
                 }
                 case 'loadValues': {
-                    await loadValues(connectionId, webview, viewModel); 
+                    await loadValues(connectionId, webview, viewModel);
                     break;
                 }
                 case 'loadRows': {
@@ -120,7 +120,7 @@ const renderDashboardWebviewContent = async (webview: azdata.DashboardWebview) =
                 }
             }
         });
-    } 
+    }
     else {
         webview.postMessage({
             status: Status.NoDatabase,
@@ -136,12 +136,9 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
         const databaseName = connection.options.database;
         const connectionId = connection.connectionId;
 
-        /*webview.postMessage({
-            databaseName: databaseName
-        });*/
-
         let viewModel = new ViewModel();
         viewModel.databaseName = databaseName;
+        viewModel.autoApply = true;
 
         webview.onDidReceiveMessage(async (data: IIncomingMessage) => {
             switch (data.command) {
@@ -154,19 +151,19 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
                     break;
                 }
                 case 'loadTables': {
-                    await loadTables(connectionId, webview, viewModel); 
+                    await loadTables(connectionId, webview, viewModel);
                     break;
                 }
                 case 'loadColumns': {
-                    await loadColumns(connectionId, webview, viewModel); 
+                    await loadColumns(connectionId, webview, viewModel);
                     break;
                 }
                 case 'loadValues': {
-                    await loadValues(connectionId, webview, viewModel); 
+                    await loadValues(connectionId, webview, viewModel);
                     break;
                 }
                 case 'loadRows': {
-                    await loadRows(connectionId, webview, viewModel); 
+                    await loadRows(connectionId, webview, viewModel);
                     break;
                 }
                 case 'copyText': {
@@ -175,7 +172,7 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
                 }
             }
         });
-    } 
+    }
     else {
         webview.postMessage({
             status: Status.NoDatabase,
@@ -186,19 +183,45 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
 
 const setViewModel = async (webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     webview.postMessage({
-        viewModel: viewModel
+        viewModel: { 
+            ...viewModel, 
+            selectedTable: viewModel.selectedTable,
+            selectedColumn: viewModel.selectedColumn,
+            selectedValue: viewModel.selectedValue,
+            selectedRow: viewModel.selectedRow
+        }
     });
 };
 
 
 const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
-    if (vmUpdates) {
-        if (vmUpdates.filter != undefined) viewModel.filter = vmUpdates.filter;
-        if (vmUpdates.selectedColumnIndex != undefined) viewModel.selectedColumnIndex = vmUpdates.selectedColumnIndex;
-        if (vmUpdates.selectedRowRowIndex != undefined) viewModel.selectedRowRowIndex = vmUpdates.selectedRowRowIndex;
-        if (vmUpdates.selectedTableIndex != undefined) viewModel.selectedTableIndex = vmUpdates.selectedTableIndex;
-        if (vmUpdates.selectedValueIndex != undefined) viewModel.selectedValueIndex = vmUpdates.selectedValueIndex;
-        if (vmUpdates.autoApply != undefined) viewModel.autoApply = vmUpdates.autoApply;
+    for (let key in vmUpdates) {
+        switch (key) {
+            case 'selectedTableIndex':
+                viewModel.selectedTableIndex = vmUpdates.selectedTableIndex;
+                break;
+            case 'selectedColumnIndex':
+                viewModel.selectedColumnIndex = vmUpdates.selectedColumnIndex;
+                break;
+            case 'selectedRowRowIndex':
+                viewModel.selectedRowRowIndex = vmUpdates.selectedRowRowIndex;
+                break;
+            case 'selectedRowColumnIndex':
+                viewModel.selectedRowColumnIndex = vmUpdates.selectedRowColumnIndex;
+                break;
+            case 'selectedValueIndex':
+                viewModel.selectedValueIndex = vmUpdates.selectedValueIndex;
+                break;
+            case 'filter':
+                viewModel.filter = vmUpdates.filter;
+                break;
+            case 'autoApply':
+                viewModel.autoApply = vmUpdates.autoApply;
+                break;
+            case 'showRecordDetails':
+                viewModel.showRecordDetails = vmUpdates.showRecordDetails;
+                break;
+        }
     }
 };
 
@@ -215,7 +238,7 @@ const loadTables = async (connectionId: string, webview: azdata.DashboardWebview
 };
 
 
-const loadColumns = async(connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const loadColumns = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     const table = viewModel.selectedTable!;
     viewModel.columns = await getMssqlDbColumns(connectionId, table);
     webview.postMessage(<IOutgoingMessage>{
@@ -245,16 +268,16 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
     let columns: string[] = [];
 
     if (dbRows.count > 0) {
-        for(var column in dbRows.rows[0]) {
+        for (var column in dbRows.rows[0]) {
             columns.push(column);
         }
     }
 
-    let values: any[] = [];
+    let values: DatabaseTableRow[] = [];
     dbRows.rows.forEach(row => {
-        let rowValues: any[] = [];
+        let rowValues: DatabaseTableRow = { Values: [] };
         columns.forEach(column => {
-            rowValues.push(row[column]);
+            rowValues.Values.push(row[column]);
         });
         values.push(rowValues);
     });

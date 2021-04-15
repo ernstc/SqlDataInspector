@@ -1,17 +1,19 @@
-import { DatabaseColumn } from "./database-column.model";
-import { DatabaseTableRows } from "./database-table-rows.model";
 import { DatabaseTable } from "./database-table.model";
+import { DatabaseColumn } from "./database-column.model";
+import { DatabaseTableRow } from './database-table-row.model';
+
 
 export class ViewModel {
     databaseName?: string;
     tables?: DatabaseTable[];
     columns?: DatabaseColumn[];
     values?: string[];
-    rows?: DatabaseTableRows[];
+    rows?: DatabaseTableRow[];
     rowsCount?: number;
     rowsHeader?: string[];
     filter?: string;
     autoApply?: boolean;
+    showRecordDetails?: boolean;
 
     selectedTableIndex?: number;
     selectedColumnIndex?: number;
@@ -31,6 +33,24 @@ export class ViewModel {
     get selectedColumn(): DatabaseColumn | undefined {
         if (this.columns != undefined && this.selectedColumnIndex != undefined) {
             return this.columns[this.selectedColumnIndex];
+        }
+        else {
+            return undefined;
+        }
+    }
+
+    get selectedValue(): string | undefined {
+        if (this.values != undefined && this.selectedValueIndex != undefined) {
+            return this.values[this.selectedValueIndex];
+        }
+        else {
+            return undefined;
+        }
+    }
+
+    get selectedRow(): DatabaseTableRow | undefined {
+        if (this.rows != undefined && this.selectedRowRowIndex != undefined) {
+            return this.rows[this.selectedRowRowIndex];
         }
         else {
             return undefined;

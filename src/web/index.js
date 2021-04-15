@@ -23,10 +23,13 @@
     let $loadingOverlay = $('#loadingOverlay');
     let $overlay = $('#overlay');
 
-    $autofilter = document.getElementById('autofilter');
+    $autofilter = $('#autofilter')
+        .click(autoFilterClicked);
     $('#btnApplyFilter').click(btnApplyFilterClicked);
     $('#btnRemoveFilter').click(btnRemoveFilterClicked);
-    $txtFilter.click(txtFilterClicked);
+    $txtFilter
+        .keyup(txtFilterChanged)
+        .click(txtFilterClicked);
 
 
     // VSCode API for interacting with the extension back-end
@@ -97,8 +100,6 @@
                     textToCopy = text.substring(indexStart, indexEnd);
                 }
 
-                console.log('text to copy = \'' + textToCopy + '\'');
-
                 sendMessage({
                     'command': 'copyText',
                     'item': textToCopy == null ? 'NULL' : textToCopy
@@ -117,11 +118,7 @@
     //*********************************************************** */
 
     window.addEventListener('message', (e) => {
-        console.log('received message:');
         if (e && e.data) {
-
-            console.log('... processing message');
-            console.log(JSON.stringify(e.data));
 
             setStatus(e.data.status);
 
@@ -129,16 +126,20 @@
                 applyViewModel(e.data.viewModel);
             }
             else  {
-                if (e.data.databaseName) {
+                if (e.data.databaseName != undefined) {
                     $databaseName.innerText = e.data.databaseName;
                 }                
-                renderTables(e.data.tables);
-                renderColumns(e.data.columns, e.data.table);
-                if (e.data.values) {
-                    renderValues(e.data.values, e.data.column, e.data.table);
+                if (e.data.tables != undefined) {
+                    renderTables(e.data.tables);
                 }
-                if (e.data.rows) {
-                    renderRows(e.data.rowsHeader, e.data.rows, e.data.count, e.data.table);
+                if (e.data.columns != undefined) {
+                    renderColumns(e.data.columns);
+                }
+                if (e.data.values != undefined) {
+                    renderValues(e.data.values, e.data.column);
+                }
+                if (e.data.rows != undefined) {
+                    renderRows(e.data.rowsHeader, e.data.rows, e.data.count);
                 }    
             }
 
@@ -192,7 +193,22 @@
     // ViewModel
     //*********************************************************** */
 
+    let _columns;
+    let _selectedTable;
+    let _selectedColumn;
+    let _selectedValue;
+    let _selectedRow;
+
+
     function applyViewModel(vm) {
+
+        if ('columns' in vm) _columns = vm.columns;
+
+        _selectedTable = vm.selectedTable;
+        _selectedColumn = vm.selectedColumn;
+        _selectedValue = vm.selectedValue;
+        _selectedRow = vm.selectedRow;
+
         if (vm.databaseName != undefined) {
             $databaseName.innerText = vm.databaseName;
         }
@@ -202,27 +218,21 @@
         }
         else {
             sendMessage({
-                'command': 'loadTables',
-                'item': selectedTable
+                'command': 'loadTables'
             });
         }
         
         if (vm.columns != undefined) {
-            let selectedTable = vm.tables[vm.selectedTableIndex];
-            renderColumns(vm.columns, selectedTable, vm.selectedColumnIndex);
+            renderColumns(vm.columns, vm.selectedColumnIndex);
         }
         
         if (vm.values != undefined) {
-            let selectedTable = vm.tables[vm.selectedTableIndex];
-            let selectedColumn = vm.columns[vm.selectedColumnIndex];            
-            renderValues(vm.values, selectedColumn, selectedTable, vm.selectedValueIndex);
+            renderValues(vm.values, _selectedColumn, vm.selectedValueIndex);
         }
         
         if (vm.rows != undefined) {
-            let selectedTable = vm.tables[vm.selectedTableIndex];
             renderRows(
                 vm.rowsHeader, vm.rows, vm.rowsCount, 
-                selectedTable,
                 vm.selectedRowRowIndex, vm.selectedRowColumnIndex
                 );
         }
@@ -233,6 +243,10 @@
         
         if (vm.autoApply != undefined) {
             $autofilter.get(0).checked = vm.autoApply;
+        }
+
+        if (vm.showRecordDetails && _selectedRow && _columns) {
+            showDatabaseTableRow(_selectedRow);
         }
     }
 
@@ -247,7 +261,7 @@
         }
         collection.forEach((collectionItem, index) => {
             items.push(
-                $elementFunc(collectionItem)
+                $elementFunc(collectionItem, index)
                     .data('item', collectionItem)
                     .data('item-index', index)
                     .toggleClass('selected', selectedIndex == index)
@@ -258,79 +272,76 @@
 
 
     function renderTables(tables, selectedIndex) {
-        if (tables) {
-            $tablesCount.innerText = `(${tables.length})`;
-            renderCollection(tables,
-                $('#tables .table'),
-                () =>
-                    $(`<div class="table-header">
-                        <div class="col1">Name</div>
-                        <div class="col2">Schema</div>
-                    </div>`),
-                (table) =>
-                    $(`<div class="table-data">
-                        <div class="col1"><i class="ms-Icon ms-Icon--Table"></i> ${table.Name}</div>
-                        <div class="col2">${table.Schema}</div>
-                    </div>`)
-                        .click(tableClicked),
-                selectedIndex
-            );
-        }
+        $tablesCount.innerText = `(${tables.length})`;
+        renderCollection(tables,
+            $('#tables .table'),
+            () =>
+                $(`<div class="table-header">
+                    <div class="col1">Name</div>
+                    <div class="col2">Schema</div>
+                </div>`),
+            (table) =>
+                $(`<div class="table-data">
+                    <div class="col1"><i class="ms-Icon ms-Icon--Table"></i> ${table.Name}</div>
+                    <div class="col2">${table.Schema}</div>
+                </div>`)
+                    .click(tableClicked),
+            selectedIndex
+        );
     };
 
 
-    function renderColumns(columns, table, selectedIndex) {
-        if (columns) {
-            $columnsCount.innerText = `(${columns.length})`;
-            renderCollection(columns,
-                $('#columns .table'),
-                () =>
-                    $(`<div class="table-header">
-                        <div class="col1">Name</div>
-                        <div class="col2">Type</div>
-                    </div>`),
-                (column) =>
-                    $(`<div class="table-data">
-                        <div class="col1"><i class="ms-Icon ms-Icon--Column"></i> ${column.Name}</div>
-                        <div class="col2">${column.Type}</div>
-                    </div>`)
-                        .click(columnClicked),
-                selectedIndex
-            );
-        }
+    function renderColumns(columns, selectedIndex) {
+        _columns = [...columns];
+        $columnsCount.innerText = `(${columns.length})`;
+        renderCollection(columns,
+            $('#columns .table'),
+            () =>
+                $(`<div class="table-header">
+                    <div class="col1">Name</div>
+                    <div class="col2">Type</div>
+                </div>`),
+            (column) =>
+                $(`<div class="table-data">
+                    <div class="col1"><i class="ms-Icon ms-Icon--Column"></i> ${column.Name}</div>
+                    <div class="col2">${column.Type}</div>
+                </div>`)
+                    .click(columnClicked),
+            selectedIndex
+        );
     };
 
 
-    function renderValues(values, column, table, selectedIndex) {
+    function renderValues(values, column, selectedIndex) {
         $valuesCount.innerText = values && values.length ? `(${values.length})` : '';
-        if (values) {
-            renderCollection(values,
-                $('#values .table'),
-                null, // no header
-                (value) => {
-                    let element = $(`<div class="table-data"></div>`)
-                        .click(valueClicked)
-                        .dblclick(valueDblClicked);
+        renderCollection(values,
+            $('#values .table'),
+            null, // no header
+            (value) => {
+                let element = $(`<div class="table-data"></div>`)
+                    .click(valueClicked)
+                    .dblclick(valueDblClicked);
 
-                    $(`<div class="col"></div>`)
-                        .text(
-                            value == null ? '[NULL]' : 
-                            value == '' ? '[Empty string]' :
-                            value == 0 && column.Type == 'bit' ? 'False' :
-                            value == 1 && column.Type == 'bit' ? 'True' :
-                            value)
-                        .appendTo(element);
-                    
-                    return element;
-                },
-                selectedIndex
-            );
-        }
+                $(`<div class="col"></div>`)
+                    .text(
+                        value == null ? '[NULL]' : 
+                        value == '' ? '[Empty string]' :
+                        value == 0 && column.Type == 'bit' ? 'False' :
+                        value == 1 && column.Type == 'bit' ? 'True' :
+                        value)
+                    .appendTo(element);
+                
+                return element;
+            },
+            selectedIndex
+        );
     };
 
 
-    function renderRows(rowsHeader, rows, rowsCount, table, selectedRowIndex, selectedColumnIndex) {
-        $rowsCount.innerText = rowsCount;
+    function renderRows(rowsHeader, rows, rowsCount, selectedRowIndex, selectedColumnIndex) {
+        //$rowsCount.innerText = rowsCount;
+        $rowsCount.innerText = rowsCount ? `(${rowsCount})` : '';
+
         renderCollection(rows,
             $('#dataRows .table'),
             () => {
@@ -340,14 +351,14 @@
                 });
                 return header;
             },
-            (row) => {
+            (row, rowIndex) => {
                 let element = $(`<div class="table-data"></div>`)
-                    .data('columns', rowsHeader)
                     .click(rowClicked)
                     .dblclick(rowDblClicked);
 
-                row.forEach((value, index) => {
+                row.Values.forEach((value, index) => {
                     $(`<div class="col"></div>`)
+                        .toggleClass('cell-selected', rowIndex == selectedRowIndex && index == selectedColumnIndex)
                         .text(value == null ? 'NULL' : value)
                         .data('cell-value', value)
                         .data('cell-index', index)
@@ -364,10 +375,18 @@
     // Event handlers
     //*********************************************************** */
 
-    let selectedTable;
-    let selectedColumn;
-    let selectedValue;
-    let selectedRow;
+    function autoFilterClicked() {
+        updateViewModel({
+            'autoApply': $autofilter.get(0).checked
+        });
+    }
+
+
+    function txtFilterChanged() {
+        updateViewModel({
+            'filter': $txtFilter.val()
+        });
+    }
 
 
     function txtFilterClicked() {
@@ -379,10 +398,14 @@
         setFocus('#tables');
         $('#tables .table .selected').removeClass('selected');
         let selectedItem = $(this).addClass('selected');
-        selectedTable = selectedItem.data('item');
+        _selectedTable = selectedItem.data('item');
         showLoading();
         updateViewModel({
-            'selectedTableIndex': selectedItem.data('item-index')
+            'selectedTableIndex': selectedItem.data('item-index'),
+            'selectedColumnIndex': null,
+            'selectedValueIndex': null,
+            'selectedRowRowIndex': null,
+            'selectedRowColumnIndex': null
         });
         sendMessage({
             'command': 'loadColumns'
@@ -391,7 +414,7 @@
             'command': 'loadRows'
         });
         renderValues([]);
-        textToCopy = `[${selectedTable.Schema}].[${selectedTable.Name}]`;
+        textToCopy = `[${_selectedTable.Schema}].[${_selectedTable.Name}]`;
     }
 
 
@@ -399,15 +422,16 @@
         setFocus('#columns');
         $('#columns .table .selected').removeClass('selected');
         let selectedItem = $(this).addClass('selected');
-        selectedColumn = selectedItem.data('item');
+        _selectedColumn = selectedItem.data('item');
         showLoading();
         updateViewModel({
-            'selectedColumnIndex': selectedItem.data('item-index')
+            'selectedColumnIndex': selectedItem.data('item-index'),
+            'selectedValueIndex': null
         });
         sendMessage({
             'command': 'loadValues'
         });
-        textToCopy = `[${selectedColumn.Name}]`;
+        textToCopy = `[${_selectedColumn.Name}]`;
     }
 
 
@@ -415,8 +439,8 @@
         setFocus('#values');
         $('#values .table .selected').removeClass('selected');
         let selectedItem = $(this).addClass('selected');
-        selectedValue = selectedItem.data('item');
-        textToCopy = selectedValue;
+        _selectedValue = selectedItem.data('item');
+        textToCopy = _selectedValue;
         updateViewModel({
             'selectedValueIndex': selectedItem.data('item-index')
         });
@@ -433,7 +457,7 @@
         $('#dataRows .table .selected').removeClass('selected');
         $(this).addClass('selected');
         let selectedItem = $(this).addClass('selected');
-        selectedRow = selectedItem.data('item');
+        _selectedRow = selectedItem.data('item');
         updateViewModel({
             'selectedRowRowIndex': selectedItem.data('item-index')
         });
@@ -442,25 +466,26 @@
 
     function rowCellClicked() {
         $('#dataRows .table .cell-selected').removeClass('cell-selected');
-        let cellValue = $(this).addClass('cell-selected').data('cell-value');
-        textToCopy = cellValue;
+        let cell = $(this).addClass('cell-selected');
+        textToCopy = cell.data('cell-value');
         updateViewModel({
-            'selectedRowColumnIndex': cellValue.data('cell-index')
+            'selectedRowColumnIndex': cell.data('cell-index')
         });
     }
 
 
     function rowDblClicked() {
+        let row = $(this).data('item');
+        showDatabaseTableRow(row);
+    }
+
+
+    function showDatabaseTableRow(row) {
         setFocus('#dialogViewRecord');
-        let $this = $(this);
-        let columns = $this.data('columns');
-        let values = $this.data('item');
-
         let data = [];
-        for (let i = 0; i < columns.length; i++) {
-            data.push([columns[i], values[i]]);
+        for (let i = 0; i < _columns.length; i++) {
+            data.push([_columns[i].Name, row.Values[i]]);
         }
-
         showDetailDialog(data);
     }
 
@@ -473,32 +498,35 @@
 
 
     function btnApplyFilterClicked() {
-        sendMessage({
-            'command': 'changedFilter',
-            'item': $txtFilter.val()
-        });
         applyFilter();
     }
 
 
     function btnRemoveFilterClicked() {
         $txtFilter.val('');
-        sendMessage({
-            'command': 'changedFilter',
-            'item': ''
+        txtFilterChanged();
+        updateViewModel({
+            'filter': '',
+            'selectedValueIndex': null,
+            'selectedRowRowIndex': null,
+            'selectedRowColumnIndex': null
         });
-        if ($autofilter.checked) {
+        if ($autofilter.get(0).checked) {
             applyFilter();
         }
     }
 
 
     function applyFilter() {
-        if (selectedColumn) {
+        updateViewModel({
+            'selectedValueIndex': null,
+            'selectedRowRowIndex': null,
+            'selectedRowColumnIndex': null
+        });
+        if (_selectedColumn) {
             showLoading();
             sendMessage({
                 'command': 'loadValues',
-                'item': selectedColumn
             });
         }
         sendMessage({
@@ -518,7 +546,7 @@
     function showDetailDialog(data) {
         textToCopy = undefined;
         $overlay.removeClass('hidden');
-        $('#dialogViewRecord .header span').text(`[${selectedTable.Schema}].[${selectedTable.Name}]`);
+        $('#dialogViewRecord .header span').text(`[${_selectedTable.Schema}].[${_selectedTable.Name}]`);
         renderCollection(data,
             $('#dialogViewRecord .table'),
             () =>
@@ -542,12 +570,20 @@
             }
         );
         $('#dialogViewRecord').removeClass('hidden');
+
+        updateViewModel({
+            'showRecordDetails': true
+        });
     }
 
 
     function hideDetailDialog() {
         $overlay.addClass('hidden');
         $('#dialogViewRecord').addClass('hidden');
+
+        updateViewModel({
+            'showRecordDetails': false
+        });
     }
 
 
@@ -557,12 +593,12 @@
     function AddFilter(operand) {
         let filter = $txtFilter.val().trim();
         if (filter.length > 0) filter += " " + operand + " ";
-        let val = selectedValue;
+        let val = _selectedValue;
         if (val == null || val == "[NULL]" || val == "[NOT NULL]") {
-            filter += "([" + selectedColumn.Name + "] IS " + ((val == null || val == "[NULL]") ? "NULL" : "NOT NULL") + ")";
+            filter += "([" + _selectedColumn.Name + "] IS " + ((val == null || val == "[NULL]") ? "NULL" : "NOT NULL") + ")";
         }
         else {
-            let type = selectedColumn.Type;
+            let type = _selectedColumn.Type;
             if (type.indexOf(':') > 0) {
                 type = type.split(':')[1];
             }
@@ -592,14 +628,14 @@
                         break;
                     }
             };
-            filter += "([" + selectedColumn.Name + "] = " + val + ")";
+            filter += "([" + _selectedColumn.Name + "] = " + val + ")";
         }
         $txtFilter.val(filter);
+        txtFilterChanged();
 
-        if ($autofilter.checked) {
-            sendMessage({
-                'command': 'changedFilter',
-                'item': filter
+        if ($autofilter.get(0).checked) {
+            updateViewModel({
+                'filter': filter
             });
             applyFilter();
         }
