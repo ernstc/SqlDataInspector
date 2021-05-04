@@ -15,6 +15,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Fixes
 
 * When switching between panels and then going back to the inspect panel the page used to become completley blank. Now the view maintains its state.
+* Fixed filtering on columns of type time, date, datetime2, datetimeoffset.
 
 ---
 
