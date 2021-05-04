@@ -6,14 +6,15 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ---
 
-## April 2021 Release (version 0.1.2)
+## May 2021 Release (version 0.2.0)
 
-Bug fixing release
+### Changes
+
+* The tool is now available from the Database or Server context menu using the menu item "Inspect data" and no more from the dashboard tab. This let to maximize the working area.
 
 ### Fixes
 
-* CTRL+C now works in the filter text area.
-* Fixed issues that were blocking the UI when the filter is not valid.
+* When switching between panels and then going back to the inspect panel the page used to become completley blank. Now the view maintains its state.
 
 ---
 

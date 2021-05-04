@@ -4,10 +4,11 @@
 
 This extension makes it easy to inspect data with just a few clicks.
 
-![Example of dashboard](https://raw.githubusercontent.com/ernstc/SqlDataInspector/main/images/screen1.png)
+![Example of dashboard](https://raw.githubusercontent.com/ernstc/SqlDataInspector/main/images/screen-021.png)
 
 ## Features
 
+* Start inspecting data from the database context menu using the menu item "Inspect data".
 * Shows the list of tables of the database.
 * Shows the list of columns of the selected table.
 * Shows all the distinct values of the selected column.
@@ -25,7 +26,7 @@ Current and Pre-releases will be available from the [Releases](https://github.co
 
 ## Change Log
 
-See the [Change Log](./src/CHANGELOG.md) for the full changes.
+See the [Change Log](./CHANGELOG.md) for the full changes.
 
 ## Bugs / New Features
 
