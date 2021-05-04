@@ -618,8 +618,12 @@
                         val = "N'" + val + "'";
                         break;
                     }
+                case "date":
                 case "datetime":
+                case "datetime2":
+                case "datetimeoffset":
                 case "smalldatetime":
+                case "time":
                     {
                         val = "'" + val + "'";
                         break;

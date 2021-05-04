@@ -25,21 +25,21 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-        "menus": {
+		"menus": {
 			"objectExplorer/item/context": [
 				{
 					"command": "sql-data-inspector.inspect-data",
 					"when": "connectionProvider == MSSQL && nodeType && nodeType == Database",
-                    "group": "data"
+					"group": "data"
 				},
-                {
+				{
 					"command": "sql-data-inspector.inspect-data",
 					"when": "connectionProvider == MSSQL && nodeType && nodeType == Server",
-                    "group": "data"
+					"group": "data"
 				}
 			]
 		},
-        "commands": [
+		"commands": [
 			{
 				"command": "sql-data-inspector.inspect-data",
 				"title": "Inspect data"
