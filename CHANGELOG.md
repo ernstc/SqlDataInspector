@@ -2,8 +2,6 @@
 
 All notable changes to the "SQL Data Inspector" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
 ---
 
 ## May 2021 Release (version 0.2.0)
