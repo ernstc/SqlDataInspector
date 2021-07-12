@@ -252,6 +252,12 @@ label {
   flex-grow: 4;
   position: relative;
 }
+#values .col1 {
+  width: 80%;
+}
+#values .col2 {
+  width: 20%;
+}
 #filters {
   flex-grow: 2;
   display: flex;

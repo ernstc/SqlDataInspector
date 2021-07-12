@@ -1,3 +1,4 @@
+import { DatabaseColumnValue } from './database-columnValue.model';
 import { DatabaseTable } from "./database-table.model";
 import { DatabaseColumn } from "./database-column.model";
 import { DatabaseTableRow } from './database-table-row.model';
@@ -7,7 +8,7 @@ export class ViewModel {
     databaseName?: string;
     tables?: DatabaseTable[];
     columns?: DatabaseColumn[];
-    values?: string[];
+    values?: DatabaseColumnValue[];
     rows?: DatabaseTableRow[];
     rowsCount?: number;
     rowsColumnsName?: string[];
@@ -41,7 +42,7 @@ export class ViewModel {
 
     get selectedValue(): string | undefined {
         if (this.values != undefined && this.selectedValueIndex != undefined) {
-            return this.values[this.selectedValueIndex];
+            return this.values[this.selectedValueIndex].Value;
         }
         else {
             return undefined;

@@ -1,3 +1,5 @@
+import { DatabaseColumnValue } from './../models/database-columnValue.model';
+import { getMssqlDbColumnValuesWithCount } from './../repositories/mssql.repository';
 import * as azdata from "azdata";
 import * as vscode from 'vscode';
 import { DatabaseTable } from './../models/database-table.model';
@@ -22,7 +24,7 @@ interface IOutgoingMessage {
     databaseName?: string;
     tables?: DatabaseTable[];
     columns?: DatabaseColumn[];
-    values?: string[];
+    values?: DatabaseColumnValue[];
     rows?: DatabaseTableRow[];
     rowsColumnsName?: string[];
     table?: DatabaseTable;
@@ -179,7 +181,7 @@ const loadValues = async (connectionId: string, webview: azdata.DashboardWebview
     const table = viewModel.selectedTable!;
     const column = viewModel.selectedColumn!;
 
-    viewModel.values = await getMssqlDbColumnValues(connectionId, table, column, viewModel.filter!);
+    viewModel.values = await getMssqlDbColumnValuesWithCount(connectionId, table, column, viewModel.filter!);
     viewModel.selectedValueIndex = undefined;
     
     webview.postMessage(<IOutgoingMessage>{

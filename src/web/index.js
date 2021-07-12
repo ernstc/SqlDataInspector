@@ -325,14 +325,22 @@
         $valuesCount.innerText = values && values.length ? `(${values.length})` : '';
         renderCollection(values,
             $('#values .table'),
-            null, // no header
+            () =>
+                $(`<div class="table-header">
+                    <div class="col1">Value</div>
+                    <div class="col2">Count</div>
+                </div>`),
             (value) => {
                 let element = $(`<div class="table-data"></div>`)
                     .click(valueClicked)
                     .dblclick(valueDblClicked);
 
-                $(`<div class="col"></div>`)
-                    .text(renderValue(value, column.Type))
+                $(`<div class="col1"></div>`)
+                    .text(renderValue(value.Value, column.Type))
+                    .appendTo(element);
+
+                $(`<div class="col2"></div>`)
+                    .text(value.Count)
                     .appendTo(element);
                 
                 return element;
@@ -439,7 +447,7 @@
         setFocus('#values');
         $('#values .table .selected').removeClass('selected');
         let selectedItem = $(this).addClass('selected');
-        _selectedValue = selectedItem.data('item');
+        _selectedValue = selectedItem.data('item').Value;
         textToCopy = _selectedValue;
         updateViewModel({
             'selectedValueIndex': selectedItem.data('item-index')

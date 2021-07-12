@@ -1,3 +1,4 @@
+import { DatabaseColumnValue } from './../models/database-columnValue.model';
 import { connection } from 'azdata';
 import { Database } from "../models/database.model";
 import { DatabaseTable } from "../models/database-table.model";
@@ -17,6 +18,11 @@ interface DbColumnsResponse {
     type: string;
 }
 
+
+interface DbColumnValuesResponse {
+    value: string;
+    count: number;
+}
 
 interface DbCountResponse {
     count: number;
@@ -120,6 +126,41 @@ export const getMssqlDbColumnValues = async (
     return result;
 };
 
+
+export const getMssqlDbColumnValuesWithCount = async (
+    connectionId: string,
+    table: DatabaseTable,
+    column: DatabaseColumn,
+    filter: string
+) => {
+    
+    if (/binary|text|image|geography|geometry|variant|xml|json/.test(column.Type)) {
+        return [];
+    }
+
+    const whereExpression = filter ? 'WHERE ' + filter : '';
+
+    const query = `
+        SELECT [${column.Name}] as value, COUNT(*) as count 
+        FROM [${table.Schema}].[${table.Name}]
+        ${whereExpression}
+        GROUP BY [${column.Name}]
+        ORDER BY [${column.Name}]`;
+
+    let dbResult = await runQuery<DbColumnValuesResponse>(Provider.MSSQL, connectionId, query);
+
+    const result: DatabaseColumnValue[] = [];
+    for (let index = 0; index < dbResult.length; index++) {
+        const element = dbResult[index];
+        const dbColumnValue: DatabaseColumnValue = {
+            Value: element.value,
+            Count: element.count
+        };
+        result.push(dbColumnValue);
+    }
+
+    return result;
+};
 
 export const getMssqlDbTableRows = async (
     connectionId: string,
