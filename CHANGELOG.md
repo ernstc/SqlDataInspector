@@ -4,6 +4,19 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
+## July 2021 Release (version 0.3.0)
+
+### Changes
+
+* Distinct Values have a new column that shows the count of the value occurrences.
+* The columns in the Distinct Values section can be sorted ascending or descending.
+
+### Fixes
+
+* Fixed a bug that caused opening the connection to the default database in case the connection is configured for connecting to a server and not to a specific database.
+
+---
+
 ## May 2021 Release (version 0.2.0)
 
 ### Changes
