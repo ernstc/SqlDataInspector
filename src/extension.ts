@@ -1,3 +1,4 @@
+import { connection } from 'azdata';
 import { Database } from './models/database.model';
 
 import * as vscode from 'vscode';
@@ -13,28 +14,46 @@ export const activate = (context: vscode.ExtensionContext) => {
         if (context.connectionProfile != undefined) {
 
             let connectionId = context.connectionProfile?.id
+            let database: string = context.connectionProfile?.databaseName!;
 
             let activeConnections = await azdata.connection.getActiveConnections();
-            if (!activeConnections.some(c => c.connectionId == connectionId)) {
-                await azdata.connection.connect(context.connectionProfile!, undefined, false);
+            if (!activeConnections.some(c => c.connectionId == connectionId )) {
+                await azdata.connection.connect(context.connectionProfile!, false, false);
                 activeConnections = await azdata.connection.getActiveConnections();
             }
 
-            const connection = activeConnections.filter(c => c.connectionId == connectionId)[0];
-            const databaseName = connection.options.database;
+            let connection = activeConnections.filter(c => c.connectionId == connectionId)[0];
 
-            // Create and show a new webview
-            const panel = vscode.window.createWebviewPanel(
-                'sql-data-inspector', // Identifies the type of the webview. Used internally
-                'Data Inspector - ' + databaseName, // Title of the panel displayed to the user
-                vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+            if (connection.options.database != database)
+            {
+                // Change the database in the connection
+                let connectionUri = await azdata.connection.getUriForConnection(connectionId);
+                let connectionProvider: azdata.ConnectionProvider = azdata.dataprotocol.getProvider(connection.providerName, azdata.DataProviderType.ConnectionProvider);
+                let databaseChanged = await connectionProvider.changeDatabase(connectionUri, database);
+                if (databaseChanged) 
                 {
-                    enableScripts: true
-                } // Webview options. More on these later.
-            );
+                    activeConnections = await azdata.connection.getActiveConnections();
+                    connection = activeConnections.filter(c => c.connectionId == connectionId)[0];
+                }
+            }
 
-            // And set its HTML content
-            await VisualizationController(panel.webview, connection);
+            if (connection != undefined)
+            {
+                const databaseName = connection.options.database;
+
+                // Create and show a new webview
+                const panel = vscode.window.createWebviewPanel(
+                    'sql-data-inspector', // Identifies the type of the webview. Used internally
+                    'Data Inspector - ' + databaseName, // Title of the panel displayed to the user
+                    vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+                    {
+                        enableScripts: true
+                    } // Webview options. More on these later.
+                );
+
+                // And set its HTML content
+                await VisualizationController(panel.webview, connection);
+            }
         }
     }));
 }
