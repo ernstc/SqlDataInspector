@@ -16,6 +16,9 @@ export class ViewModel {
     autoApply?: boolean;
     showRecordDetails?: boolean;
 
+    sortAscendingColumnValues?: boolean;
+    sortAscendingColumnValuesCount?: boolean;
+
     selectedTableIndex?: number;
     selectedColumnIndex?: number;
     selectedValueIndex?: number;

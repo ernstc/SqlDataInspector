@@ -135,7 +135,7 @@
                     await renderColumns(e.data.columns);
                 }
                 if (e.data.values != undefined) {
-                    renderValues(e.data.values, e.data.column);
+                    renderValues(e.data.values, e.data.column, undefined, e.data.sortAscendingColumnValues, e.data.sortAscendingColumnValuesCount);
                 }
                 if (e.data.rows != undefined) {
                     renderRows(e.data.rowsColumnsName, e.data.rows, e.data.count);
@@ -227,7 +227,7 @@
         }
         
         if (vm.values != undefined) {
-            renderValues(vm.values, _selectedColumn, vm.selectedValueIndex);
+            renderValues(vm.values, _selectedColumn, vm.selectedValueIndex, vm.sortAscendingColumnValues, vm.sortAscendingColumnValuesCount);
         }
         
         if (vm.rows != undefined) {
@@ -268,7 +268,7 @@
             );
         });
         $container.empty().append(items);
-    };
+    }
 
 
     function renderValue(value, columnType) {
@@ -297,7 +297,7 @@
                     .click(tableClicked),
             selectedIndex
         );
-    };
+    }
 
 
     async function renderColumns(columns, selectedIndex) {
@@ -318,17 +318,18 @@
                     .click(columnClicked),
             selectedIndex
         );
-    };
+    }
 
 
-    function renderValues(values, column, selectedIndex) {
+    function renderValues(values, column, selectedIndex, sortAscendingValues, sortAscendingValuesCount) {
         $valuesCount.innerText = values && values.length ? `(${values.length})` : '';
+        let $table;
         renderCollection(values,
-            $('#values .table'),
+            $table = $('#values .table'),
             () =>
                 $(`<div class="table-header">
-                    <div class="col1">Value</div>
-                    <div class="col2">Count</div>
+                    <div class="col1 sortable" data-column="values" data-sort="ascending" data-sort-default="">Value</div>
+                    <div class="col2 sortable" data-column="counts" data-sort="" data-sort-default="ascending">Count</div>
                 </div>`),
             (value) => {
                 let element = $(`<div class="table-data"></div>`)
@@ -347,11 +348,65 @@
             },
             selectedIndex
         );
-    };
+        setHeaderSorting($table.find('.table-header .col1').click(valuesHeaderClicked), sortAscendingValues);
+        setHeaderSorting($table.find('.table-header .col2').click(valuesCountHeaderClicked), sortAscendingValuesCount);
+    }
+
+
+    function setHeaderSorting($header, sortAscending) {
+        $header.find('i').remove();        
+        if (sortAscending == true) {
+            $header.data('sort', 'ascending').append('<i class="ms-Icon ms-Icon--CaretSolidUp"></i>');
+        }
+        else if (sortAscending == false) {
+            $header.data('sort', '').append('<i class="ms-Icon ms-Icon--CaretSolidDown"></i>');
+        }
+        else {
+            $header.data('sort', $header.data('sort-default'));
+        }
+    }
+
+
+    function valuesHeaderClicked() {
+        let $this = $(this);
+        let sortAscending = $this.data('sort') != 'ascending';
+        setHeaderSorting($('#values .table-header .col1'), sortAscending);
+        setHeaderSorting($('#values .table-header .col2'), undefined);
+
+        showLoading();
+        updateViewModel({
+            'sortAscendingColumnValues': sortAscending,
+            'sortAscendingColumnValuesCount': null,
+        });
+        sendMessage({
+            'command': 'loadValues'
+        });
+    }
+    
+
+    function valuesCountHeaderClicked() {
+        let $this = $(this);
+        let sortAscending = $this.data('sort') != 'ascending';
+        setHeaderSorting($('#values .table-header .col1'), undefined);
+        setHeaderSorting($('#values .table-header .col2'), sortAscending);
+
+        showLoading();
+        updateViewModel({
+            'sortAscendingColumnValues': null,
+            'sortAscendingColumnValuesCount': sortAscending,
+        });
+        sendMessage({
+            'command': 'loadValues'
+        });
+    }
 
 
     function renderRows(rowsColumnsName, rows, rowsCount, selectedRowIndex, selectedColumnIndex) {
-        $rowsCount.innerText = rowsCount ? `(${rowsCount})` : '';
+        $rowsCount.innerText = 
+            rows.length < rowsCount ? `(${rows.length} / ${rowsCount})` : 
+            rowsCount ? `(${rowsCount})` : 
+            '';
+
         _rowsColumns = [];
         rowsColumnsName.forEach(name => _rowsColumns.push(_columns.filter(c => c.Name == name)[0]));
         renderCollection(rows,
@@ -381,7 +436,7 @@
             },
             selectedRowIndex
         );
-    };
+    }
 
 
     // Event handlers
@@ -435,6 +490,8 @@
         showLoading();
         updateViewModel({
             'selectedColumnIndex': selectedItem.data('item-index'),
+            'sortAscendingColumnValues': true,
+            'sortAscendingColumnValuesCount': null,
         });
         sendMessage({
             'command': 'loadValues'

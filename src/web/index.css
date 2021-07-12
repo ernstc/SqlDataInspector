@@ -158,6 +158,15 @@ label {
   overflow: hidden;
   display: table-cell;
 }
+.table .table-header .sortable {
+  cursor: pointer;
+  position: relative;
+}
+.table .table-header i {
+  position: absolute;
+  right: 2px;
+  top: 7px;
+}
 .table .table-data {
   display: table;
   table-layout: fixed;

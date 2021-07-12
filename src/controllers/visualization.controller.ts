@@ -133,6 +133,12 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
             case 'showRecordDetails':
                 viewModel.showRecordDetails = vmUpdates.showRecordDetails;
                 break;
+            case 'sortAscendingColumnValues':
+                viewModel.sortAscendingColumnValues = vmUpdates.sortAscendingColumnValues;
+                break;
+            case 'sortAscendingColumnValuesCount':
+                viewModel.sortAscendingColumnValuesCount = vmUpdates.sortAscendingColumnValuesCount;
+                break;
         }
     }
 };
@@ -181,14 +187,23 @@ const loadValues = async (connectionId: string, webview: azdata.DashboardWebview
     const table = viewModel.selectedTable!;
     const column = viewModel.selectedColumn!;
 
-    viewModel.values = await getMssqlDbColumnValuesWithCount(connectionId, table, column, viewModel.filter!);
+    viewModel.values = await getMssqlDbColumnValuesWithCount(
+        connectionId, 
+        table, column, 
+        viewModel.filter!, 
+        viewModel.sortAscendingColumnValues, 
+        viewModel.sortAscendingColumnValuesCount
+        );
+
     viewModel.selectedValueIndex = undefined;
     
     webview.postMessage(<IOutgoingMessage>{
         status: Status.RenderingData,
         values: viewModel.values,
         table: table,
-        column: column
+        column: column,
+        sortAscendingColumnValues: viewModel.sortAscendingColumnValues, 
+        sortAscendingColumnValuesCount: viewModel.sortAscendingColumnValuesCount
     });
 };
 

@@ -131,21 +131,41 @@ export const getMssqlDbColumnValuesWithCount = async (
     connectionId: string,
     table: DatabaseTable,
     column: DatabaseColumn,
-    filter: string
+    filter: string,
+    sortAscendingColumnValues?: boolean,
+    sortAscendingColumnValuesCount?: boolean
 ) => {
+
+    // Very simple SQL Injection prevention.
+    if (filter != undefined && filter.indexOf(';') >= 0) {
+        return [];
+    }
     
     if (/binary|text|image|geography|geometry|variant|xml|json/.test(column.Type)) {
         return [];
     }
 
     const whereExpression = filter ? 'WHERE ' + filter : '';
+    let sortColumn: string;
+
+    if (sortAscendingColumnValues != undefined) {
+        sortColumn = `[${column.Name}]`;
+        if (sortAscendingColumnValues == false) sortColumn += ' DESC';
+    }
+    else if (sortAscendingColumnValuesCount != undefined) {
+        sortColumn = `COUNT(*)`;
+        if (sortAscendingColumnValuesCount == false) sortColumn += ' DESC';
+    }
+    else {
+        sortColumn = `[${column.Name}]`;
+    }
 
     const query = `
         SELECT [${column.Name}] as value, COUNT(*) as count 
         FROM [${table.Schema}].[${table.Name}]
         ${whereExpression}
         GROUP BY [${column.Name}]
-        ORDER BY [${column.Name}]`;
+        ORDER BY ${sortColumn}`;
 
     let dbResult = await runQuery<DbColumnValuesResponse>(Provider.MSSQL, connectionId, query);
 
