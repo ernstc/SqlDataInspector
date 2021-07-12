@@ -123,6 +123,7 @@
 
             if (e.data.viewModel) {
                 applyViewModel(e.data.viewModel);
+                hideLoading();
             }
             else  {
                 if (e.data.databaseName != undefined) {
@@ -130,19 +131,21 @@
                 }                
                 if (e.data.tables != undefined) {
                     renderTables(e.data.tables);
+                    hideLoading();
                 }
                 if (e.data.columns != undefined) {
                     await renderColumns(e.data.columns);
+                    hideLoading();
                 }
                 if (e.data.values != undefined) {
                     renderValues(e.data.values, e.data.column, undefined, e.data.sortAscendingColumnValues, e.data.sortAscendingColumnValuesCount);
+                    hideLoading();
                 }
                 if (e.data.rows != undefined) {
                     renderRows(e.data.rowsColumnsName, e.data.rows, e.data.count);
+                    hideLoading();
                 }    
             }
-
-            hideLoading();
         }
     }, false);
 
@@ -160,26 +163,33 @@
 
 
     let loadingTimer = undefined;
+    let loadingCounters = 0;
 
 
-    function showLoading() {
+    function showLoading(operationsCount = 1) {
+        loadingCounters += operationsCount;
         $loadingOverlay.show();
         if (loadingTimer == undefined) {
             loadingTimer = setTimeout(() => {
                 $loading.show();
             },
-                300);
+            300);
         }
     }
 
 
     function hideLoading() {
-        if (loadingTimer) {
-            clearTimeout(loadingTimer);
-            loadingTimer = undefined;
+        loadingCounters--;
+        if (loadingCounters < 0) loadingCounters = 0;
+        if (loadingCounters == 0)
+        {
+            if (loadingTimer) {
+                clearTimeout(loadingTimer);
+                loadingTimer = undefined;
+            }
+            $loadingOverlay.hide();
+            $loading.hide();
         }
-        $loadingOverlay.hide();
-        $loading.hide();
     }
 
 
@@ -217,6 +227,7 @@
             renderTables(vm.tables, vm.selectedTableIndex);
         }
         else {
+            showLoading();
             sendMessage({
                 'command': 'loadTables'
             });
@@ -469,7 +480,7 @@
         _selectedColumn = undefined;
         _selectedValue = undefined;
         _selectedRow = undefined;
-        showLoading();
+        showLoading(2);
         updateViewModel({
             'selectedTableIndex': selectedItem.data('item-index')
         });
@@ -593,6 +604,7 @@
                 'command': 'loadValues',
             });
         }
+        showLoading();
         sendMessage({
             'command': 'loadRows'
         });
