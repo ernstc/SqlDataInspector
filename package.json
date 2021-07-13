@@ -2,7 +2,7 @@
 	"name": "sql-data-inspector",
 	"displayName": "SQL Data Inspector",
 	"description": "This extension makes it easy to inspect data with just a few clicks.",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"publisher": "ernstc",
 	"license": "MIT",
 	"icon": "images/icon.png",
