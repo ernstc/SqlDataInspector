@@ -15,6 +15,7 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 * Fixed a bug that caused opening the connection to the default database in case the connection is configured for connecting to a server and not to a specific database.
 * Fixed loading indicator.
+* Fixed filter columns with text.
 
 ---
 
