@@ -12,7 +12,7 @@ This extension makes it easy to inspect data with just a few clicks.
 * Shows the list of tables of the database.
 * Shows the list of columns of the selected table.
 * Shows all the distinct values of the selected column.
-* Shows a snapshot of the first 10 rows of the selected tables.
+* Shows a snapshot of the first 20 rows of the selected tables.
 * You can edit the WHERE clause that will be applied to each query that retrieves data.
 * By double clicking on a distinct value, a filter on that value is automatically added in the "Filters" section.
 * By double clicking on a row in the table snapshot, it shows a dialog with a detailed record of the row.
