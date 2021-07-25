@@ -34,13 +34,35 @@ export const getMssqlDbTables = async (
 ) => {
 
     const query = `
-        SELECT
-            name, 
-            schema_Name(schema_id) AS SchemaName 
+        SELECT 
+            name,
+            schema_Name(schema_id) AS SchemaName
         FROM
-            sys.objects 
+            (
+            SELECT
+                *,
+                CAST(
+                    CASE
+                        WHEN tbl.is_ms_shipped = 1 THEN 1
+                        WHEN (
+                            SELECT
+                                major_id 
+                            FROM
+                                sys.extended_properties 
+                            WHERE
+                                major_id = tbl.object_id AND 
+                                minor_id = 0 AND
+                                class = 1 AND
+                                name = N'microsoft_database_tools_support') 
+                            IS NOT NULL THEN 1
+                        ELSE 0
+                    END
+                AS bit) AS [IsSystemObject]
+            FROM
+                sys.tables AS tbl
+            ) v
         WHERE
-            type='U' 
+            v.IsSystemObject = 0
         ORDER BY
             SchemaName, name`;
 
