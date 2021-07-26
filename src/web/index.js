@@ -705,6 +705,16 @@
                         val = "'" + val + "'";
                         break;
                     }
+                case "float":
+                case "double":
+                case "real":
+                case "decimal":
+                case "money":
+                case "smallmoney":
+                    {
+                        val = val.replace(',', '.');
+                        break;
+                    }
                 default:
                     {
                         break;
