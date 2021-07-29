@@ -204,6 +204,7 @@ export const getMssqlDbColumnValuesWithCount = async (
     return result;
 };
 
+
 export const getMssqlDbTableRows = async (
     connectionId: string,
     table: DatabaseTable,
@@ -228,6 +229,27 @@ export const getMssqlDbTableRows = async (
 
     return {
         rows: dbRowsResult,
+        count: dbCountResult.length > 0 ? dbCountResult[0].count : 0
+    };
+};
+
+
+export const getMssqlDbTableRowsCount = async (
+    connectionId: string,
+    table: DatabaseTable,
+    filter: string
+) => {
+    
+    const whereExpression = filter ? 'WHERE ' + filter : '';
+
+    const queryCount = `
+        SELECT COUNT(*) as count
+        FROM [${table.Schema}].[${table.Name}]
+        ${whereExpression}`;
+
+    let dbCountResult = await runQuery<DbCountResponse>(Provider.MSSQL, connectionId, queryCount);
+
+    return {
         count: dbCountResult.length > 0 ? dbCountResult[0].count : 0
     };
 };

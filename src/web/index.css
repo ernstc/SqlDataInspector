@@ -97,6 +97,14 @@ label {
   left: 50%;
   top: 50%;
 }
+#liveMonitoring {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+#liveMonitoring label {
+  margin-right: 10px;
+}
 #loadingOverlay {
   position: absolute;
   top: 0;
@@ -154,7 +162,8 @@ label {
 }
 .table .table-header .col,
 .table .table-header .col1,
-.table .table-header .col2 {
+.table .table-header .col2,
+.table .table-header .col3 {
   overflow: hidden;
   display: table-cell;
 }
@@ -180,7 +189,8 @@ label {
 }
 .table .table-data .col,
 .table .table-data .col1,
-.table .table-data .col2 {
+.table .table-data .col2,
+.table .table-data .col3 {
   overflow: hidden;
   display: table-cell;
 }
@@ -222,11 +232,6 @@ label {
 #header h1 {
   font-size: 14pt;
 }
-#status {
-  position: absolute;
-  top: 4px;
-  right: 8px;
-}
 #navigation {
   display: flex;
   flex-direction: row;
@@ -248,10 +253,13 @@ label {
   position: relative;
 }
 #tables .col1 {
-  width: 60%;
+  width: 45%;
 }
 #tables .col2 {
-  width: 40%;
+  width: 25%;
+}
+#tables .col3 {
+  width: 30%;
 }
 #columns {
   flex-grow: 3;
@@ -268,9 +276,10 @@ label {
   width: 20%;
 }
 #filters {
-  flex-grow: 2;
+  flex-grow: 1;
   display: flex;
   flex-direction: row;
+  min-height: 128px;
 }
 #filtersArea {
   flex-grow: 1;

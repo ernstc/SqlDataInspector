@@ -15,6 +15,7 @@ export class ViewModel {
     filter?: string;
     autoApply?: boolean;
     showRecordDetails?: boolean;
+    liveMonitoring?: boolean;
 
     sortAscendingColumnValues?: boolean;
     sortAscendingColumnValuesCount?: boolean;

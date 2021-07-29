@@ -1,18 +1,8 @@
 (function ($) {
 
-    // Status messages
-    //*********************************************************** */
-
-    const statuses = {
-        LOADING_DATA: 'Loading...',
-        COMPLETE: ''
-    };
-
-
     // Inizialization
     //*********************************************************** */
 
-    let $status = document.getElementById('status');
     let $databaseName = document.getElementById('databaseName');
     let $rowsCount = document.getElementById('rowsCount');
     let $tablesCount = document.getElementById('tablesCount');
@@ -22,15 +12,19 @@
     let $loading = $('#loading');
     let $loadingOverlay = $('#loadingOverlay');
     let $overlay = $('#overlay');
+    let $liveMonitoring = $('#liveMonitoring input');
 
     $autofilter = $('#autofilter')
         .click(autoFilterClicked);
-    $('#btnApplyFilter').click(btnApplyFilterClicked);
-    $('#btnRemoveFilter').click(btnRemoveFilterClicked);
+    $('#btnApplyFilter')
+        .click(btnApplyFilterClicked);
+    $('#btnRemoveFilter')
+        .click(btnRemoveFilterClicked);
     $txtFilter
         .keyup(txtFilterChanged)
         .click(txtFilterClicked);
-
+    $liveMonitoring
+        .click(setLiveMonitoring);
 
     // VSCode API for interacting with the extension back-end
     //*********************************************************** */
@@ -119,8 +113,6 @@
 
     window.addEventListener('message', async (e) => {
         if (e && e.data) {
-            setStatus(e.data.status);
-
             if (e.data.viewModel) {
                 applyViewModel(e.data.viewModel);
                 hideLoading();
@@ -142,9 +134,12 @@
                     hideLoading();
                 }
                 if (e.data.rows != undefined) {
-                    renderRows(e.data.rowsColumnsName, e.data.rows, e.data.count);
+                    renderRows(e.data.rowsColumnsName, e.data.rows, e.data.count, null, null, e.data.tableIndex);
                     hideLoading();
-                }    
+                }
+                if (e.data.table != undefined && e.data.tableIndex != undefined) {
+                    $('#tables .table-data .col3').eq(e.data.tableIndex).text(e.data.table.Count);
+                }
             }
         }
     }, false);
@@ -152,15 +147,6 @@
 
     // Utilities
     //*********************************************************** */
-
-    function setStatus(status) {
-        if (status) {
-            const newStatus = statuses[status];
-            $status.innerText = newStatus ? newStatus : '';
-        }
-        $status.innerText = '';
-    }
-
 
     let loadingTimer = undefined;
     let loadingCounters = 0;
@@ -244,7 +230,8 @@
         if (vm.rows != undefined) {
             renderRows(
                 vm.rowsColumnsName, vm.rows, vm.rowsCount, 
-                vm.selectedRowRowIndex, vm.selectedRowColumnIndex
+                vm.selectedRowRowIndex, vm.selectedRowColumnIndex,
+                vm.selectedTableIndex
                 );
         }
         
@@ -259,6 +246,9 @@
         if (vm.showRecordDetails && _selectedRow && _columns) {
             showDatabaseTableRow(_selectedRow);
         }
+
+        $liveMonitoring.get(0).checked = vm.liveMonitoring == true;
+        setLiveMonitoring();
     }
 
 
@@ -299,11 +289,13 @@
                 $(`<div class="table-header">
                     <div class="col1">Name</div>
                     <div class="col2">Schema</div>
+                    <div class="col3">Count</div>
                 </div>`),
             (table) =>
                 $(`<div class="table-data">
                     <div class="col1"><i class="ms-Icon ms-Icon--Table"></i> ${table.Name}</div>
                     <div class="col2">${table.Schema}</div>
+                    <div class="col3">${table.Count == undefined ? '' : table.Count}</div>
                 </div>`)
                     .click(tableClicked),
             selectedIndex
@@ -412,7 +404,7 @@
     }
 
 
-    function renderRows(rowsColumnsName, rows, rowsCount, selectedRowIndex, selectedColumnIndex) {
+    function renderRows(rowsColumnsName, rows, rowsCount, selectedRowIndex, selectedColumnIndex, tableIndex) {
         $rowsCount.innerText = 
             rows.length < rowsCount ? `(${rows.length} / ${rowsCount})` : 
             rowsCount ? `(${rowsCount})` : 
@@ -608,6 +600,53 @@
         sendMessage({
             'command': 'loadRows'
         });
+    }
+
+
+    let liveMonitoringIntervalHandler = undefined;
+
+    function setLiveMonitoring() {
+        let isEnabled = $liveMonitoring.get(0).checked;
+
+        updateViewModel({
+            'liveMonitoring': isEnabled
+        });
+
+        if (!isEnabled)
+        {
+            if (liveMonitoringIntervalHandler != undefined) {
+                clearInterval(liveMonitoringIntervalHandler);
+                liveMonitoringIntervalHandler = undefined;
+            }
+        }
+        else if (liveMonitoringIntervalHandler == undefined) {
+            const pause = 150;
+            let tables = $('#tables .table-data');
+            
+            liveMonitoringIntervalHandler = setInterval(() => {
+                for (let index = 0; index < tables.length; index++)
+                {
+                    setTimeout(() => {
+                        sendMessage({
+                            'command': 'loadRowsCount',
+                            'index': index
+                        });
+                    }, pause * index);
+                }
+
+                if (_selectedTable != undefined) {
+                    sendMessage({
+                        'command': 'loadRows'
+                    });
+                }
+
+                if (_selectedColumn != undefined) {
+                    sendMessage({
+                        'command': 'loadValues'
+                    });
+                }
+            }, pause * (tables.length + 1));    
+        }
     }
 
 

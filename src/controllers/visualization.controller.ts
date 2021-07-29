@@ -1,5 +1,5 @@
 import { DatabaseColumnValue } from './../models/database-columnValue.model';
-import { getMssqlDbColumnValuesWithCount } from './../repositories/mssql.repository';
+import { getMssqlDbColumnValuesWithCount, getMssqlDbTableRowsCount } from './../repositories/mssql.repository';
 import * as azdata from "azdata";
 import * as vscode from 'vscode';
 import { DatabaseTable } from './../models/database-table.model';
@@ -15,6 +15,7 @@ interface IIncomingMessage {
     command: string;
     item?: any;
     viewModel?: ViewModel;
+    index?: number;
 }
 
 
@@ -29,6 +30,7 @@ interface IOutgoingMessage {
     rowsColumnsName?: string[];
     table?: DatabaseTable;
     column?: DatabaseColumn;
+    tableIndex?: number;
 }
 
 
@@ -75,6 +77,10 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
                     }
                     case 'loadRows': {
                         await loadRows(connectionId, webview, viewModel);
+                        break;
+                    }
+                    case 'loadRowsCount': {
+                        await loadRowsCount(connectionId, webview, viewModel, data.index!);
                         break;
                     }
                     case 'copyText': {
@@ -129,6 +135,9 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
                 break;
             case 'autoApply':
                 viewModel.autoApply = vmUpdates.autoApply;
+                break;
+            case 'liveMonitoring':
+                viewModel.liveMonitoring = vmUpdates.liveMonitoring;
                 break;
             case 'showRecordDetails':
                 viewModel.showRecordDetails = vmUpdates.showRecordDetails;
@@ -211,6 +220,7 @@ const loadValues = async (connectionId: string, webview: azdata.DashboardWebview
 const loadRows = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     const table = viewModel.selectedTable!;
     const dbRows = await getMssqlDbTableRows(connectionId, table, viewModel.filter!);
+    table.Count = dbRows.count.toString();
     let columnsName: string[] = [];
 
     if (dbRows.count > 0) {
@@ -239,6 +249,21 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
         rowsColumnsName: columnsName,
         rows: values,
         count: dbRows.count,
-        table: table
+        table: table,
+        tableIndex: viewModel.tables?.indexOf(table)
+    });
+};
+
+
+const loadRowsCount = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel, index: number) => {
+    const table = viewModel.tables![index];
+    const dbRowsCount = await getMssqlDbTableRowsCount(connectionId, table, viewModel.filter!);
+
+    table.Count = dbRowsCount.count.toString();
+
+    webview.postMessage(<IOutgoingMessage>{
+        status: Status.RenderingData,
+        table: table,
+        tableIndex: index
     });
 };
