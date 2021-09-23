@@ -102,8 +102,22 @@ label {
   top: 10px;
   right: 10px;
 }
+#liveMonitoring.enabled {
+  right: 170px;
+}
 #liveMonitoring label {
   margin-right: 10px;
+}
+#refreshTimer {
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  display: none;
+}
+#refreshTimer select {
+  height: 19px;
+  font-size: 9pt;
+  margin-left: 4px;
 }
 #loadingOverlay {
   position: absolute;
@@ -249,7 +263,7 @@ label {
   padding: 8px;
 }
 #tables {
-  flex-grow: 3;
+  flex-grow: 4;
   position: relative;
 }
 #tables .col1 {
@@ -264,6 +278,12 @@ label {
 #columns {
   flex-grow: 3;
   position: relative;
+}
+#columns .col1 {
+  width: 55%;
+}
+#columns .col2 {
+  width: 45%;
 }
 #values {
   flex-grow: 4;

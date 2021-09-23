@@ -12,7 +12,10 @@
     let $loading = $('#loading');
     let $loadingOverlay = $('#loadingOverlay');
     let $overlay = $('#overlay');
+    let $liveMonitoringDiv = $('#liveMonitoring');
     let $liveMonitoring = $('#liveMonitoring input');
+    let $refreshTimerDiv = $('#refreshTimer');
+    let $refreshTimer = $('#refreshTimer select');
 
     $autofilter = $('#autofilter')
         .click(autoFilterClicked);
@@ -25,6 +28,8 @@
         .click(txtFilterClicked);
     $liveMonitoring
         .click(setLiveMonitoring);
+    $refreshTimer
+        .change(setRefreshTimer);
 
     // VSCode API for interacting with the extension back-end
     //*********************************************************** */
@@ -248,6 +253,8 @@
         }
 
         $liveMonitoring.get(0).checked = vm.liveMonitoring == true;
+        $refreshTimer.val(vm.refreshTimer != undefined ? vm.refreshTimer : 30);
+
         setLiveMonitoring();
     }
 
@@ -316,7 +323,7 @@
             (column) =>
                 $(`<div class="table-data">
                     <div class="col1" title="${column.Name}"><i class="ms-Icon ms-Icon--Column"></i> ${column.Name}</div>
-                    <div class="col2">${column.Type}</div>
+                    <div class="col2" title="${column.Type}">${column.Type}</div>
                 </div>`)
                     .click(columnClicked),
             selectedIndex
@@ -604,15 +611,23 @@
 
 
     let liveMonitoringIntervalHandler = undefined;
+    let isLiveMonitoringEnabled = false;
+    const pauseBetweenCommands = 150;
 
     function setLiveMonitoring() {
-        let isEnabled = $liveMonitoring.get(0).checked;
+        isLiveMonitoringEnabled = $liveMonitoring.get(0).checked;
+
+        $liveMonitoringDiv.toggleClass('enabled', isLiveMonitoringEnabled);
+        $refreshTimerDiv.toggle(isLiveMonitoringEnabled);
+
+        let timerValue = parseInt($refreshTimer.val(), 10);
 
         updateViewModel({
-            'liveMonitoring': isEnabled
+            'liveMonitoring': isLiveMonitoringEnabled,
+            'refreshTimer': timerValue
         });
 
-        if (!isEnabled)
+        if (!isLiveMonitoringEnabled)
         {
             if (liveMonitoringIntervalHandler != undefined) {
                 clearInterval(liveMonitoringIntervalHandler);
@@ -620,33 +635,73 @@
             }
         }
         else if (liveMonitoringIntervalHandler == undefined) {
-            const pause = 150;
             let tables = $('#tables .table-data');
-            
-            liveMonitoringIntervalHandler = setInterval(() => {
+
+            let intervalMs = timerValue * 1000;
+            let intervalTableMs = pauseBetweenCommands * (tables.length + 1) + 1000;
+            if (intervalTableMs > intervalMs) {
+                intervalMs = intervalTableMs;
+            }
+
+            let refreshFunc = () => {
+                let messages = [];
+
                 for (let index = 0; index < tables.length; index++)
                 {
-                    setTimeout(() => {
-                        sendMessage({
-                            'command': 'loadRowsCount',
-                            'index': index
-                        });
-                    }, pause * index);
+                    messages.push({
+                        'command': 'loadRowsCount',
+                        'index': index
+                    });
                 }
 
                 if (_selectedTable != undefined) {
-                    sendMessage({
+                    messages.push({
                         'command': 'loadRows'
                     });
                 }
 
                 if (_selectedColumn != undefined) {
-                    sendMessage({
+                    messages.push({
                         'command': 'loadValues'
                     });
                 }
-            }, pause * (tables.length + 1));    
+
+                let idx = 0;
+                let execMessagesFunc = () => {
+                    if (isLiveMonitoringEnabled && idx < messages.length) {
+                        sendMessage(messages[idx++]);
+                        setTimeout(() => {
+                            execMessagesFunc();
+                        }, pauseBetweenCommands);
+                    }
+                };
+                execMessagesFunc();
+            }
+
+            refreshFunc();
+
+            setTimeout(() => {
+                if (liveMonitoringIntervalHandler != undefined) {
+                    clearInterval(liveMonitoringIntervalHandler);
+                    liveMonitoringIntervalHandler = undefined;
+                }
+                if (isLiveMonitoringEnabled) {
+                    liveMonitoringIntervalHandler = setInterval(refreshFunc, intervalMs);
+                }
+            }, intervalTableMs);
         }
+    }
+
+
+    function setRefreshTimer() {
+        if (liveMonitoringIntervalHandler != undefined) {
+            clearInterval(liveMonitoringIntervalHandler);
+            liveMonitoringIntervalHandler = undefined;
+        }
+        isLiveMonitoringEnabled = false;
+        setTimeout(() => {
+            setLiveMonitoring();    
+        }, pauseBetweenCommands * 2);        
     }
 
 

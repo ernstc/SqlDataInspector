@@ -104,9 +104,26 @@ label {
     top: 10px;
     right: 10px;
 
+    &.enabled {
+		right: 170px;
+	}
+
     label {
         margin-right: 10px;
     }
+}
+
+#refreshTimer {
+    position: absolute;
+    top: 7px;
+    right: 10px;
+    display: none;
+
+	select {
+		height: 19px;
+		font-size: 9pt;
+		margin-left: 4px;
+	}
 }
 
 #loadingOverlay {
@@ -264,7 +281,7 @@ label {
 }
 
 #tables {
-    flex-grow: 3;
+    flex-grow: 4;
     position: relative;
 
     .col1 {
@@ -283,6 +300,14 @@ label {
 #columns {
     flex-grow: 3;
     position: relative;
+
+    .col1 {
+        width: 55%;
+    }
+    
+    .col2 {
+        width: 45%;
+    }
 }
 
 #values {

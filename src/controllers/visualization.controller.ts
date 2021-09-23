@@ -139,6 +139,9 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
             case 'liveMonitoring':
                 viewModel.liveMonitoring = vmUpdates.liveMonitoring;
                 break;
+            case 'refreshTimer':
+                viewModel.refreshTimer = vmUpdates.refreshTimer;
+                break;
             case 'showRecordDetails':
                 viewModel.showRecordDetails = vmUpdates.showRecordDetails;
                 break;
