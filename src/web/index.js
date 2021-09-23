@@ -293,8 +293,8 @@
                 </div>`),
             (table) =>
                 $(`<div class="table-data">
-                    <div class="col1"><i class="ms-Icon ms-Icon--Table"></i> ${table.Name}</div>
-                    <div class="col2">${table.Schema}</div>
+                    <div class="col1" title="${table.Name}"><i class="ms-Icon ms-Icon--Table"></i> ${table.Name}</div>
+                    <div class="col2" title="${table.Schema}">${table.Schema}</div>
                     <div class="col3">${table.Count == undefined ? '' : table.Count}</div>
                 </div>`)
                     .click(tableClicked),
@@ -315,7 +315,7 @@
                 </div>`),
             (column) =>
                 $(`<div class="table-data">
-                    <div class="col1"><i class="ms-Icon ms-Icon--Column"></i> ${column.Name}</div>
+                    <div class="col1" title="${column.Name}"><i class="ms-Icon ms-Icon--Column"></i> ${column.Name}</div>
                     <div class="col2">${column.Type}</div>
                 </div>`)
                     .click(columnClicked),
