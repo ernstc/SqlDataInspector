@@ -2,7 +2,7 @@
 	"name": "sql-data-inspector",
 	"displayName": "SQL Data Inspector",
 	"description": "This extension makes it easy to inspect data with just a few clicks.",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"publisher": "ernstc",
 	"license": "MIT",
 	"icon": "images/icon.png",
@@ -75,7 +75,7 @@
 		"glob": "^7.1.7",
 		"mocha": "^7.2.0",
 		"ncp": "^2.0.0",
-		"typescript": "^3.9.0",
+		"typescript": "^4.4.0",
 		"vsce": "^1.88.0",
 		"vscode-test": "^1.5.0"
 	}
