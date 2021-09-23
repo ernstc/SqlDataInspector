@@ -200,8 +200,8 @@ label {
 }
 .table .selected,
 .table .selected:hover {
-  background-color: var(--vscode-list-focusBackground);
-  color: var(--vscode-list-focusForeground);
+  background-color: var(--vscode-list-inactiveSelectionBackground);
+  color: var(--vscode-list-inactiveSelectionForeground);
 }
 .focused .selected,
 .focused .selected:hover {
@@ -323,8 +323,8 @@ label {
 }
 #dataRows .table .selected,
 #dataRows .table .selected:hover {
-  background-color: var(--vscode-list-focusBackground);
-  color: var(--vscode-list-focusForeground);
+  background-color: var(--vscode-list-inactiveSelectionBackground);
+  color: var(--vscode-list-inactiveSelectionForeground);
 }
 #dataRows.focused .cell-selected,
 #dataRows.focused .cell-selected:hover {
@@ -382,8 +382,8 @@ label {
 }
 #dialogViewRecord .table .selected,
 #dialogViewRecord .table .selected:hover {
-  background-color: var(--vscode-list-focusBackground);
-  color: var(--vscode-list-focusForeground);
+  background-color: var(--vscode-list-inactiveSelectionBackground);
+  color: var(--vscode-list-inactiveSelectionForeground);
 }
 #dialogViewRecord .table .selected .col2,
 #dialogViewRecord .table .selected:hover .col2 {
