@@ -4,6 +4,19 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
+## September 2021 Release (version 0.4.0)
+
+### Changes
+
+* Added rows count in the tables list.
+* Added live monitoring mode for periodically refreshing the views.
+
+### Fixes
+
+* The list of tables does not shows anymore system tables like dbo.__RefactorLog.
+* Fixed filtering on columns with numbers with decimal digits.
+
+---
 ## July 2021 Release (version 0.3.0)
 
 ### Changes
