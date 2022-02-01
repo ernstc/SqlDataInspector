@@ -315,11 +315,23 @@
                     <div class="col3">Count</div>
                 </div>`),
             (table) =>
-                $(`<div class="table-data">
-                    <div class="col1" title="${table.Name}"><i class="ms-Icon ms-Icon--Table"></i> ${table.Name}</div>
-                    <div class="col2" title="${table.Schema}">${table.Schema}</div>
-                    <div class="col3">${table.Count == undefined ? '' : table.Count}</div>
-                </div>`)
+                $(`<div class="table-data"></div>`)
+                    .append(
+                        $('<div class="col1"></div>')
+                            .attr('title', table.Name)
+                            .append('<i class="ms-Icon ms-Icon--Table"></i>')
+                            .append('&nbsp;')
+                            .append($('<span></span>').text(table.Name))
+                    )
+                    .append(
+                        $('<div class="col2"></div>')
+                            .attr('title', table.Schema)
+                            .text(table.Schema)
+                    )
+                    .append(
+                        $('<div class="col3"></div>')
+                            .text(table.Count == undefined ? '' : table.Count)
+                    )
                     .click(tableClicked),
             selectedIndex
         );
@@ -328,11 +340,15 @@
 
     function renderTablesSchemaFilter(tablesSchema) {
         let filterValue = $tablesSchemaFilter.val();
-        let options = '<option value="*"> </option>';
+        $tablesSchemaFilter.empty().append('<option value="*"> </option>');
         for (let i = 0; i < tablesSchema.length; i++) {
-            options += `<option value="${tablesSchema[i]}">${tablesSchema[i]}</option>`;
+            $tablesSchemaFilter.append(
+                $(`<option></option>`)
+                    .attr('value', tablesSchema[i])
+                    .text(tablesSchema[i])
+            );
         }
-        $tablesSchemaFilter.html(options).val(filterValue);
+        $tablesSchemaFilter.val(filterValue);
     }
 
 
@@ -347,10 +363,19 @@
                     <div class="col2">Type</div>
                 </div>`),
             (column) =>
-                $(`<div class="table-data">
-                    <div class="col1" title="${column.Name}"><i class="ms-Icon ms-Icon--Column"></i> ${column.Name}</div>
-                    <div class="col2" title="${column.Type}">${column.Type}</div>
-                </div>`)
+                $(`<div class="table-data"></div>`)
+                    .append(
+                        $('<div class="col1"></div>')
+                            .attr('title', column.Name)
+                            .append('<i class="ms-Icon ms-Icon--Column"></i>')
+                            .append('&nbsp;')
+                            .append($('<span></span>').text(column.Name))
+                    )
+                    .append(
+                        $('<div class="col2"></div>')
+                            .attr('title', column.Type)
+                            .text(column.Type)
+                    )
                     .click(columnClicked),
             selectedIndex
         );
@@ -450,7 +475,7 @@
             () => {
                 let header = $(`<div class="table-header"></div>`);
                 rowsColumnsName.forEach(name => {
-                    header.append(`<div class="col">${name}</div>`);
+                    header.append($(`<div class="col"></div>`).text(name));
                 });
                 return header;
             },
@@ -815,15 +840,17 @@
                 let column = row[0];
                 let value = row[1];
                 let element = 
-                    $(`<div class="table-data">
-                        <div class="col1">${column.Name}</div>
-                    </div>`)
+                    $(`<div class="table-data"></div>`)
+                        .append(
+                            $('<div class="col1"></div>')
+                                .text(column.Name)
+                        )
+                        .append(
+                            $(`<div class="col2"></div>`)
+                                .text(renderValue(value, column.Type))
+                        )
                         .data('cell-value', row[1])
                         .click(detailRowClicked);
-
-                $(`<div class="col2"></div>`)
-                    .text(renderValue(value, column.Type))
-                    .appendTo(element);
 
                 return element;
             }
