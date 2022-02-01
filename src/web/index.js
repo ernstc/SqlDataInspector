@@ -872,7 +872,7 @@
                 case "varchar":
                 case "nvarchar":
                     {
-                        val = "N'" + val.replace('\'', '\'\'') + "'";
+                        val = "N'" + val.replace(/\'/g, "''") + "'";
                         break;
                     }
                 case "date":
