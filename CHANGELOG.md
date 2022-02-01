@@ -4,6 +4,18 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
+## February 2022 Release (version 0.5.0)
+
+### Changes
+
+* You can filter tables by schema.
+
+### Fixes
+
+* Fixed vulnerabilities.
+
+---
+
 ## September 2021 Release (version 0.4.0)
 
 ### Changes
@@ -17,6 +29,7 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 * Fixed filtering on columns with numbers with decimal digits.
 
 ---
+
 ## July 2021 Release (version 0.3.0)
 
 ### Changes
