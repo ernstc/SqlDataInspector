@@ -116,40 +116,43 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
     for (let key in vmUpdates) {
         switch (key) {
             case 'selectedTableIndex':
-                viewModel.selectedTableIndex = vmUpdates.selectedTableIndex;
+                viewModel.selectedTableIndex = vmUpdates?.selectedTableIndex != -1 ? vmUpdates?.selectedTableIndex : undefined;
                 break;
             case 'selectedColumnIndex':
-                viewModel.selectedColumnIndex = vmUpdates.selectedColumnIndex;
+                viewModel.selectedColumnIndex = vmUpdates?.selectedColumnIndex != -1 ? vmUpdates?.selectedColumnIndex : undefined;
                 break;
             case 'selectedRowRowIndex':
-                viewModel.selectedRowRowIndex = vmUpdates.selectedRowRowIndex;
+                viewModel.selectedRowRowIndex = vmUpdates?.selectedRowRowIndex != -1 ? vmUpdates?.selectedRowRowIndex : undefined;
                 break;
             case 'selectedRowColumnIndex':
-                viewModel.selectedRowColumnIndex = vmUpdates.selectedRowColumnIndex;
+                viewModel.selectedRowColumnIndex = vmUpdates?.selectedRowColumnIndex != -1 ? vmUpdates?.selectedRowColumnIndex : undefined;
                 break;
             case 'selectedValueIndex':
-                viewModel.selectedValueIndex = vmUpdates.selectedValueIndex;
+                viewModel.selectedValueIndex = vmUpdates?.selectedValueIndex != -1 ? vmUpdates?.selectedValueIndex : undefined;
                 break;
             case 'filter':
-                viewModel.filter = vmUpdates.filter;
+                viewModel.filter = vmUpdates?.filter;
                 break;
             case 'autoApply':
-                viewModel.autoApply = vmUpdates.autoApply;
+                viewModel.autoApply = vmUpdates?.autoApply;
                 break;
             case 'liveMonitoring':
-                viewModel.liveMonitoring = vmUpdates.liveMonitoring;
+                viewModel.liveMonitoring = vmUpdates?.liveMonitoring;
                 break;
             case 'refreshTimer':
-                viewModel.refreshTimer = vmUpdates.refreshTimer;
+                viewModel.refreshTimer = vmUpdates?.refreshTimer;
                 break;
             case 'showRecordDetails':
-                viewModel.showRecordDetails = vmUpdates.showRecordDetails;
+                viewModel.showRecordDetails = vmUpdates?.showRecordDetails;
                 break;
             case 'sortAscendingColumnValues':
-                viewModel.sortAscendingColumnValues = vmUpdates.sortAscendingColumnValues;
+                viewModel.sortAscendingColumnValues = vmUpdates?.sortAscendingColumnValues;
                 break;
             case 'sortAscendingColumnValuesCount':
-                viewModel.sortAscendingColumnValuesCount = vmUpdates.sortAscendingColumnValuesCount;
+                viewModel.sortAscendingColumnValuesCount = vmUpdates?.sortAscendingColumnValuesCount;
+                break;
+            case 'filterTablesSchema':
+                viewModel.filterTablesSchema = vmUpdates?.filterTablesSchema;
                 break;
         }
     }
@@ -162,8 +165,10 @@ const loadTables = async (connectionId: string, webview: azdata.DashboardWebview
     });
 
     viewModel.tables = await getMssqlDbTables(connectionId);
+    viewModel.tablesSchema = [...new Set(viewModel.tables.map(t => t.Schema))];
     viewModel.columns = undefined;
     viewModel.values = undefined;
+    viewModel.rowsColumnsName = undefined;
     viewModel.rows = undefined;
     viewModel.rowsCount = undefined;
     viewModel.selectedTableIndex = undefined;
@@ -171,11 +176,38 @@ const loadTables = async (connectionId: string, webview: azdata.DashboardWebview
     viewModel.selectedValueIndex = undefined;
     viewModel.selectedRowRowIndex = undefined;
     viewModel.selectedRowColumnIndex = undefined;
-    
-    webview.postMessage({
-        status: Status.RenderingData,
-        tables: viewModel.tables
-    });
+
+    if (viewModel.filterTablesSchema != undefined
+        && viewModel.filterTablesSchema != '*') {
+        viewModel.tables = viewModel.tables.filter(t => t.Schema == viewModel.filterTablesSchema);
+
+        //viewModel.columns = undefined;
+        //viewModel.values = undefined;
+        //viewModel.rowsColumnsName = undefined;
+        //viewModel.rows = undefined
+        //viewModel.rowsCount = undefined;
+        //viewModel.selectedTableIndex = undefined;
+        //viewModel.selectedColumnIndex = undefined;
+        //viewModel.selectedValueIndex = undefined;
+        //viewModel.selectedRowRowIndex = undefined;
+        //viewModel.selectedRowColumnIndex = undefined;
+
+        webview.postMessage({
+            status: Status.RenderingData,
+            tables: viewModel.tables,
+            tablesSchema: viewModel.tablesSchema,
+            columns: undefined,
+            values: undefined,
+            rows: undefined
+        });
+    }
+    else {
+        webview.postMessage({
+            status: Status.RenderingData,
+            tables: viewModel.tables,
+            tablesSchema: viewModel.tablesSchema
+        });
+    }
 };
 
 
@@ -259,9 +291,12 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
 
 
 const loadRowsCount = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel, index: number) => {
-    const table = viewModel.tables![index];
-    const dbRowsCount = await getMssqlDbTableRowsCount(connectionId, table, viewModel.filter!);
+    const table = viewModel.tables ? viewModel.tables[index] : undefined;
+    if (table == undefined) {
+        return;
+    }
 
+    const dbRowsCount = await getMssqlDbTableRowsCount(connectionId, table, viewModel.filter!);
     table.Count = dbRowsCount.count.toString();
 
     webview.postMessage(<IOutgoingMessage>{

@@ -88,6 +88,10 @@ export const getMssqlDbColumns = async (
     table: DatabaseTable
 ) => {
 
+    if (table == undefined) {
+        return [];
+    }
+
     const query = `
         SELECT  
             syscolumns.name
@@ -124,6 +128,10 @@ export const getMssqlDbColumnValues = async (
     column: DatabaseColumn,
     filter: string
 ) => {
+
+    if (table == undefined || column == undefined) {
+        return [];
+    }
     
     if (/binary|text|image|geography|geometry|variant|xml|json/.test(column.Type)) {
         return [];
@@ -157,6 +165,10 @@ export const getMssqlDbColumnValuesWithCount = async (
     sortAscendingColumnValues?: boolean,
     sortAscendingColumnValuesCount?: boolean
 ) => {
+
+    if (table == undefined || column == undefined) {
+        return [];
+    }
 
     // Very simple SQL Injection prevention.
     if (filter != undefined && filter.indexOf(';') >= 0) {
@@ -210,6 +222,13 @@ export const getMssqlDbTableRows = async (
     table: DatabaseTable,
     filter: string
 ) => {
+
+    if (table == undefined) {
+        return {
+            rows: [],
+            count: 0
+        };
+    }
     
     const snapshotSize = 20;
     const whereExpression = filter ? 'WHERE ' + filter : '';
@@ -240,6 +259,12 @@ export const getMssqlDbTableRowsCount = async (
     filter: string
 ) => {
     
+    if (table == undefined) {
+        return {
+            count: 0
+        };
+    }
+
     const whereExpression = filter ? 'WHERE ' + filter : '';
 
     const queryCount = `

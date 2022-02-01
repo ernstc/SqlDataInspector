@@ -7,6 +7,7 @@ import { DatabaseTableRow } from './database-table-row.model';
 export class ViewModel {
     databaseName?: string;
     tables?: DatabaseTable[];
+    tablesSchema?: string[];
     columns?: DatabaseColumn[];
     values?: DatabaseColumnValue[];
     rows?: DatabaseTableRow[];
@@ -17,7 +18,7 @@ export class ViewModel {
     showRecordDetails?: boolean;
     liveMonitoring?: boolean;
     refreshTimer?: number;
-
+    
     sortAscendingColumnValues?: boolean;
     sortAscendingColumnValuesCount?: boolean;
 
@@ -26,6 +27,8 @@ export class ViewModel {
     selectedValueIndex?: number;
     selectedRowRowIndex?: number;
     selectedRowColumnIndex?: number;
+
+    filterTablesSchema?: string;
 
     get selectedTable(): DatabaseTable | undefined {
         if (this.tables != undefined && this.selectedTableIndex != undefined) {

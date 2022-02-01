@@ -443,3 +443,27 @@ label {
 .dialog .body {
   padding: 8px;
 }
+#tablesFilters {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  white-space: nowrap;
+}
+#tablesFilters .ms-Icon--FilterSolid {
+  display: none;
+}
+#tablesFilters.schema .ms-Icon--Filter {
+  display: none;
+}
+#tablesFilters.schema .ms-Icon--FilterSolid {
+  display: inline-block;
+}
+#tablesFilters span {
+  font-size: 9pt;
+}
+#tablesFilters select {
+  position: unset;
+  width: auto;
+  min-width: 100px;
+  font-size: 9pt;
+}

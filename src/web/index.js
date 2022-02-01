@@ -16,6 +16,8 @@
     let $liveMonitoring = $('#liveMonitoring input');
     let $refreshTimerDiv = $('#refreshTimer');
     let $refreshTimer = $('#refreshTimer select');
+    let $tablesFilters = $('#tablesFilters');
+    let $tablesSchemaFilter = $('#tablesFilters select');
 
     $autofilter = $('#autofilter')
         .click(autoFilterClicked);
@@ -30,6 +32,8 @@
         .click(setLiveMonitoring);
     $refreshTimer
         .change(setRefreshTimer);
+    $tablesSchemaFilter
+        .change(setTablesSchemaFilter);
 
     // VSCode API for interacting with the extension back-end
     //*********************************************************** */
@@ -128,6 +132,10 @@
                 }                
                 if (e.data.tables != undefined) {
                     renderTables(e.data.tables);
+                    hideLoading();
+                }
+                if (e.data.tablesSchema != undefined) {
+                    renderTablesSchemaFilter(e.data.tablesSchema);
                     hideLoading();
                 }
                 if (e.data.columns != undefined) {
@@ -252,6 +260,14 @@
             showDatabaseTableRow(_selectedRow);
         }
 
+        if (vm.tablesSchema) {
+            renderTablesSchemaFilter(vm.tablesSchema);
+        }
+
+        let schemaFilterValue = vm.filterTablesSchema || '*';
+        $tablesFilters.toggleClass('schema', schemaFilterValue != '*');
+        $tablesSchemaFilter.val(schemaFilterValue);
+
         $liveMonitoring.get(0).checked = vm.liveMonitoring == true;
         $refreshTimer.val(vm.refreshTimer != undefined ? vm.refreshTimer : 30);
 
@@ -307,6 +323,16 @@
                     .click(tableClicked),
             selectedIndex
         );
+    }
+
+
+    function renderTablesSchemaFilter(tablesSchema) {
+        let filterValue = $tablesSchemaFilter.val();
+        let options = '<option value="*"> </option>';
+        for (let i = 0; i < tablesSchema.length; i++) {
+            options += `<option value="${tablesSchema[i]}">${tablesSchema[i]}</option>`;
+        }
+        $tablesSchemaFilter.html(options).val(filterValue);
     }
 
 
@@ -434,13 +460,15 @@
                     .dblclick(rowDblClicked);
 
                 row.Values.forEach((value, index) => {
-                    $(`<div class="col"></div>`)
-                        .toggleClass('cell-selected', rowIndex == selectedRowIndex && index == selectedColumnIndex)
-                        .text(renderValue(value, _rowsColumns[index].Type))
-                        .data('cell-value', value)
-                        .data('cell-index', index)
-                        .click(rowCellClicked)
-                        .appendTo(element);
+                    if (_rowsColumns[index] != null) {
+                        $(`<div class="col"></div>`)
+                            .toggleClass('cell-selected', rowIndex == selectedRowIndex && index == selectedColumnIndex)
+                            .text(renderValue(value, _rowsColumns[index].Type))
+                            .data('cell-value', value)
+                            .data('cell-index', index)
+                            .click(rowCellClicked)
+                            .appendTo(element);
+                    }
                 });
                 return element;
             },
@@ -612,7 +640,7 @@
 
     let liveMonitoringIntervalHandler = undefined;
     let isLiveMonitoringEnabled = false;
-    const pauseBetweenCommands = 150;
+    const pauseBetweenCommands = 160;
 
     function setLiveMonitoring() {
         isLiveMonitoringEnabled = $liveMonitoring.get(0).checked;
@@ -635,41 +663,61 @@
             }
         }
         else if (liveMonitoringIntervalHandler == undefined) {
-            let tables = $('#tables .table-data');
-
-            let intervalMs = timerValue * 1000;
-            let intervalTableMs = pauseBetweenCommands * (tables.length + 1) + 1000;
-            if (intervalTableMs > intervalMs) {
-                intervalMs = intervalTableMs;
-            }
-
+            
             let refreshFunc = () => {
-                let messages = [];
+                let tables = $('#tables .table-data');
+                let tasks = [];
 
                 for (let index = 0; index < tables.length; index++)
                 {
-                    messages.push({
-                        'command': 'loadRowsCount',
-                        'index': index
+                    let item = tables.eq(index).data('item');
+                    tasks.push({
+                        'item': item,
+                        'message': {
+                            'command': 'loadRowsCount',
+                            'index': index
+                        }
                     });
                 }
 
                 if (_selectedTable != undefined) {
-                    messages.push({
-                        'command': 'loadRows'
+                    tasks.push({
+                        'message': {
+                            'command': 'loadRows'
+                        }
                     });
                 }
 
                 if (_selectedColumn != undefined) {
-                    messages.push({
-                        'command': 'loadValues'
+                    tasks.push({
+                        'message': {
+                            'command': 'loadValues'
+                        }
                     });
                 }
 
                 let idx = 0;
                 let execMessagesFunc = () => {
-                    if (isLiveMonitoringEnabled && idx < messages.length) {
-                        sendMessage(messages[idx++]);
+                    if (isLiveMonitoringEnabled && idx < tasks.length) {
+
+                        let task = tasks[idx];
+
+                        if (task.item != undefined) {
+                            let currentTable = $('#tables .table-data').eq(idx).data('item');
+                            if (
+                                currentTable == undefined 
+                                || (currentTable.Name != task.item.Name && currentTable.Schema != task.item.Schema)
+                            ) {
+                                idx++;
+                                setTimeout(() => {
+                                    execMessagesFunc();
+                                }, 10);
+                                return;
+                            }
+                        }
+
+                        idx++;
+                        sendMessage(task.message);
                         setTimeout(() => {
                             execMessagesFunc();
                         }, pauseBetweenCommands);
@@ -677,6 +725,9 @@
                 };
                 execMessagesFunc();
             }
+
+            let tables = $('#tables .table-data');
+            let intervalTableMs = pauseBetweenCommands * (tables.length + 1) + 1000;
 
             refreshFunc();
 
@@ -686,6 +737,12 @@
                     liveMonitoringIntervalHandler = undefined;
                 }
                 if (isLiveMonitoringEnabled) {
+                    let tables = $('#tables .table-data');
+                    let intervalTableMs = pauseBetweenCommands * (tables.length + 1) + 1000;
+                    let intervalMs = timerValue * 1000;
+                    if (intervalMs < intervalTableMs) {
+                        intervalMs = intervalTableMs;
+                    }
                     liveMonitoringIntervalHandler = setInterval(refreshFunc, intervalMs);
                 }
             }, intervalTableMs);
@@ -702,6 +759,35 @@
         setTimeout(() => {
             setLiveMonitoring();    
         }, pauseBetweenCommands * 2);        
+    }
+
+
+    function setTablesSchemaFilter() {
+        var filterValue = $tablesSchemaFilter.val();
+        _selectedTable = undefined;
+        _selectedColumn = undefined;
+        _selectedValue = undefined;
+        _selectedRow = undefined;
+
+        renderTables([]);
+        renderColumns([]);
+        renderValues([]);
+        renderRows([], [], 0);
+        textToCopy = ``;
+
+        updateViewModel({
+            'filterTablesSchema': filterValue,
+            'selectedTableIndex': -1,
+            'selectedColumnIndex': -1,
+            'selectedRowRowIndex': -1,
+            'selectedRowColumnIndex': -1,
+            'selectedValueIndex': -1
+        });
+        $tablesFilters.toggleClass('schema', filterValue != '*');
+        showLoading(1);
+        sendMessage({
+            'command': 'loadTables'
+        });
     }
 
 

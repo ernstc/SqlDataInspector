@@ -494,3 +494,33 @@ label {
         padding: 8px;
     }
 }
+
+#tablesFilters {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    white-space: nowrap;
+
+    .ms-Icon--FilterSolid {
+        display: none;
+    }
+
+    &.schema .ms-Icon--Filter {
+        display: none;
+    }
+
+    &.schema .ms-Icon--FilterSolid {
+        display: inline-block;
+    }
+
+    span {
+        font-size: 9pt;
+    }
+
+    select {
+        position: unset;
+        width: auto;
+        min-width: 100px;
+        font-size: 9pt;
+    }
+}

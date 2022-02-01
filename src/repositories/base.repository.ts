@@ -9,7 +9,8 @@ export const runQuery = async <T>(provider: Provider, connectionId: string, quer
         const result = await queryProvider.runQueryAndReturn(connectionUri, query);
         return mapResult(result) as T[];
     }
-    catch (e) {
+    catch (e: any) {
+        console.error(e.message);
         return [] as T[];
     }
 };

@@ -1,11 +1,14 @@
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SQL Data Inspector</title>
     <!-- JQUERY PLACEHOLDER -->
     <!-- ICONS CSS PLACEHOLDER -->
     <!-- CSS PLACEHOLDER -->
-    <link rel="stylesheet" href="fabric-icons-inline.css">
-    <link rel="stylesheet" href="index.css">
+    <!--<link rel="stylesheet" href="fabric-icons-inline.css">
+    <link rel="stylesheet" href="index.css">-->
 </head>
 
 <body>
@@ -15,7 +18,7 @@
             <div id="liveMonitoring"><label for="cbx1">Live Monitoring</label><input type="checkbox" id="cbx1"></div>
             <div id="refreshTimer">
                 <span>refresh every</span>
-                <select>
+                <select aria-label="refresh every">
                     <option value="5">5 sec</option>
                     <option value="10" selected>10 sec</option>
                     <option value="30">30 sec</option>
@@ -26,7 +29,17 @@
         </div>
         <div id="navigation">
             <div id="tables">
-                <h2>Tables <span id="tablesCount" class="count"></span></h2>
+                <h2>
+                    Tables <span id="tablesCount" class="count"></span>
+                    <div id="tablesFilters">
+                        <span><i class="ms-Icon ms-Icon--Filter"></i><i class="ms-Icon ms-Icon--FilterSolid"></i> Schema</span>
+                        <select aria-label="schema">
+                            <option value="*"> </option>
+                            <!--<option>dbo</option>
+                            <option>custom</option>-->
+                        </select>
+                    </div>
+                </h2>                
                 <div class="table">
                     <div class="table-header">
                         <div class="col1">Name</div>
@@ -70,7 +83,7 @@
             <div id="filtersArea">
                 <h2>Filter <span class="sub">(WHERE statement)</span></h2>
                 <div>
-                    <textarea id="txtFilter" spellcheck="false" autocomplete="off" autocorrect="off"></textarea>
+                    <textarea id="txtFilter" title="filter" spellcheck="false" autocomplete="off" autocorrect="off"></textarea>
                 </div>
             </div>
             <div id="filterActions">
