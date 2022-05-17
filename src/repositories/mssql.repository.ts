@@ -1,15 +1,17 @@
-import { DatabaseColumnValue } from './../models/database-columnValue.model';
+import { DatabaseColumnValue } from '../models/database-columnValue.model';
 import { connection } from 'azdata';
 import { Database } from "../models/database.model";
-import { DatabaseTable } from "../models/database-table.model";
+import { DatabaseObject } from "../models/database-object.model";
+import { DatabaseObjectType } from "../models/database-objectType.model";
 import { runQuery } from "./base.repository";
 import { Provider } from "../models/provider.enum";
 import { DatabaseColumn } from '../models/database-column.model';
 
 
-interface DbTablesResponse {
+interface DbObjectResponse {
     name: string;
     SchemaName: string;
+    isView: number;
 }
 
 
@@ -29,14 +31,39 @@ interface DbCountResponse {
 }
 
 
-export const getMssqlDbTables = async (
+export const getMssqlDbObjects = async (
     connectionId: string,
-) => {
+    tables: boolean = true,
+    views: boolean = true
+): Promise<DatabaseObject[]> => {
+
+    const tablesAndViewsQuery = `
+        (
+            SELECT object_id, schema_id, name, is_ms_shipped, 0 AS isView
+            FROM sys.tables
+            UNION
+            SELECT object_id, schema_id, name, is_ms_shipped, 1 AS isView
+            FROM sys.views
+        )`;
+
+    const tablesQuery = 'sys.tables';
+    const viewsQuery = 'sys.views';
+
+    const objectsQuery: string | null = 
+            tables && views ? tablesAndViewsQuery :
+            tables ? tablesQuery :
+            views ? viewsQuery :
+            null;
+
+    if (objectsQuery == null) {
+        return [];
+    } 
 
     const query = `
         SELECT 
             name,
-            schema_Name(schema_id) AS SchemaName
+            schema_Name(schema_id) AS SchemaName,
+            isView
         FROM
             (
             SELECT
@@ -59,22 +86,23 @@ export const getMssqlDbTables = async (
                     END
                 AS bit) AS [IsSystemObject]
             FROM
-                sys.tables AS tbl
+                ${objectsQuery} AS tbl
             ) v
         WHERE
             v.IsSystemObject = 0
         ORDER BY
-            SchemaName, name`;
+            SchemaName, name, isView`;
 
-    let dbResult = await runQuery<DbTablesResponse>(Provider.MSSQL, connectionId, query);
+    let dbResult = await runQuery<DbObjectResponse>(Provider.MSSQL, connectionId, query);
 
-    const result: DatabaseTable[] = [];
+    const result: DatabaseObject[] = [];
     for (let index = 0; index < dbResult.length; index++) {
         const element = dbResult[index];
 
-        const dbTable: DatabaseTable = {
+        const dbTable: DatabaseObject = {
             Name: element.name,
-            Schema: element.SchemaName
+            Schema: element.SchemaName,
+            ObjectType: element.isView ? DatabaseObjectType.View : DatabaseObjectType.Table
         };
 
         result.push(dbTable);
@@ -85,7 +113,7 @@ export const getMssqlDbTables = async (
 
 export const getMssqlDbColumns = async (
     connectionId: string,
-    table: DatabaseTable
+    table: DatabaseObject
 ) => {
 
     if (table == undefined) {
@@ -124,7 +152,7 @@ export const getMssqlDbColumns = async (
 
 export const getMssqlDbColumnValues = async (
     connectionId: string,
-    table: DatabaseTable,
+    table: DatabaseObject,
     column: DatabaseColumn,
     filter: string
 ) => {
@@ -159,7 +187,7 @@ export const getMssqlDbColumnValues = async (
 
 export const getMssqlDbColumnValuesWithCount = async (
     connectionId: string,
-    table: DatabaseTable,
+    table: DatabaseObject,
     column: DatabaseColumn,
     filter: string,
     sortAscendingColumnValues?: boolean,
@@ -219,7 +247,7 @@ export const getMssqlDbColumnValuesWithCount = async (
 
 export const getMssqlDbTableRows = async (
     connectionId: string,
-    table: DatabaseTable,
+    table: DatabaseObject,
     filter: string
 ) => {
 
@@ -255,7 +283,7 @@ export const getMssqlDbTableRows = async (
 
 export const getMssqlDbTableRowsCount = async (
     connectionId: string,
-    table: DatabaseTable,
+    table: DatabaseObject,
     filter: string
 ) => {
     
