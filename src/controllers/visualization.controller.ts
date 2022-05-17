@@ -23,14 +23,14 @@ interface IOutgoingMessage {
     status?: string;
     errors?: any[];
     databaseName?: string;
-    tables?: DatabaseObject[];
+    objects?: DatabaseObject[];
     columns?: DatabaseColumn[];
     values?: DatabaseColumnValue[];
     rows?: DatabaseTableRow[];
     rowsColumnsName?: string[];
-    table?: DatabaseObject;
+    object?: DatabaseObject;
     column?: DatabaseColumn;
-    tableIndex?: number;
+    objectIndex?: number;
 }
 
 
@@ -50,6 +50,8 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
         let viewModel = new ViewModel();
         viewModel.databaseName = databaseName;
         viewModel.autoApply = true;
+        viewModel.selectTables = true;
+        viewModel.selectViews = true;
 
         webview.onDidReceiveMessage(async (data: IIncomingMessage) => {
             let commands = data.command.split('|');
@@ -63,7 +65,7 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
                         updateViewModel(viewModel, data.viewModel);
                         break;
                     }
-                    case 'loadTables': {
+                    case 'loadObjects': {
                         await loadObjects(connectionId, webview, viewModel);
                         break;
                     }
@@ -115,7 +117,7 @@ const setViewModel = async (webview: azdata.DashboardWebview | vscode.Webview, v
 const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
     for (let key in vmUpdates) {
         switch (key) {
-            case 'selectedTableIndex':
+            case 'selectedObjectIndex':
                 viewModel.selectedObjectIndex = vmUpdates?.selectedObjectIndex != -1 ? vmUpdates?.selectedObjectIndex : undefined;
                 break;
             case 'selectedColumnIndex':
@@ -151,7 +153,7 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
             case 'sortAscendingColumnValuesCount':
                 viewModel.sortAscendingColumnValuesCount = vmUpdates?.sortAscendingColumnValuesCount;
                 break;
-            case 'filterTablesSchema':
+            case 'filterObjectsSchema':
                 viewModel.filterObjectsSchema = vmUpdates?.filterObjectsSchema;
                 break;
             case 'selectTables':
@@ -200,8 +202,8 @@ const loadObjects = async (connectionId: string, webview: azdata.DashboardWebvie
 
         webview.postMessage({
             status: Status.RenderingData,
-            tables: viewModel.objects,
-            tablesSchema: viewModel.objectsSchema,
+            objects: viewModel.objects,
+            objectsSchema: viewModel.objectsSchema,
             columns: undefined,
             values: undefined,
             rows: undefined
@@ -210,17 +212,17 @@ const loadObjects = async (connectionId: string, webview: azdata.DashboardWebvie
     else {
         webview.postMessage({
             status: Status.RenderingData,
-            tables: viewModel.objects,
-            tablesSchema: viewModel.objectsSchema
+            objects: viewModel.objects,
+            objectsSchema: viewModel.objectsSchema
         });
     }
 };
 
 
 const loadColumns = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
-    const table = viewModel.selectedObject!;
+    const object = viewModel.selectedObject!;
 
-    viewModel.columns = await getMssqlDbColumns(connectionId, table);
+    viewModel.columns = await getMssqlDbColumns(connectionId, object);
     viewModel.values = undefined;
     viewModel.selectedColumnIndex = undefined;
     viewModel.selectedValueIndex = undefined;
@@ -228,18 +230,18 @@ const loadColumns = async (connectionId: string, webview: azdata.DashboardWebvie
     webview.postMessage(<IOutgoingMessage>{
         status: Status.RenderingData,
         columns: viewModel.columns,
-        table: table
+        object: object
     });
 };
 
 
 const loadValues = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
-    const table = viewModel.selectedObject!;
+    const object = viewModel.selectedObject!;
     const column = viewModel.selectedColumn!;
 
     viewModel.values = await getMssqlDbColumnValuesWithCount(
         connectionId, 
-        table, column, 
+        object, column, 
         viewModel.filter!, 
         viewModel.sortAscendingColumnValues, 
         viewModel.sortAscendingColumnValuesCount
@@ -250,7 +252,7 @@ const loadValues = async (connectionId: string, webview: azdata.DashboardWebview
     webview.postMessage(<IOutgoingMessage>{
         status: Status.RenderingData,
         values: viewModel.values,
-        table: table,
+        object: object,
         column: column,
         sortAscendingColumnValues: viewModel.sortAscendingColumnValues, 
         sortAscendingColumnValuesCount: viewModel.sortAscendingColumnValuesCount
@@ -259,9 +261,9 @@ const loadValues = async (connectionId: string, webview: azdata.DashboardWebview
 
 
 const loadRows = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
-    const table = viewModel.selectedObject!;
-    const dbRows = await getMssqlDbTableRows(connectionId, table, viewModel.filter!);
-    table.Count = dbRows.count.toString();
+    const object = viewModel.selectedObject!;
+    const dbRows = await getMssqlDbTableRows(connectionId, object, viewModel.filter!);
+    object.Count = dbRows.count.toString();
     let columnsName: string[] = [];
 
     if (dbRows.count > 0) {
@@ -290,24 +292,24 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
         rowsColumnsName: columnsName,
         rows: values,
         count: dbRows.count,
-        table: table,
-        tableIndex: viewModel.objects?.indexOf(table)
+        object: object,
+        objectIndex: viewModel.objects?.indexOf(object)
     });
 };
 
 
 const loadRowsCount = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel, index: number) => {
-    const table = viewModel.objects ? viewModel.objects[index] : undefined;
-    if (table == undefined) {
+    const object = viewModel.objects ? viewModel.objects[index] : undefined;
+    if (object == undefined) {
         return;
     }
 
-    const dbRowsCount = await getMssqlDbTableRowsCount(connectionId, table, viewModel.filter!);
-    table.Count = dbRowsCount.count.toString();
+    const dbRowsCount = await getMssqlDbTableRowsCount(connectionId, object, viewModel.filter!);
+    object.Count = dbRowsCount.count.toString();
 
     webview.postMessage(<IOutgoingMessage>{
         status: Status.RenderingData,
-        table: table,
-        tableIndex: index
+        object: object,
+        objectIndex: index
     });
 };

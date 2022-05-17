@@ -11,7 +11,7 @@ import { DatabaseColumn } from '../models/database-column.model';
 interface DbObjectResponse {
     name: string;
     SchemaName: string;
-    isView: number;
+    isView: string;
 }
 
 
@@ -46,8 +46,17 @@ export const getMssqlDbObjects = async (
             FROM sys.views
         )`;
 
-    const tablesQuery = 'sys.tables';
-    const viewsQuery = 'sys.views';
+    const tablesQuery = `
+        (
+            SELECT object_id, schema_id, name, is_ms_shipped, 0 AS isView
+            FROM sys.tables
+        )`;
+
+    const viewsQuery = `
+        (
+            SELECT object_id, schema_id, name, is_ms_shipped, 1 AS isView
+            FROM sys.views
+        )`;
 
     const objectsQuery: string | null = 
             tables && views ? tablesAndViewsQuery :
@@ -91,7 +100,7 @@ export const getMssqlDbObjects = async (
         WHERE
             v.IsSystemObject = 0
         ORDER BY
-            SchemaName, name, isView`;
+            isView, SchemaName, name`;
 
     let dbResult = await runQuery<DbObjectResponse>(Provider.MSSQL, connectionId, query);
 
@@ -102,7 +111,7 @@ export const getMssqlDbObjects = async (
         const dbTable: DatabaseObject = {
             Name: element.name,
             Schema: element.SchemaName,
-            ObjectType: element.isView ? DatabaseObjectType.View : DatabaseObjectType.Table
+            ObjectType: element.isView == '1' ? DatabaseObjectType.View : DatabaseObjectType.Table
         };
 
         result.push(dbTable);
