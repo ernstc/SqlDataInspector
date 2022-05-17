@@ -28,10 +28,13 @@
             </div>
         </div>
         <div id="navigation">
-            <div id="tables">
+            <div id="objects">
                 <h2>
-                    Tables <span id="tablesCount" class="count"></span>
-                    <div id="tablesFilters">
+                    <input type="checkbox" id="cbTables">
+                    <label for="cbTables">Tables</label> <span id="tablesCount" class="count">(00)</span>
+                    <input type="checkbox" id="cbViews">
+                    <label for="cbViews">Views</label> <span id="viewsCount" class="count">(00)</span>
+                    <div id="objectFilters">
                         <span><i class="ms-Icon ms-Icon--Filter"></i><i class="ms-Icon ms-Icon--FilterSolid"></i> Schema</span>
                         <select aria-label="schema">
                             <option value="*"> </option>
@@ -39,7 +42,7 @@
                             <option>custom</option>-->
                         </select>
                     </div>
-                </h2>                
+                </h2>
                 <div class="table">
                     <div class="table-header">
                         <div class="col1">Name</div>
@@ -104,8 +107,8 @@
             <h2>Rows <span id="rowsCount" class="count"></span></h2>
             <div class="table">
                 <!--<div class="table-header">
-                    <div class="col">Name1</div>
-                    <div class="col">Name2</div>
+                    <div class="col sortable">Name1</div>
+                    <div class="col sortable">Name2</div>
                     <div class="col">Name3</div>
                     <div class="col">Name4</div>
                     <div class="col">Name1</div>
