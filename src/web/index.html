@@ -30,10 +30,10 @@
         <div id="navigation">
             <div id="objects">
                 <h2>
-                    <input type="checkbox" id="cbTables">
-                    <label for="cbTables">Tables</label> <span id="tablesCount" class="count">(00)</span>
-                    <input type="checkbox" id="cbViews">
-                    <label for="cbViews">Views</label> <span id="viewsCount" class="count">(00)</span>
+                    <input type="checkbox" id="cbTables" checked>
+                    <label for="cbTables">Tables</label> <span id="tablesCount" class="count"></span>
+                    <input type="checkbox" id="cbViews" checked>
+                    <label for="cbViews">Views</label> <span id="viewsCount" class="count"></span>
                     <div id="objectFilters">
                         <span><i class="ms-Icon ms-Icon--Filter"></i><i class="ms-Icon ms-Icon--FilterSolid"></i> Schema</span>
                         <select aria-label="schema">
@@ -86,7 +86,7 @@
             <div id="filtersArea">
                 <h2>Filter <span class="sub">(WHERE statement)</span></h2>
                 <div>
-                    <textarea id="txtFilter" title="filter" spellcheck="false" autocomplete="off" autocorrect="off"></textarea>
+                    <textarea id="txtFilter" spellcheck="false" autocomplete="off" autocorrect="off"></textarea>
                 </div>
             </div>
             <div id="filterActions">

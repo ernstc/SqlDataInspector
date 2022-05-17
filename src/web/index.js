@@ -6,8 +6,11 @@
     let $databaseName = document.getElementById('databaseName');
     let $rowsCount = document.getElementById('rowsCount');
     let $tablesCount = document.getElementById('tablesCount');
+    let $viewsCount = document.getElementById('viewsCount');
     let $columnsCount = document.getElementById('columnsCount');
     let $valuesCount = document.getElementById('valuesCount');
+    let $cbTables = $('#cbTables');
+    let $cbViews = $('#cbViews');
     let $txtFilter = $('#txtFilter');
     let $loading = $('#loading');
     let $loadingOverlay = $('#loadingOverlay');
@@ -16,8 +19,8 @@
     let $liveMonitoring = $('#liveMonitoring input');
     let $refreshTimerDiv = $('#refreshTimer');
     let $refreshTimer = $('#refreshTimer select');
-    let $tablesFilters = $('#tablesFilters');
-    let $tablesSchemaFilter = $('#tablesFilters select');
+    let $objectFilters = $('#objectFilters');
+    let $objectSchemaFilter = $('#objectFilters select');
 
     $autofilter = $('#autofilter')
         .click(autoFilterClicked);
@@ -32,8 +35,12 @@
         .click(setLiveMonitoring);
     $refreshTimer
         .change(setRefreshTimer);
-    $tablesSchemaFilter
-        .change(setTablesSchemaFilter);
+    $objectSchemaFilter
+        .change(setObjectsSchemaFilter);
+    $cbTables
+        .change(objectsChanged);
+    $cbViews
+        .change(objectsChanged);
 
     // VSCode API for interacting with the extension back-end
     //*********************************************************** */
@@ -130,12 +137,12 @@
                 if (e.data.databaseName != undefined) {
                     $databaseName.innerText = e.data.databaseName;
                 }                
-                if (e.data.tables != undefined) {
-                    renderTables(e.data.tables);
+                if (e.data.objects != undefined) {
+                    renderObjects(e.data.objects);
                     hideLoading();
                 }
-                if (e.data.tablesSchema != undefined) {
-                    renderTablesSchemaFilter(e.data.tablesSchema);
+                if (e.data.objectsSchema != undefined) {
+                    renderObjectsSchemaFilter(e.data.objectsSchema);
                     hideLoading();
                 }
                 if (e.data.columns != undefined) {
@@ -147,11 +154,11 @@
                     hideLoading();
                 }
                 if (e.data.rows != undefined) {
-                    renderRows(e.data.rowsColumnsName, e.data.rows, e.data.count, null, null, e.data.tableIndex);
+                    renderRows(e.data.rowsColumnsName, e.data.rows, e.data.count, null, null, e.data.objectIndex);
                     hideLoading();
                 }
-                if (e.data.table != undefined && e.data.tableIndex != undefined) {
-                    $('#tables .table-data .col3').eq(e.data.tableIndex).text(e.data.table.Count);
+                if (e.data.object != undefined && e.data.objectIndex != undefined) {
+                    $('#objects .table-data .col3').eq(e.data.objectIndex).text(e.data.object.Count);
                 }
             }
         }
@@ -203,7 +210,7 @@
 
     let _columns;
     let _rowsColumns;
-    let _selectedTable;
+    let _selectedObject;
     let _selectedColumn;
     let _selectedValue;
     let _selectedRow;
@@ -213,7 +220,7 @@
 
         if ('columns' in vm) _columns = vm.columns;
 
-        _selectedTable = vm.selectedTable;
+        _selectedObject = vm.selectedObject;
         _selectedColumn = vm.selectedColumn;
         _selectedValue = vm.selectedValue;
         _selectedRow = vm.selectedRow;
@@ -222,13 +229,16 @@
             $databaseName.innerText = vm.databaseName;
         }
 
-        if (vm.tables != undefined) {
-            renderTables(vm.tables, vm.selectedTableIndex);
+        $cbTables.get(0).checked = vm.selectTables == true;
+        $cbViews.get(0).checked = vm.selectViews == true;
+        
+        if (vm.objects != undefined) {
+            renderObjects(vm.objects, vm.selectedObjectIndex);
         }
         else {
             showLoading();
             sendMessage({
-                'command': 'loadTables'
+                'command': 'loadObjects'
             });
         }
         
@@ -244,7 +254,7 @@
             renderRows(
                 vm.rowsColumnsName, vm.rows, vm.rowsCount, 
                 vm.selectedRowRowIndex, vm.selectedRowColumnIndex,
-                vm.selectedTableIndex
+                vm.selectedObjectIndex
                 );
         }
         
@@ -260,13 +270,13 @@
             showDatabaseTableRow(_selectedRow);
         }
 
-        if (vm.tablesSchema) {
-            renderTablesSchemaFilter(vm.tablesSchema);
+        if (vm.objectsSchema) {
+            renderObjectsSchemaFilter(vm.objectsSchema);
         }
 
-        let schemaFilterValue = vm.filterTablesSchema || '*';
-        $tablesFilters.toggleClass('schema', schemaFilterValue != '*');
-        $tablesSchemaFilter.val(schemaFilterValue);
+        let schemaFilterValue = vm.filterObjectsSchema || '*';
+        $objectFilters.toggleClass('schema', schemaFilterValue != '*');
+        $objectSchemaFilter.val(schemaFilterValue);
 
         $liveMonitoring.get(0).checked = vm.liveMonitoring == true;
         $refreshTimer.val(vm.refreshTimer != undefined ? vm.refreshTimer : 30);
@@ -304,51 +314,54 @@
     }
 
 
-    function renderTables(tables, selectedIndex) {
-        $tablesCount.innerText = `(${tables.length})`;
-        renderCollection(tables,
-            $('#tables .table'),
+    function renderObjects(objects, selectedIndex) {
+        let tablesCount = objects.filter(o => o.ObjectType == 0).length;
+        let viewsCount = objects.filter(o => o.ObjectType == 1).length
+        $tablesCount.innerText = $cbTables.get(0).checked ? `(${tablesCount})` : '';
+        $viewsCount.innerText = $cbViews.get(0).checked ? `(${viewsCount})` : '';
+        renderCollection(objects,
+            $('#objects .table'),
             () =>
                 $(`<div class="table-header">
                     <div class="col1">Name</div>
                     <div class="col2">Schema</div>
                     <div class="col3">Count</div>
                 </div>`),
-            (table) =>
+            (object) =>
                 $(`<div class="table-data"></div>`)
                     .append(
                         $('<div class="col1"></div>')
-                            .attr('title', table.Name)
-                            .append('<i class="ms-Icon ms-Icon--Table"></i>')
+                            .attr('title', object.Name)
+                            .append(`<i class="ms-Icon ms-Icon--${object.ObjectType == 1 ? 'DatabaseView' : 'Table'}"></i>`)
                             .append('&nbsp;')
-                            .append($('<span></span>').text(table.Name))
+                            .append($('<span></span>').text(object.Name))
                     )
                     .append(
                         $('<div class="col2"></div>')
-                            .attr('title', table.Schema)
-                            .text(table.Schema)
+                            .attr('title', object.Schema)
+                            .text(object.Schema)
                     )
                     .append(
                         $('<div class="col3"></div>')
-                            .text(table.Count == undefined ? '' : table.Count)
+                            .text(object.Count == undefined ? '' : object.Count)
                     )
-                    .click(tableClicked),
+                    .click(objectClicked),
             selectedIndex
         );
     }
 
 
-    function renderTablesSchemaFilter(tablesSchema) {
-        let filterValue = $tablesSchemaFilter.val();
-        $tablesSchemaFilter.empty().append('<option value="*"> </option>');
-        for (let i = 0; i < tablesSchema.length; i++) {
-            $tablesSchemaFilter.append(
+    function renderObjectsSchemaFilter(objectsSchema) {
+        let filterValue = $objectSchemaFilter.val();
+        $objectSchemaFilter.empty().append('<option value="*"> </option>');
+        for (let i = 0; i < objectsSchema.length; i++) {
+            $objectSchemaFilter.append(
                 $(`<option></option>`)
-                    .attr('value', tablesSchema[i])
-                    .text(tablesSchema[i])
+                    .attr('value', objectsSchema[i])
+                    .text(objectsSchema[i])
             );
         }
-        $tablesSchemaFilter.val(filterValue);
+        $objectSchemaFilter.val(filterValue);
     }
 
 
@@ -462,7 +475,7 @@
     }
 
 
-    function renderRows(rowsColumnsName, rows, rowsCount, selectedRowIndex, selectedColumnIndex, tableIndex) {
+    function renderRows(rowsColumnsName, rows, rowsCount, selectedRowIndex, selectedColumnIndex, objectIndex) {
         $rowsCount.innerText = 
             rows.length < rowsCount ? `(${rows.length} / ${rowsCount})` : 
             rowsCount ? `(${rowsCount})` : 
@@ -524,23 +537,23 @@
     }
 
 
-    function tableClicked() {
-        setFocus('#tables');
-        $('#tables .table .selected').removeClass('selected');
+    function objectClicked() {
+        setFocus('#objects');
+        $('#objects .table .selected').removeClass('selected');
         let selectedItem = $(this).addClass('selected');
-        _selectedTable = selectedItem.data('item');
+        _selectedObject = selectedItem.data('item');
         _selectedColumn = undefined;
         _selectedValue = undefined;
         _selectedRow = undefined;
         showLoading(2);
         updateViewModel({
-            'selectedTableIndex': selectedItem.data('item-index')
+            'selectedObjectIndex': selectedItem.data('item-index')
         });
         sendMessage({
             'command': 'loadColumns|loadRows'
         });
         renderValues([]);
-        textToCopy = `[${_selectedTable.Schema}].[${_selectedTable.Name}]`;
+        textToCopy = `[${_selectedObject.Schema}].[${_selectedObject.Name}]`;
     }
 
 
@@ -690,7 +703,7 @@
         else if (liveMonitoringIntervalHandler == undefined) {
             
             let refreshFunc = () => {
-                let tables = $('#tables .table-data');
+                let tables = $('#objects .table-data');
                 let tasks = [];
 
                 for (let index = 0; index < tables.length; index++)
@@ -705,7 +718,7 @@
                     });
                 }
 
-                if (_selectedTable != undefined) {
+                if (_selectedObject != undefined) {
                     tasks.push({
                         'message': {
                             'command': 'loadRows'
@@ -728,7 +741,7 @@
                         let task = tasks[idx];
 
                         if (task.item != undefined) {
-                            let currentTable = $('#tables .table-data').eq(idx).data('item');
+                            let currentTable = $('#objects .table-data').eq(idx).data('item');
                             if (
                                 currentTable == undefined 
                                 || (currentTable.Name != task.item.Name && currentTable.Schema != task.item.Schema)
@@ -751,7 +764,7 @@
                 execMessagesFunc();
             }
 
-            let tables = $('#tables .table-data');
+            let tables = $('#objects .table-data');
             let intervalTableMs = pauseBetweenCommands * (tables.length + 1) + 1000;
 
             refreshFunc();
@@ -762,7 +775,7 @@
                     liveMonitoringIntervalHandler = undefined;
                 }
                 if (isLiveMonitoringEnabled) {
-                    let tables = $('#tables .table-data');
+                    let tables = $('#objects .table-data');
                     let intervalTableMs = pauseBetweenCommands * (tables.length + 1) + 1000;
                     let intervalMs = timerValue * 1000;
                     if (intervalMs < intervalTableMs) {
@@ -787,31 +800,47 @@
     }
 
 
-    function setTablesSchemaFilter() {
-        var filterValue = $tablesSchemaFilter.val();
-        _selectedTable = undefined;
+    function setObjectsSchemaFilter() {
+        var filterValue = $objectSchemaFilter.val();
+        _selectedObject = undefined;
         _selectedColumn = undefined;
         _selectedValue = undefined;
         _selectedRow = undefined;
 
-        renderTables([]);
+        renderObjects([]);
         renderColumns([]);
         renderValues([]);
         renderRows([], [], 0);
         textToCopy = ``;
 
         updateViewModel({
-            'filterTablesSchema': filterValue,
-            'selectedTableIndex': -1,
+            'filterObjectsSchema': filterValue,
+            'selectedObjectIndex': -1,
             'selectedColumnIndex': -1,
             'selectedRowRowIndex': -1,
             'selectedRowColumnIndex': -1,
             'selectedValueIndex': -1
         });
-        $tablesFilters.toggleClass('schema', filterValue != '*');
+        $objectFilters.toggleClass('schema', filterValue != '*');
         showLoading(1);
         sendMessage({
-            'command': 'loadTables'
+            'command': 'loadObjects'
+        });
+    }
+
+
+    function objectsChanged() {
+        console.log('objects changed');
+        console.log($cbTables.get(0).checked);
+        console.log($cbViews.get(0).checked);
+
+        updateViewModel({
+            'selectTables': $cbTables.get(0).checked,
+            'selectViews': $cbViews.get(0).checked
+        });
+        showLoading(1);
+        sendMessage({
+            'command': 'loadObjects'
         });
     }
 
@@ -828,7 +857,7 @@
     function showDetailDialog(data) {
         textToCopy = undefined;
         $overlay.removeClass('hidden');
-        $('#dialogViewRecord .header span').text(`[${_selectedTable.Schema}].[${_selectedTable.Name}]`);
+        $('#dialogViewRecord .header span').text(`[${_selectedObject.Schema}].[${_selectedObject.Name}]`);
         renderCollection(data,
             $('#dialogViewRecord .table'),
             () =>
