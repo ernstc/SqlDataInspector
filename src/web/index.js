@@ -367,7 +367,7 @@
 
     async function renderColumns(columns, selectedIndex) {
         _columns = columns;
-        $columnsCount.innerText = `(${columns.length})`;
+        $columnsCount.innerText = _selectedObject != undefined ? `(${columns.length})` : '';
         renderCollection(columns,
             $('#columns .table'),
             () =>
@@ -807,7 +807,6 @@
         _selectedValue = undefined;
         _selectedRow = undefined;
 
-        renderObjects([]);
         renderColumns([]);
         renderValues([]);
         renderRows([], [], 0);
@@ -830,11 +829,22 @@
 
 
     function objectsChanged() {
-        console.log('objects changed');
-        console.log($cbTables.get(0).checked);
-        console.log($cbViews.get(0).checked);
+        _selectedObject = undefined;
+        _selectedColumn = undefined;
+        _selectedValue = undefined;
+        _selectedRow = undefined;
+
+        renderColumns([]);
+        renderValues([]);
+        renderRows([], [], 0);
+        textToCopy = ``;
 
         updateViewModel({
+            'selectedObjectIndex': -1,
+            'selectedColumnIndex': -1,
+            'selectedRowRowIndex': -1,
+            'selectedRowColumnIndex': -1,
+            'selectedValueIndex': -1,
             'selectTables': $cbTables.get(0).checked,
             'selectViews': $cbViews.get(0).checked
         });
