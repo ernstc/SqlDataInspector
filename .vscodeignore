@@ -2,7 +2,10 @@
 .vscode/**
 .vscode-test/**
 images/screen*.*
-out/test/**
+node_modules/**
+dist/test/**
+dist/web/*.less
+dist/web/debug-theme.css
 src/**
 .gitignore
 vsc-extension-quickstart.md

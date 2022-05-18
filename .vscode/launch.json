@@ -20,9 +20,9 @@
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ],
             "outFiles": [
-                "${workspaceFolder}/out/**/*.js"
+                "${workspaceFolder}/dist/**/*.js"
             ],
-            "preLaunchTask": "npm: watch",
+            "preLaunchTask": "npm: debug",
             "timeout": 30000
         },
         {
@@ -32,12 +32,12 @@
             "runtimeExecutable": "azuredatastudio",
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}",
-                "--extensionTestsPath=${workspaceFolder}/out/test/suite"
+                "--extensionTestsPath=${workspaceFolder}/dist/test/suite"
             ],
             "outFiles": [
-                "${workspaceFolder}/out/test/**/*.js"
+                "${workspaceFolder}/dist/test/**/*.js"
             ],
-            "preLaunchTask": "npm: watch",
+            "preLaunchTask": "npm: debug",
             "timeout": 30000
         }
     ]
