@@ -351,7 +351,7 @@
         if (filterValue == undefined) {
             filterValue = $objectSchemaFilter.val();
         }
-        else if (objectsSchema.indexOf(filterValue) < 0) {
+        else if (filterValue != '*' && objectsSchema.indexOf(filterValue) < 0) {
             objectsSchema.unshift(filterValue);
         }
 
