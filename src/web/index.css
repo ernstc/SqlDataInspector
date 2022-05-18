@@ -262,18 +262,26 @@ label {
 #navigation > div {
   padding: 8px;
 }
-#tables {
+#objects {
   flex-grow: 4;
   position: relative;
 }
-#tables .col1 {
+#objects .col1 {
   width: 45%;
 }
-#tables .col2 {
+#objects .col2 {
   width: 25%;
 }
-#tables .col3 {
+#objects .col3 {
   width: 30%;
+}
+#objects h2 label {
+  font-weight: 10pt;
+  top: 0px;
+}
+#objects h2 input[type=checkbox] {
+  position: relative;
+  top: 2px;
 }
 #columns {
   flex-grow: 3;
@@ -443,25 +451,26 @@ label {
 .dialog .body {
   padding: 8px;
 }
-#tablesFilters {
+#objectFilters {
   position: absolute;
   top: 8px;
   right: 8px;
   white-space: nowrap;
+  background-color: var(--vscode-editor-background);
 }
-#tablesFilters .ms-Icon--FilterSolid {
+#objectFilters .ms-Icon--FilterSolid {
   display: none;
 }
-#tablesFilters.schema .ms-Icon--Filter {
+#objectFilters.schema .ms-Icon--Filter {
   display: none;
 }
-#tablesFilters.schema .ms-Icon--FilterSolid {
+#objectFilters.schema .ms-Icon--FilterSolid {
   display: inline-block;
 }
-#tablesFilters span {
+#objectFilters span {
   font-size: 9pt;
 }
-#tablesFilters select {
+#objectFilters select {
   position: unset;
   width: auto;
   min-width: 100px;

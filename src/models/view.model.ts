@@ -1,13 +1,13 @@
 import { DatabaseColumnValue } from './database-columnValue.model';
-import { DatabaseTable } from "./database-table.model";
+import { DatabaseObject } from "./database-object.model";
 import { DatabaseColumn } from "./database-column.model";
 import { DatabaseTableRow } from './database-table-row.model';
 
 
 export class ViewModel {
     databaseName?: string;
-    tables?: DatabaseTable[];
-    tablesSchema?: string[];
+    objects?: DatabaseObject[];
+    objectsSchema?: string[];
     columns?: DatabaseColumn[];
     values?: DatabaseColumnValue[];
     rows?: DatabaseTableRow[];
@@ -18,21 +18,23 @@ export class ViewModel {
     showRecordDetails?: boolean;
     liveMonitoring?: boolean;
     refreshTimer?: number;
+    selectTables?: boolean;
+    selectViews?: boolean;
     
     sortAscendingColumnValues?: boolean;
     sortAscendingColumnValuesCount?: boolean;
 
-    selectedTableIndex?: number;
+    selectedObjectIndex?: number;
     selectedColumnIndex?: number;
     selectedValueIndex?: number;
     selectedRowRowIndex?: number;
     selectedRowColumnIndex?: number;
 
-    filterTablesSchema?: string;
+    filterObjectsSchema?: string;
 
-    get selectedTable(): DatabaseTable | undefined {
-        if (this.tables != undefined && this.selectedTableIndex != undefined) {
-            return this.tables[this.selectedTableIndex];
+    get selectedObject(): DatabaseObject | undefined {
+        if (this.objects != undefined && this.selectedObjectIndex != undefined) {
+            return this.objects[this.selectedObjectIndex];
         }
         else {
             return undefined;

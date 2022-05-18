@@ -1,5 +1,5 @@
 export enum Status {
-    GettingTableData = 'GETTING_TABLE_DATA',
+    GettingObjectsData = 'GETTING_OBJECTS_DATA',
     RenderingData = 'RENDERING_DATA',
     Complete = 'COMPLETE',
     NoDatabase = 'NO_DATABASE',
