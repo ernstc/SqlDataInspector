@@ -15,10 +15,6 @@ export const loadWebView = () => {
         .readFileSync(path.join(__dirname, 'web', 'index.js'))
         .toString();
     
-    const iconsCss = fs
-        .readFileSync(path.join(__dirname, 'web', 'fabric-icons-inline.css'))
-        .toString();
-    
     const styleCss = fs
         .readFileSync(path.join(__dirname, 'web', 'index.css'))
         .toString();
@@ -31,11 +27,6 @@ export const loadWebView = () => {
     htmlView = htmlView.replace(
         '<!-- INDEX.JS PLACEHOLDER -->',
         `<script>${indexScript}</script>`
-    );
-
-    htmlView = htmlView.replace(
-        '<!-- ICONS CSS PLACEHOLDER -->',
-        `<style>\n${iconsCss}\n</style>`
     );
 
     htmlView = htmlView.replace(
