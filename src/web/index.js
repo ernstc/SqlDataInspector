@@ -129,7 +129,6 @@
 
     window.addEventListener('message', async (e) => {
         if (e && e.data) {
-
             if (e.data.viewModel) {
                 applyViewModel(e.data.viewModel);
                 hideLoading();
