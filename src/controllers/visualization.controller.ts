@@ -24,19 +24,29 @@ interface IOutgoingMessage {
     errors?: any[];
     databaseName?: string;
     objects?: DatabaseObject[];
+    objectsSchema?: string[];
     columns?: DatabaseColumn[];
     values?: DatabaseColumnValue[];
     rows?: DatabaseTableRow[];
     rowsColumnsName?: string[];
+    rowsCount?: number;
     object?: DatabaseObject;
-    column?: DatabaseColumn;
     objectIndex?: number;
+    column?: DatabaseColumn;
+    viewModel?: ViewModel;
+    sortAscendingColumnValues?: boolean;
+    sortAscendingColumnValuesCount?: boolean;
+    filterObjectsSchema?: string;
 }
-
 
 
 export const VisualizationController = async (webview: vscode.Webview, connection: azdata.connection.Connection) => {
     await renderWebviewContent(webview, connection);
+}
+
+
+const postMessage = (webview: azdata.DashboardWebview | vscode.Webview, message: IOutgoingMessage) => {
+    webview.postMessage(message);
 }
 
 
@@ -94,7 +104,7 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
         });
     }
     else {
-        webview.postMessage({
+        postMessage(webview, {
             status: Status.NoDatabase,
         });
     }
@@ -102,10 +112,10 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
 
 
 const setViewModel = async (webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
-    webview.postMessage({
+    postMessage(webview, {
         viewModel: { 
             ...viewModel, 
-            selectedTable: viewModel.selectedObject,
+            selectedObject: viewModel.selectedObject,
             selectedColumn: viewModel.selectedColumn,
             selectedValue: viewModel.selectedValue,
             selectedRow: viewModel.selectedRow
@@ -168,7 +178,7 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
 
 
 const loadObjects = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
-    webview.postMessage({
+    postMessage(webview, {
         status: Status.GettingObjectsData,
     });
 
@@ -200,20 +210,22 @@ const loadObjects = async (connectionId: string, webview: azdata.DashboardWebvie
         //viewModel.selectedRowRowIndex = undefined;
         //viewModel.selectedRowColumnIndex = undefined;
 
-        webview.postMessage({
+        postMessage(webview, {
             status: Status.RenderingData,
             objects: viewModel.objects,
             objectsSchema: viewModel.objectsSchema,
+            filterObjectsSchema: viewModel.filterObjectsSchema,
             columns: undefined,
             values: undefined,
             rows: undefined
         });
     }
     else {
-        webview.postMessage({
+        postMessage(webview, {
             status: Status.RenderingData,
             objects: viewModel.objects,
-            objectsSchema: viewModel.objectsSchema
+            objectsSchema: viewModel.objectsSchema,
+            filterObjectsSchema: viewModel.filterObjectsSchema
         });
     }
 };
@@ -227,7 +239,7 @@ const loadColumns = async (connectionId: string, webview: azdata.DashboardWebvie
     viewModel.selectedColumnIndex = undefined;
     viewModel.selectedValueIndex = undefined;
 
-    webview.postMessage(<IOutgoingMessage>{
+    postMessage(webview, {
         status: Status.RenderingData,
         columns: viewModel.columns,
         object: object
@@ -249,7 +261,7 @@ const loadValues = async (connectionId: string, webview: azdata.DashboardWebview
 
     viewModel.selectedValueIndex = undefined;
     
-    webview.postMessage(<IOutgoingMessage>{
+    postMessage(webview, {
         status: Status.RenderingData,
         values: viewModel.values,
         object: object,
@@ -287,11 +299,11 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
     viewModel.selectedRowRowIndex = undefined;
     viewModel.selectedRowColumnIndex = undefined;
 
-    webview.postMessage(<IOutgoingMessage>{
+    postMessage(webview, {
         status: Status.RenderingData,
         rowsColumnsName: columnsName,
         rows: values,
-        count: dbRows.count,
+        rowsCount: dbRows.count,
         object: object,
         objectIndex: viewModel.objects?.indexOf(object)
     });
@@ -307,7 +319,7 @@ const loadRowsCount = async (connectionId: string, webview: azdata.DashboardWebv
     const dbRowsCount = await getMssqlDbTableRowsCount(connectionId, object, viewModel.filter!);
     object.Count = dbRowsCount.count.toString();
 
-    webview.postMessage(<IOutgoingMessage>{
+    postMessage(webview, {
         status: Status.RenderingData,
         object: object,
         objectIndex: index

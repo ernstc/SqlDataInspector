@@ -129,6 +129,9 @@
 
     window.addEventListener('message', async (e) => {
         if (e && e.data) {
+
+            console.log(JSON.stringify(e.data));
+
             if (e.data.viewModel) {
                 applyViewModel(e.data.viewModel);
                 hideLoading();
@@ -142,7 +145,7 @@
                     hideLoading();
                 }
                 if (e.data.objectsSchema != undefined) {
-                    renderObjectsSchemaFilter(e.data.objectsSchema);
+                    renderObjectsSchemaFilter(e.data.objectsSchema, e.data.filterObjectsSchema);
                     hideLoading();
                 }
                 if (e.data.columns != undefined) {
@@ -154,7 +157,7 @@
                     hideLoading();
                 }
                 if (e.data.rows != undefined) {
-                    renderRows(e.data.rowsColumnsName, e.data.rows, e.data.count, null, null, e.data.objectIndex);
+                    renderRows(e.data.rowsColumnsName, e.data.rows, e.data.rowsCount, null, null, e.data.objectIndex);
                     hideLoading();
                 }
                 if (e.data.object != undefined && e.data.objectIndex != undefined) {
@@ -271,12 +274,8 @@
         }
 
         if (vm.objectsSchema) {
-            renderObjectsSchemaFilter(vm.objectsSchema);
+            renderObjectsSchemaFilter(vm.objectsSchema, vm.filterObjectsSchema);
         }
-
-        let schemaFilterValue = vm.filterObjectsSchema || '*';
-        $objectFilters.toggleClass('schema', schemaFilterValue != '*');
-        $objectSchemaFilter.val(schemaFilterValue);
 
         $liveMonitoring.get(0).checked = vm.liveMonitoring == true;
         $refreshTimer.val(vm.refreshTimer != undefined ? vm.refreshTimer : 30);
@@ -351,8 +350,17 @@
     }
 
 
-    function renderObjectsSchemaFilter(objectsSchema) {
-        let filterValue = $objectSchemaFilter.val();
+    function renderObjectsSchemaFilter(objectsSchema, filterValue) {
+        if (filterValue == undefined) {
+            filterValue = $objectSchemaFilter.val();
+        }
+        else if (objectsSchema.indexOf(filterValue) < 0) {
+            objectsSchema.unshift(filterValue);
+        }
+
+        filterValue = filterValue || '*';
+        $objectFilters.toggleClass('schema', filterValue != '*');
+
         $objectSchemaFilter.empty().append('<option value="*"> </option>');
         for (let i = 0; i < objectsSchema.length; i++) {
             $objectSchemaFilter.append(
@@ -978,6 +986,5 @@
             applyFilter();
         }
     }
-
 
 })(jQuery);
