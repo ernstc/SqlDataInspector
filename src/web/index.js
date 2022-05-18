@@ -130,8 +130,6 @@
     window.addEventListener('message', async (e) => {
         if (e && e.data) {
 
-            console.log(JSON.stringify(e.data));
-
             if (e.data.viewModel) {
                 applyViewModel(e.data.viewModel);
                 hideLoading();
