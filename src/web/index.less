@@ -539,3 +539,52 @@ label {
         font-size: 9pt;
     }
 }
+
+#rowsPageSize {
+    display: inline-block;
+    position: absolute;
+    right: 8px;
+}
+
+#rowsPaging {
+    display: inline-block;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+
+    li {
+        display: inline-block;
+        min-width: 40px;
+        height: 20px;
+        text-align: center;
+        cursor: pointer;
+        position: relative;
+        top: -2px;
+        padding-top: 2px;
+
+        &.selected {
+            background-color: gray;
+        }
+
+        &.left-button, &.right-button {
+            visibility: hidden;
+        }
+
+        i {
+            position: relative;
+            top: 1px;
+        }
+    }
+
+    &.show-left-buttons {
+        .left-button {
+            visibility: visible;
+        }
+    }
+
+    &.show-right-buttons {
+        .right-button {
+            visibility: visible;
+        }
+    }
+}
