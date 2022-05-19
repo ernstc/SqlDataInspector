@@ -546,6 +546,9 @@ label {
   top: -2px;
   padding-top: 2px;
 }
+#rowsPaging li.hidden {
+  display: none;
+}
 #rowsPaging li.selected {
   background-color: gray;
 }
