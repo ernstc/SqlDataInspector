@@ -62,6 +62,8 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
         viewModel.autoApply = true;
         viewModel.selectTables = true;
         viewModel.selectViews = true;
+        viewModel.rowsPageIndex = 1;
+        viewModel.rowsPageSize = 20;
 
         webview.onDidReceiveMessage(async (data: IIncomingMessage) => {
             let commands = data.command.split('|');
@@ -172,6 +174,12 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
             case 'selectViews':
                 viewModel.selectViews = vmUpdates?.selectViews;
                 break;
+            case 'rowsPageIndex':
+                viewModel.rowsPageIndex = vmUpdates?.rowsPageIndex;
+                break;
+            case 'rowsPageSize':
+                viewModel.rowsPageSize = vmUpdates?.rowsPageSize;
+                break;
         }
     }
 };
@@ -194,6 +202,7 @@ const loadObjects = async (connectionId: string, webview: azdata.DashboardWebvie
     viewModel.selectedValueIndex = undefined;
     viewModel.selectedRowRowIndex = undefined;
     viewModel.selectedRowColumnIndex = undefined;
+    viewModel.rowsPageIndex = 1;
 
     if (viewModel.filterObjectsSchema != undefined
         && viewModel.filterObjectsSchema != '*') {
@@ -274,7 +283,10 @@ const loadValues = async (connectionId: string, webview: azdata.DashboardWebview
 
 const loadRows = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     const object = viewModel.selectedObject!;
-    const dbRows = await getMssqlDbTableRows(connectionId, object, viewModel.filter!);
+    const primaryKey = viewModel.columns?.filter(c => c.IsPrimaryKey)
+        .sort((c1, c2) => c1.KeyOrdinal <= c2.KeyOrdinal ? -1 : 1)
+        .map(c => c.Name);
+    const dbRows = await getMssqlDbTableRows(connectionId, object, viewModel.filter!, primaryKey, viewModel.rowsPageIndex, viewModel.rowsPageSize);
     object.Count = dbRows.count.toString();
     let columnsName: string[] = [];
 

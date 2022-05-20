@@ -18,6 +18,9 @@ interface DbObjectResponse {
 interface DbColumnsResponse {
     name: string;
     type: string;
+    is_primary_key: string;
+    key_ordinal: string;
+    has_foreign_key: string
 }
 
 
@@ -123,26 +126,48 @@ export const getMssqlDbObjects = async (
 export const getMssqlDbColumns = async (
     connectionId: string,
     table: DatabaseObject
-) => {
+): Promise<DatabaseColumn[]> => {
 
     if (table == undefined) {
         return [];
     }
 
     const query = `
-        SELECT  
-            syscolumns.name
-            , CASE WHEN ut.xtype = ut.xusertype OR st.name IS NULL THEN ut.name ELSE ut.name + ':' + st.name END as type
+        SELECT distinct
+            c.name
+            , CASE WHEN ut.system_type_id = ut.user_type_id OR st.name IS NULL THEN ut.name ELSE ut.name + ':' + st.name END as type
+            , ISNULL(i.is_primary_key, 0) AS is_primary_key
+            , ISNULL(i.key_ordinal, 0) as key_ordinal
+            , CASE WHEN fk.parent_column_id IS NOT NULL THEN 1 ELSE 0 END AS has_foreign_key
         FROM
-            syscolumns 
-            INNER JOIN sysobjects ON syscolumns.id = sysobjects.id 
-            INNER JOIN systypes ut ON syscolumns.xusertype = ut.xusertype 
-            LEFT OUTER JOIN systypes st ON ut.xtype = st.xusertype
+            sys.columns c
+            INNER JOIN sys.objects o ON c.object_id = o.object_id 
+            INNER JOIN sys.types ut ON c.user_type_id = ut.user_type_id 
+            LEFT OUTER JOIN sys.types st ON ut.system_type_id = st.user_type_id
+            LEFT OUTER JOIN
+                (
+                    SELECT
+                        ic.column_id,
+                        i.object_id,
+                        i.is_primary_key,
+                        ic.key_ordinal
+                    FROM 
+                        sys.indexes i
+                        INNER JOIN sys.index_columns ic
+                            ON ic.index_id = i.index_id 
+                            AND i.object_id = ic.object_id
+                            AND i.is_primary_key = 1
+                ) i
+                ON c.column_id = i.column_id
+                AND c.object_id = i.object_id
+            LEFT OUTER JOIN sys.foreign_key_columns fk
+                ON c.object_id = fk.parent_object_id
+                AND c.column_id = fk.parent_column_id
         WHERE
-            (sysobjects.name = N'${table.Name}') 
-            and (schema_Name(sysobjects.uid) = N'${table.Schema}')
+            (o.name = N'${table.Name}') 
+            and (schema_Name(o.schema_id) = N'${table.Schema}')
         ORDER BY
-            syscolumns.name`;
+            c.name`;
 
     let dbResult = await runQuery<DbColumnsResponse>(Provider.MSSQL, connectionId, query);
 
@@ -151,7 +176,10 @@ export const getMssqlDbColumns = async (
         const element = dbResult[index];
         const dbColumn: DatabaseColumn = {
             Name: element.name,
-            Type: element.type
+            Type: element.type,
+            IsPrimaryKey: element.is_primary_key == '1',
+            KeyOrdinal: parseInt(element.key_ordinal),
+            HasForeignKey: element.has_foreign_key == '1'
         };
         result.push(dbColumn);
     }
@@ -164,7 +192,7 @@ export const getMssqlDbColumnValues = async (
     table: DatabaseObject,
     column: DatabaseColumn,
     filter: string
-) => {
+): Promise<string[]> => {
 
     if (table == undefined || column == undefined) {
         return [];
@@ -201,7 +229,7 @@ export const getMssqlDbColumnValuesWithCount = async (
     filter: string,
     sortAscendingColumnValues?: boolean,
     sortAscendingColumnValuesCount?: boolean
-) => {
+): Promise<DatabaseColumnValue[]> => {
 
     if (table == undefined || column == undefined) {
         return [];
@@ -257,7 +285,10 @@ export const getMssqlDbColumnValuesWithCount = async (
 export const getMssqlDbTableRows = async (
     connectionId: string,
     table: DatabaseObject,
-    filter: string
+    filter: string,
+    orderByColumns?: string[],
+    pageIndex: number = 1,
+    pageSize: number = 20
 ) => {
 
     if (table == undefined) {
@@ -266,14 +297,25 @@ export const getMssqlDbTableRows = async (
             count: 0
         };
     }
+
+    if (pageIndex < 1) pageIndex = 1;
+    if (pageSize < 0) pageSize = 20;
+
+    const hasOrderingColumns = orderByColumns != undefined && orderByColumns.length > 0;
     
-    const snapshotSize = 20;
     const whereExpression = filter ? 'WHERE ' + filter : '';
+    const orderBy = hasOrderingColumns ? `
+        ORDER BY ${orderByColumns.join(',')}
+        OFFSET ${(pageIndex - 1) * pageSize} ROWS FETCH NEXT ${pageSize} ROWS ONLY
+        ` : '';
+
+    const top = !hasOrderingColumns ? `TOP(${pageSize})` : '';
 
     const queryRows = `
-        SELECT TOP(${snapshotSize}) * 
+        SELECT ${top} * 
         FROM [${table.Schema}].[${table.Name}]
-        ${whereExpression}`;
+        ${whereExpression}
+        ${orderBy}`;
 
     const queryCount = `
         SELECT COUNT(*) as count
