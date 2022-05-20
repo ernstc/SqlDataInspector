@@ -530,13 +530,13 @@ label {
   position: absolute;
   right: 8px;
 }
-#rowsPaging {
+#rowsPager {
   display: inline-block;
   position: absolute;
   left: 50%;
   transform: translate(-50%, 0);
 }
-#rowsPaging li {
+#rowsPager li {
   display: inline-block;
   min-width: 40px;
   height: 20px;
@@ -546,23 +546,23 @@ label {
   top: -2px;
   padding-top: 2px;
 }
-#rowsPaging li.hidden {
+#rowsPager li.hidden {
   display: none;
 }
-#rowsPaging li.selected {
+#rowsPager li.selected {
   background-color: gray;
 }
-#rowsPaging li.left-button,
-#rowsPaging li.right-button {
+#rowsPager li.left-button,
+#rowsPager li.right-button {
   visibility: hidden;
 }
-#rowsPaging li i {
+#rowsPager li i {
   position: relative;
   top: 1px;
 }
-#rowsPaging.show-left-buttons .left-button {
+#rowsPager.show-left-buttons .left-button {
   visibility: visible;
 }
-#rowsPaging.show-right-buttons .right-button {
+#rowsPager.show-right-buttons .right-button {
   visibility: visible;
 }

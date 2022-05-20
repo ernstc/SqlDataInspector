@@ -3,24 +3,26 @@
     // Inizialization
     //*********************************************************** */
 
-    let $databaseName = document.getElementById('databaseName');
-    let $rowsCount = document.getElementById('rowsCount');
-    let $tablesCount = document.getElementById('tablesCount');
-    let $viewsCount = document.getElementById('viewsCount');
-    let $columnsCount = document.getElementById('columnsCount');
-    let $valuesCount = document.getElementById('valuesCount');
-    let $cbTables = $('#cbTables');
-    let $cbViews = $('#cbViews');
-    let $txtFilter = $('#txtFilter');
-    let $loading = $('#loading');
-    let $loadingOverlay = $('#loadingOverlay');
-    let $overlay = $('#overlay');
-    let $liveMonitoringDiv = $('#liveMonitoring');
-    let $liveMonitoring = $('#liveMonitoring input');
-    let $refreshTimerDiv = $('#refreshTimer');
-    let $refreshTimer = $('#refreshTimer select');
-    let $objectFilters = $('#objectFilters');
-    let $objectSchemaFilter = $('#objectFilters select');
+    const $databaseName = document.getElementById('databaseName');
+    const $rowsCount = document.getElementById('rowsCount');
+    const $tablesCount = document.getElementById('tablesCount');
+    const $viewsCount = document.getElementById('viewsCount');
+    const $columnsCount = document.getElementById('columnsCount');
+    const $valuesCount = document.getElementById('valuesCount');
+    const $cbTables = $('#cbTables');
+    const $cbViews = $('#cbViews');
+    const $txtFilter = $('#txtFilter');
+    const $loading = $('#loading');
+    const $loadingOverlay = $('#loadingOverlay');
+    const $overlay = $('#overlay');
+    const $liveMonitoringDiv = $('#liveMonitoring');
+    const $liveMonitoring = $('#liveMonitoring input');
+    const $refreshTimerDiv = $('#refreshTimer');
+    const $refreshTimer = $('#refreshTimer select');
+    const $objectFilters = $('#objectFilters');
+    const $objectSchemaFilter = $('#objectFilters select');
+    const $rowsPageSize = $('#rowsPageSize select');
+    const $rowsPager = $('#rowsPager');
 
     $autofilter = $('#autofilter')
         .click(autoFilterClicked);
@@ -41,6 +43,10 @@
         .change(objectsChanged);
     $cbViews
         .change(objectsChanged);
+    $rowsPageSize
+        .change(setPageSize);
+    $rowsPager.find('li')
+        .click(btnPageClicked);
 
     // VSCode API for interacting with the extension back-end
     //*********************************************************** */
@@ -520,6 +526,11 @@
     }
 
 
+    function renderPager() {
+
+    }
+
+
     // Event handlers
     //*********************************************************** */
 
@@ -860,12 +871,30 @@
     }
 
 
+    function setPageSize() {
+        let pageSize = $rowsPageSize.val();
+        updateViewModel({
+            'rowsPageSize': pageSize
+        });
+        showLoading(1);
+        sendMessage({
+            'command': 'loadRows'
+        });
+    }
+
+
+    function btnPageClicked() {
+        let page = $(this).data('page');
+        console.log(page);
+    }
+
+
     // Dialogs
     //*********************************************************** */
 
     $('#dialogViewRecord .close').click(() => {
         setFocus('#dataRows');
-        hideDetailDialog();        
+        hideDetailDialog();
     });
 
 
