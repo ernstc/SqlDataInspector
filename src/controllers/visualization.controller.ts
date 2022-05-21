@@ -16,6 +16,7 @@ interface IIncomingMessage {
     item?: any;
     viewModel?: ViewModel;
     index?: number;
+    rowsPageIndex?: string;
 }
 
 
@@ -30,6 +31,7 @@ interface IOutgoingMessage {
     rows?: DatabaseTableRow[];
     rowsColumnsName?: string[];
     rowsCount?: number;
+    rowsPageIndex?: number;
     object?: DatabaseObject;
     objectIndex?: number;
     column?: DatabaseColumn;
@@ -62,6 +64,8 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
         viewModel.autoApply = true;
         viewModel.selectTables = true;
         viewModel.selectViews = true;
+        viewModel.rowsPageIndex = 1;
+        viewModel.rowsPageSize = 20;
 
         webview.onDidReceiveMessage(async (data: IIncomingMessage) => {
             let commands = data.command.split('|');
@@ -98,6 +102,44 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
                     case 'copyText': {
                         vscode.env.clipboard.writeText(data.item);
                         break;
+                    }
+                    case 'changeRowsPage': {
+                        if (
+                            data.rowsPageIndex != undefined
+                            && viewModel.rowsCount != undefined 
+                            && viewModel.rowsPageIndex != undefined
+                            && viewModel.rowsPageSize != undefined
+                        )
+                        {
+                            const pagesCount = Math.ceil(viewModel.rowsCount / viewModel.rowsPageSize);
+                            let pageIndex: number;
+                            switch (data.rowsPageIndex)
+                            {
+                                case 'first': {
+                                    pageIndex = 1;
+                                    break;
+                                }
+                                case 'prev': {
+                                    pageIndex = viewModel.rowsPageIndex - 1;
+                                    if (pageIndex < 1) pageIndex = 1;
+                                    break;
+                                }
+                                case 'next': {
+                                    pageIndex = viewModel.rowsPageIndex + 1;
+                                    if (pageIndex > pagesCount) pageIndex = pagesCount;
+                                    break;
+                                }
+                                case 'last' {
+                                    pageIndex = pagesCount;
+                                    break;
+                                }
+                                default: {
+                                    pageIndex = parseInt(data.rowsPageIndex);
+                                }
+                            }
+                            viewModel.rowsPageIndex = pageIndex;
+                            await loadRows(connectionId, webview, viewModel);
+                        }                        
                     }
                 }
             }
@@ -172,6 +214,12 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
             case 'selectViews':
                 viewModel.selectViews = vmUpdates?.selectViews;
                 break;
+            case 'rowsPageIndex':
+                viewModel.rowsPageIndex = vmUpdates?.rowsPageIndex;
+                break;
+            case 'rowsPageSize':
+                viewModel.rowsPageSize = vmUpdates?.rowsPageSize;
+                break;
         }
     }
 };
@@ -194,6 +242,7 @@ const loadObjects = async (connectionId: string, webview: azdata.DashboardWebvie
     viewModel.selectedValueIndex = undefined;
     viewModel.selectedRowRowIndex = undefined;
     viewModel.selectedRowColumnIndex = undefined;
+    viewModel.rowsPageIndex = 1;
 
     if (viewModel.filterObjectsSchema != undefined
         && viewModel.filterObjectsSchema != '*') {
@@ -274,7 +323,10 @@ const loadValues = async (connectionId: string, webview: azdata.DashboardWebview
 
 const loadRows = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     const object = viewModel.selectedObject!;
-    const dbRows = await getMssqlDbTableRows(connectionId, object, viewModel.filter!);
+    const primaryKey = viewModel.columns?.filter(c => c.IsPrimaryKey)
+        .sort((c1, c2) => c1.KeyOrdinal <= c2.KeyOrdinal ? -1 : 1)
+        .map(c => c.Name);
+    const dbRows = await getMssqlDbTableRows(connectionId, object, viewModel.filter!, primaryKey, viewModel.rowsPageIndex, viewModel.rowsPageSize);
     object.Count = dbRows.count.toString();
     let columnsName: string[] = [];
 
@@ -304,6 +356,7 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
         rowsColumnsName: columnsName,
         rows: values,
         rowsCount: dbRows.count,
+        rowsPageIndex: viewModel.rowsPageIndex,
         object: object,
         objectIndex: viewModel.objects?.indexOf(object)
     });

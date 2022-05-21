@@ -6,8 +6,7 @@
     <title>SQL Data Inspector</title>
     <!-- JQUERY PLACEHOLDER -->
     <!-- CSS PLACEHOLDER -->
-    <!--<link rel="stylesheet" href="fabric-icons-inline.css">
-    <link rel="stylesheet" href="index.css">-->
+    <!--<link rel="stylesheet" href="index.css">-->
 </head>
 
 <body>
@@ -103,7 +102,29 @@
             </div>
         </div>
         <div id="dataRows">
-            <h2>Rows <span id="rowsCount" class="count"></span></h2>
+            <h2>
+                Rows <span id="rowsCount" class="count"></span>
+                <div id="rowsPageSize">
+                    <span>Page size</span>
+                    <select aria-label="Page size">
+                        <option value="10">10</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <ul id="rowsPager" style="display: none;">
+                    <li class="left-button" data-page="first"><i class="ms-Icon ms-Icon--ChevronLeftEnd6"></i></li>
+                    <li class="left-button" data-page="prev"><i class="ms-Icon ms-Icon--ChevronLeftSmall"></i></li>
+                    <li class="page hidden" data-page="1">1</li>
+                    <li class="page hidden" data-page="2">2</li>
+                    <li class="page hidden" data-page="3">3</li>
+                    <li class="page hidden" data-page="4">4</li>
+                    <li class="page hidden" data-page="5">5</li>
+                    <li class="right-button" data-page="next"><i class="ms-Icon ms-Icon--ChevronRightSmall"></i></li>
+                    <li class="right-button" data-page="last"><i class="ms-Icon ms-Icon--ChevronRightEnd6"></i></li>
+                </ul>
+            </h2>
             <div class="table">
                 <!--<div class="table-header">
                     <div class="col sortable">Name1</div>

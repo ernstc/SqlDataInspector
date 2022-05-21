@@ -13,6 +13,8 @@ export class ViewModel {
     rows?: DatabaseTableRow[];
     rowsCount?: number;
     rowsColumnsName?: string[];
+    rowsPageSize?: number;
+    rowsPageIndex?: number;
     filter?: string;
     autoApply?: boolean;
     showRecordDetails?: boolean;
@@ -31,6 +33,7 @@ export class ViewModel {
     selectedRowColumnIndex?: number;
 
     filterObjectsSchema?: string;
+
 
     get selectedObject(): DatabaseObject | undefined {
         if (this.objects != undefined && this.selectedObjectIndex != undefined) {

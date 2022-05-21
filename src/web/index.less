@@ -392,6 +392,11 @@ label {
             width: 200px;
         }
 
+        .row-index {
+            width: 60px;
+            text-align: center;
+        }
+
         .selected, .selected:hover {
             background-color: var(--vscode-list-inactiveSelectionBackground);
             color: var(--vscode-list-inactiveSelectionForeground);
@@ -537,5 +542,68 @@ label {
         width: auto;
         min-width: 100px;
         font-size: 9pt;
+    }
+}
+
+#rowsPageSize {
+    display: inline-block;
+    position: absolute;
+    right: 8px;
+}
+
+#rowsPager {
+    display: inline-block;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+
+    li {
+        display: inline-block;
+        min-width: 50px;
+        height: 20px;
+        text-align: center;
+        cursor: pointer;
+        position: relative;
+        top: -2px;
+        padding-top: 2px;
+
+        &:hover, &.clicked {
+            background-color: var(--vscode-list-hoverBackground);
+            color: var(--vscode-list-hoverForeground);
+        }
+
+        &.hidden {
+            display: none;
+        }
+
+        &.selected {
+            background-color: var(--vscode-list-activeSelectionBackground);
+            color: var(--vscode-list-activeSelectionForeground);
+        }
+
+        &.left-button, &.right-button {
+            visibility: hidden;
+
+            &.visible {
+                visibility: visible;
+            }
+        }
+
+        i {
+            position: relative;
+            top: 1px;
+        }
+    }
+
+    &.show-left-buttons {
+        .left-button {
+            visibility: visible;
+        }
+    }
+
+    &.show-right-buttons {
+        .right-button {
+            visibility: visible;
+        }
     }
 }
