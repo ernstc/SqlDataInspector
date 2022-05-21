@@ -16,6 +16,7 @@ interface IIncomingMessage {
     item?: any;
     viewModel?: ViewModel;
     index?: number;
+    rowsPageIndex?: string;
 }
 
 
@@ -30,6 +31,7 @@ interface IOutgoingMessage {
     rows?: DatabaseTableRow[];
     rowsColumnsName?: string[];
     rowsCount?: number;
+    rowsPageIndex?: number;
     object?: DatabaseObject;
     objectIndex?: number;
     column?: DatabaseColumn;
@@ -100,6 +102,44 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
                     case 'copyText': {
                         vscode.env.clipboard.writeText(data.item);
                         break;
+                    }
+                    case 'changeRowsPage': {
+                        if (
+                            data.rowsPageIndex != undefined
+                            && viewModel.rowsCount != undefined 
+                            && viewModel.rowsPageIndex != undefined
+                            && viewModel.rowsPageSize != undefined
+                        )
+                        {
+                            const pagesCount = Math.ceil(viewModel.rowsCount / viewModel.rowsPageSize);
+                            let pageIndex: number;
+                            switch (data.rowsPageIndex)
+                            {
+                                case 'first': {
+                                    pageIndex = 1;
+                                    break;
+                                }
+                                case 'prev': {
+                                    pageIndex = viewModel.rowsPageIndex - 1;
+                                    if (pageIndex < 1) pageIndex = 1;
+                                    break;
+                                }
+                                case 'next': {
+                                    pageIndex = viewModel.rowsPageIndex + 1;
+                                    if (pageIndex > pagesCount) pageIndex = pagesCount;
+                                    break;
+                                }
+                                case 'last' {
+                                    pageIndex = pagesCount;
+                                    break;
+                                }
+                                default: {
+                                    pageIndex = parseInt(data.rowsPageIndex);
+                                }
+                            }
+                            viewModel.rowsPageIndex = pageIndex;
+                            await loadRows(connectionId, webview, viewModel);
+                        }                        
                     }
                 }
             }
@@ -316,6 +356,7 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
         rowsColumnsName: columnsName,
         rows: values,
         rowsCount: dbRows.count,
+        rowsPageIndex: viewModel.rowsPageIndex,
         object: object,
         objectIndex: viewModel.objects?.indexOf(object)
     });

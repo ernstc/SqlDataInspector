@@ -398,6 +398,10 @@ label {
 #dataRows .table .col {
   width: 200px;
 }
+#dataRows .table .row-index {
+  width: 60px;
+  text-align: center;
+}
 #dataRows .table .selected,
 #dataRows .table .selected:hover {
   background-color: var(--vscode-list-inactiveSelectionBackground);
@@ -538,7 +542,7 @@ label {
 }
 #rowsPager li {
   display: inline-block;
-  min-width: 40px;
+  min-width: 50px;
   height: 20px;
   text-align: center;
   cursor: pointer;
@@ -546,15 +550,25 @@ label {
   top: -2px;
   padding-top: 2px;
 }
+#rowsPager li:hover,
+#rowsPager li.clicked {
+  background-color: var(--vscode-list-hoverBackground);
+  color: var(--vscode-list-hoverForeground);
+}
 #rowsPager li.hidden {
   display: none;
 }
 #rowsPager li.selected {
-  background-color: gray;
+  background-color: var(--vscode-list-activeSelectionBackground);
+  color: var(--vscode-list-activeSelectionForeground);
 }
 #rowsPager li.left-button,
 #rowsPager li.right-button {
   visibility: hidden;
+}
+#rowsPager li.left-button.visible,
+#rowsPager li.right-button.visible {
+  visibility: visible;
 }
 #rowsPager li i {
   position: relative;
