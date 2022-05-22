@@ -25,6 +25,9 @@ export class ViewModel {
     
     sortAscendingColumnValues?: boolean;
     sortAscendingColumnValuesCount?: boolean;
+    
+    sortRowsByColumnName?: string;
+    sortRowsByColumnAscending?: boolean;
 
     selectedObjectIndex?: number;
     selectedColumnIndex?: number;

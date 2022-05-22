@@ -38,6 +38,8 @@ interface IOutgoingMessage {
     viewModel?: ViewModel;
     sortAscendingColumnValues?: boolean;
     sortAscendingColumnValuesCount?: boolean;
+    sortRowsByColumnName?: string;
+    sortRowsByColumnAscending?: boolean;
     filterObjectsSchema?: string;
 }
 
@@ -220,6 +222,12 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
             case 'rowsPageSize':
                 viewModel.rowsPageSize = vmUpdates?.rowsPageSize;
                 break;
+            case 'sortRowsByColumnName':
+                viewModel.sortRowsByColumnName = vmUpdates?.sortRowsByColumnName;
+                break;
+            case 'sortRowsByColumnAscending':
+                viewModel.sortRowsByColumnAscending = vmUpdates?.sortRowsByColumnAscending;
+                break;
         }
     }
 };
@@ -323,10 +331,28 @@ const loadValues = async (connectionId: string, webview: azdata.DashboardWebview
 
 const loadRows = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     const object = viewModel.selectedObject!;
-    const primaryKey = viewModel.columns?.filter(c => c.IsPrimaryKey)
-        .sort((c1, c2) => c1.KeyOrdinal <= c2.KeyOrdinal ? -1 : 1)
-        .map(c => c.Name);
-    const dbRows = await getMssqlDbTableRows(connectionId, object, viewModel.filter!, primaryKey, viewModel.rowsPageIndex, viewModel.rowsPageSize);
+
+    let orderByColumns: string[] | undefined;
+    let sortAscending: boolean[] | undefined;
+
+    if (viewModel.sortRowsByColumnName) {
+        orderByColumns = [ viewModel.sortRowsByColumnName ];
+        if (viewModel.sortRowsByColumnAscending != undefined) {
+            sortAscending = [ viewModel.sortRowsByColumnAscending ];
+        }
+        else {
+            sortAscending = [ true ];
+        }
+    }
+    else {
+        const primaryKey = viewModel.columns?.filter(c => c.IsPrimaryKey)
+            .sort((c1, c2) => c1.KeyOrdinal <= c2.KeyOrdinal ? -1 : 1)
+            .map(c => c.Name);
+        orderByColumns = primaryKey;
+        sortAscending = primaryKey?.map(p => true);
+    }
+
+    const dbRows = await getMssqlDbTableRows(connectionId, object, viewModel.filter!, orderByColumns, sortAscending, viewModel.rowsPageIndex, viewModel.rowsPageSize);
     object.Count = dbRows.count.toString();
     let columnsName: string[] = [];
 
@@ -357,6 +383,8 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
         rows: values,
         rowsCount: dbRows.count,
         rowsPageIndex: viewModel.rowsPageIndex,
+        sortRowsByColumnName: viewModel.sortRowsByColumnName,
+        sortRowsByColumnAscending: viewModel.sortRowsByColumnAscending,
         object: object,
         objectIndex: viewModel.objects?.indexOf(object)
     });

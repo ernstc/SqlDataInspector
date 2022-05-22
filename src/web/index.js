@@ -160,7 +160,7 @@
                     hideLoading();
                 }
                 if (e.data.rows != undefined) {
-                    renderRows(e.data.rowsColumnsName, e.data.rows, e.data.rowsCount, e.data.rowsPageIndex, null, null, e.data.objectIndex);
+                    renderRows(e.data.rowsColumnsName, e.data.rows, e.data.rowsCount, e.data.rowsPageIndex, null, null, e.data.objectIndex, e.data.sortRowsByColumnName, e.data.sortRowsByColumnAscending);
                     hideLoading();
                 }
                 if (e.data.object != undefined && e.data.objectIndex != undefined) {
@@ -264,7 +264,8 @@
             renderRows(
                 vm.rowsColumnsName, vm.rows, vm.rowsCount, vm.rowsPageIndex,
                 vm.selectedRowRowIndex, vm.selectedRowColumnIndex,
-                vm.selectedObjectIndex
+                vm.selectedObjectIndex,
+                vm.sortRowsByColumnName, vm.sortRowsByColumnAscending
                 );
         }
         
@@ -490,7 +491,9 @@
     }
 
 
-    function renderRows(rowsColumnsName, rows, rowsCount, rowsPageIndex, selectedRowIndex, selectedColumnIndex, objectIndex) {
+    const _notSortableTypes = ['text', 'ntext', 'binary', 'varbinary', 'image', 'cursor', 'rowversion', 'hierarchyid', 'geometry', 'geography', 'sql_variant', 'table'];
+
+    function renderRows(rowsColumnsName, rows, rowsCount, rowsPageIndex, selectedRowIndex, selectedColumnIndex, objectIndex, sortRowsByColumnName, sortRowsByColumnAscending) {
         let pageSize = parseInt($rowsPageSize.val());
         let firstRow = (rowsPageIndex - 1) * pageSize + 1;
         
@@ -502,9 +505,24 @@
             $('#dataRows .table'),
             () => {
                 let header = $(`<div class="table-header"><div class="col row-index">row #</div></div>`);
-                rowsColumnsName.forEach(name => {
-                    header.append($(`<div class="col"></div>`).text(name));
-                });
+                for (let index = 0; index < rowsColumnsName.length; index++)
+                {
+                    let name = rowsColumnsName[index];
+                    let $header = $(`<div class="col"></div>`).text(name).appendTo(header);
+                    let colType = _rowsColumns[index].Type;
+                    if (_notSortableTypes.indexOf(colType) < 0)
+                    {
+                        $header.addClass('sortable').data('column', name).data('sort', '').click(rowsHeaderClicked);
+                    }
+                    if (name == sortRowsByColumnName) {
+                        if (sortRowsByColumnAscending == true) {
+                            $header.data('sort', 'ascending').append('<i class="ms-Icon ms-Icon--CaretSolidUp"></i>');
+                        }
+                        else {
+                            $header.data('sort', '').append('<i class="ms-Icon ms-Icon--CaretSolidDown"></i>');
+                        }                
+                    }
+                };
                 return header;
             },
             (row, rowIndex) => {
@@ -535,6 +553,32 @@
             selectedRowIndex
         );
         renderPager(rowsCount, rowsPageIndex);
+    }
+
+
+    function rowsHeaderClicked() {
+        let $header = $(this);
+        let colName = $header.data('column');
+        let sortAscending = $header.data('sort') != 'ascending';
+
+        $('#dataRows .table-header i').remove();
+        $('#dataRows .table-header .sortable').data('sort', '');
+
+        if (sortAscending == true) {
+            $header.data('sort', 'ascending').append('<i class="ms-Icon ms-Icon--CaretSolidUp"></i>');
+        }
+        else {
+            $header.data('sort', '').append('<i class="ms-Icon ms-Icon--CaretSolidDown"></i>');
+        }
+
+        showLoading();
+        updateViewModel({
+            'sortRowsByColumnName': colName,
+            'sortRowsByColumnAscending': sortAscending,
+        });
+        sendMessage({
+            'command': 'loadRows'
+        });
     }
 
 
@@ -578,7 +622,6 @@
 
         $rowsPager.find('.left-button').toggleClass('visible', rowsPageIndex > 1);
         $rowsPager.find('.right-button').toggleClass('visible', rowsPageIndex < pages);
-
         $rowsPager.show();
     }
 
@@ -616,7 +659,8 @@
         showLoading(2);
         updateViewModel({
             'selectedObjectIndex': selectedItem.data('item-index'),
-            'rowsPageIndex': 1
+            'rowsPageIndex': 1,
+            'sortRowsByColumnName': null
         });
         sendMessage({
             'command': 'loadColumns|loadRows'

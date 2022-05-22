@@ -287,6 +287,7 @@ export const getMssqlDbTableRows = async (
     table: DatabaseObject,
     filter: string,
     orderByColumns?: string[],
+    sortAscending?: boolean[],
     pageIndex: number = 1,
     pageSize: number = 20
 ) => {
@@ -302,10 +303,13 @@ export const getMssqlDbTableRows = async (
     if (pageSize < 0) pageSize = 20;
 
     const hasOrderingColumns = orderByColumns != undefined && orderByColumns.length > 0;
+    if (hasOrderingColumns && sortAscending != undefined) {
+        orderByColumns = orderByColumns?.map((col, index) => sortAscending[index] ? col : col + ' DESC');
+    }
     
     const whereExpression = filter ? 'WHERE ' + filter : '';
     const orderBy = hasOrderingColumns ? `
-        ORDER BY ${orderByColumns.join(',')}
+        ORDER BY ${orderByColumns?.join(',')}
         OFFSET ${(pageIndex - 1) * pageSize} ROWS FETCH NEXT ${pageSize} ROWS ONLY
         ` : '';
 

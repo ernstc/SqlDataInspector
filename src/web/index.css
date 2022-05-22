@@ -146,6 +146,7 @@ label {
   position: absolute;
   left: 50%;
   top: 50%;
+  z-index: 101;
 }
 #liveMonitoring {
   position: absolute;
@@ -176,6 +177,7 @@ label {
   bottom: 0;
   right: 0;
   background-color: transparent;
+  z-index: 100;
 }
 @-webkit-keyframes rotate {
   100% {
