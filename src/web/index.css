@@ -350,6 +350,9 @@ label {
 #columns .col2 {
   width: 45%;
 }
+#columns .primary-key {
+  font-weight: bold;
+}
 #values {
   flex-grow: 4;
   position: relative;

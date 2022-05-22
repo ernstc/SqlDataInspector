@@ -398,7 +398,7 @@
                             .attr('title', column.Name)
                             .append('<i class="ms-Icon ms-Icon--Column"></i>')
                             .append('&nbsp;')
-                            .append($('<span></span>').text(column.Name))
+                            .append($(`<span${column.IsPrimaryKey ? ' class="primary-key"' : ''}></span>`).text(column.Name))
                     )
                     .append(
                         $('<div class="col2"></div>')
