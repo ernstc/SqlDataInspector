@@ -129,7 +129,7 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
                                     if (pageIndex > pagesCount) pageIndex = pagesCount;
                                     break;
                                 }
-                                case 'last' {
+                                case 'last': {
                                     pageIndex = pagesCount;
                                     break;
                                 }
