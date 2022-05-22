@@ -96,6 +96,7 @@ label {
     border-right-color: #888;
     border-radius: 22px;
     -webkit-animation: rotate 1s infinite linear;
+    animation: rotate 1s infinite linear;
     position: absolute;
     left: 50%;
     top: 50%;
@@ -140,6 +141,12 @@ label {
 @-webkit-keyframes rotate {
     100% {
         -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
     }
 }
 
@@ -552,8 +559,9 @@ label {
 }
 
 #rowsPager {
-    display: inline-block;
+    display: none;
     position: absolute;
+    top: 8px;
     left: 50%;
     transform: translate(-50%, 0);
 

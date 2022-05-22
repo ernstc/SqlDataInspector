@@ -545,6 +545,11 @@
         const pageSize = parseInt($rowsPageSize.val());
         const pages = Math.ceil(rowsCount / pageSize);
 
+        if (pages == 1) {
+            $rowsPager.hide();
+            return;
+        }
+
         if (rowsPageIndex > pages) rowsPageIndex = pages;
 
         let firstPage = rowsPageIndex - 2;
