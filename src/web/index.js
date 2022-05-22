@@ -247,6 +247,10 @@
                 'command': 'loadObjects'
             });
         }
+
+        if (vm.rowsPageSize != undefined) {
+            $rowsPageSize.val(vm.rowsPageSize);
+        }
         
         if (vm.columns != undefined) {
             await renderColumns(vm.columns, vm.selectedColumnIndex);
