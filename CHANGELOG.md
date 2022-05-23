@@ -4,6 +4,22 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
+## May 2022 Release (version 0.6.0)
+
+### Changes
+
+* Added visualization of Views #8.
+* Added pagination in the rows data visualization.
+* Added sorting by column in the table rows #5.
+* Primary key columns are shown in bold
+
+### Fixes
+
+* Fixed vulnerabilities.
+* Minor UI fixes
+
+---
+
 ## February 2022 Release (version 0.5.0)
 
 ### Changes

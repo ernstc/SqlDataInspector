@@ -4,16 +4,16 @@
 
 This extension makes it easy to inspect data with just a few clicks.
 
-![Example of dashboard](https://raw.githubusercontent.com/ernstc/SqlDataInspector/main/images/screen-051.png)
+![Example of dashboard](https://raw.githubusercontent.com/ernstc/SqlDataInspector/main/images/screen-061.png)
 
 ## Features
 
 * Start inspecting data from the database context menu using the menu item "Inspect data".
-* Shows the list of tables of the database.
-* Shows the list of columns of the selected table.
+* Shows the list of tables and views of the database.
+* Shows the list of columns of the selected table or view.
 * Shows all the distinct values of the selected column.
-* Shows a snapshot of the first 20 rows of the selected tables.
-* You can filter tables by schema.
+* Shows the rows of the selected table or view with the capabilities to sort by columns and paging.
+* You can filter objects by schema.
 * You can edit the WHERE clause that will be applied to each query that retrieves data.
 * By double clicking on a distinct value, a filter on that value is automatically added in the "Filters" section.
 * By double clicking on a row in the table snapshot, it shows a dialog with a detailed record of the row.
