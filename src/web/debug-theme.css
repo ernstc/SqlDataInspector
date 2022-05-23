@@ -23,3 +23,6 @@
     --vscode-foreground: black;
     --vscode-window-activeBorder: purple;
 }
+
+#loadingOverlay { display: none !important; }
+#loading { display: none !important; }

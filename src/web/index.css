@@ -548,19 +548,18 @@ label {
 #rowsPager {
   display: none;
   position: absolute;
-  top: 8px;
+  top: 7px;
   left: 50%;
   transform: translate(-50%, 0);
+  overflow: hidden;
+  height: 21px;
 }
 #rowsPager li {
   display: inline-block;
   min-width: 50px;
-  height: 20px;
+  height: 21px;
   text-align: center;
   cursor: pointer;
-  position: relative;
-  top: -2px;
-  padding-top: 2px;
 }
 #rowsPager li:hover,
 #rowsPager li.clicked {
@@ -574,6 +573,17 @@ label {
   background-color: var(--vscode-list-activeSelectionBackground);
   color: var(--vscode-list-activeSelectionForeground);
 }
+#rowsPager li.page {
+  font-size: 9pt;
+}
+#rowsPager li.page span {
+  position: relative;
+  top: 1px;
+}
+#rowsPager li i {
+  position: relative;
+  top: 3px;
+}
 #rowsPager li.left-button,
 #rowsPager li.right-button {
   visibility: hidden;
@@ -581,10 +591,6 @@ label {
 #rowsPager li.left-button.visible,
 #rowsPager li.right-button.visible {
   visibility: visible;
-}
-#rowsPager li i {
-  position: relative;
-  top: 1px;
 }
 #rowsPager.show-left-buttons .left-button {
   visibility: visible;

@@ -616,7 +616,7 @@
             let el = elements.eq(i);
             el.data('page', page);
             el.toggleClass('selected', rowsPageIndex == page);
-            el.text(page);
+            el.find('span').text(page);
             el.removeClass('hidden');
         }
 

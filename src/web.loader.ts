@@ -30,7 +30,7 @@ export const loadWebView = () => {
     );
 
     htmlView = htmlView.replace(
-        '<!-- CSS PLACEHOLDER -->',
+        '<link rel="stylesheet" href="index.css">',
         `<style>\n${styleCss}\n</style>`
     );
 
