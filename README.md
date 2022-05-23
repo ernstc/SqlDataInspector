@@ -4,7 +4,7 @@
 
 This extension makes it easy to inspect data with just a few clicks.
 
-![Example of dashboard](https://raw.githubusercontent.com/ernstc/SqlDataInspector/main/images/screen-061.png)
+![Example of dashboard](https://raw.githubusercontent.com/ernstc/SqlDataInspector/main/images/screen-061.jpg)
 
 ## Features
 
