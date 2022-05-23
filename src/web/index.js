@@ -774,7 +774,8 @@
         updateViewModel({
             'selectedValueIndex': null,
             'selectedRowRowIndex': null,
-            'selectedRowColumnIndex': null
+            'selectedRowColumnIndex': null,
+            'rowsPageIndex': 1
         });
         if (_selectedColumn) {
             showLoading();
