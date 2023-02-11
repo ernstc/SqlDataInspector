@@ -36,7 +36,7 @@ If you find a bug or have an idea to improve this extension please create a new 
 
 ## Contributing
 
-You are more than welcoem to help contribute to this project if you wish, please create a new fork of the main branch, then submit a pull request to the main branch after making your changes.
+You are more than welcome to help contribute to this project if you wish, please create a new fork of the main branch, then submit a pull request to the main branch after making your changes.
 
 ## License
 
