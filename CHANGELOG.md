@@ -9,10 +9,13 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 ### Changes
 
 * Requires Azure Data Studio >= 1.79.2
+* Added server name to header
 
 ### Fixes
 
 * Updated npm modules and jQuery
+* Fixed ESLint warnings
+* Fixed markdownlint warnings
 
 ---
 
