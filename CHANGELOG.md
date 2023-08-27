@@ -4,6 +4,18 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
+## September 2023 Release (version 0.6.1)
+
+### Changes
+
+* Requires Azure Data Studio >= 1.79.2
+
+### Fixes
+
+* Updated npm modules and jQuery
+
+---
+
 ## May 2022 Release (version 0.6.0)
 
 ### Changes
@@ -80,7 +92,7 @@ Bug fixing release
 
 ### Fixes
 
-* Fixed visualization in dark mode. 
+* Fixed visualization in dark mode.
 
 ### Features
 
