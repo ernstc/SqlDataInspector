@@ -5,6 +5,7 @@ import { DatabaseTableRow } from './database-table-row.model';
 
 
 export class ViewModel {
+    serverName?: string;
     databaseName?: string;
     objects?: DatabaseObject[];
     objectsSchema?: string[];

@@ -23,6 +23,7 @@ interface IIncomingMessage {
 interface IOutgoingMessage {
     status?: string;
     errors?: any[];
+    serverName?: string;
     databaseName?: string;
     objects?: DatabaseObject[];
     objectsSchema?: string[];
@@ -58,10 +59,12 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
     webview.html = loadWebView();
     if (connection.options.database) {
 
+        const serverName = connection.options.server;
         const databaseName = connection.options.database;
         const connectionId = connection.connectionId;
 
         let viewModel = new ViewModel();
+        viewModel.serverName = serverName;
         viewModel.databaseName = databaseName;
         viewModel.autoApply = true;
         viewModel.selectTables = true;

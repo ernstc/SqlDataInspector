@@ -3,6 +3,7 @@
     // Inizialization
     //*********************************************************** */
 
+    const $serverName = document.getElementById('serverName');
     const $databaseName = document.getElementById('databaseName');
     const $rowsCount = document.getElementById('rowsCount');
     const $tablesCount = document.getElementById('tablesCount');
@@ -140,6 +141,9 @@
                 hideLoading();
             }
             else  {
+                if (e.data.serverName !== undefined) {
+                    $serverName.innerText = e.data.serverName;
+                }   
                 if (e.data.databaseName !== undefined) {
                     $databaseName.innerText = e.data.databaseName;
                 }                
@@ -231,7 +235,11 @@
         _selectedValue = vm.selectedValue;
         _selectedRow = vm.selectedRow;
 
-        if (vm.databaseName !== undefined) {
+        if (vm.serverName!==undefined) {
+            $serverName.innerText = vm.serverName;
+        }
+
+        if (vm.databaseName!==undefined) {
             $databaseName.innerText = vm.databaseName;
         }
 

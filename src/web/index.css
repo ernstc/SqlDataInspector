@@ -303,6 +303,9 @@ label {
 #header h1 {
   font-size: 14pt;
 }
+#header h1 div {
+  float: left;
+}
 #navigation {
   display: flex;
   flex-direction: row;
