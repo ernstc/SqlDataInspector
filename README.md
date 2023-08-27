@@ -1,6 +1,6 @@
-![GitHub All Releases](https://img.shields.io/github/downloads/ernstc/SqlDataInspector/total)
-
 # SQL Data Inspector
+
+![GitHub All Releases](https://img.shields.io/github/downloads/ernstc/SqlDataInspector/total)
 
 This extension makes it easy to inspect data with just a few clicks.
 

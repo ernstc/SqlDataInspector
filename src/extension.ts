@@ -11,20 +11,20 @@ export const activate = (context: vscode.ExtensionContext) => {
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
     context.subscriptions.push(vscode.commands.registerCommand('sql-data-inspector.inspect-data', async (context: azdata.ObjectExplorerContext) => {
-        if (context.connectionProfile != undefined) {
+        if (context.connectionProfile !== undefined) {
 
-            let connectionId = context.connectionProfile?.id
+            let connectionId = context.connectionProfile?.id;
             let database: string = context.connectionProfile?.databaseName!;
 
             let activeConnections = await azdata.connection.getActiveConnections();
-            if (!activeConnections.some(c => c.connectionId == connectionId )) {
+            if (!activeConnections.some(c => c.connectionId === connectionId )) {
                 await azdata.connection.connect(context.connectionProfile!, false, false);
                 activeConnections = await azdata.connection.getActiveConnections();
             }
 
-            let connection = activeConnections.filter(c => c.connectionId == connectionId)[0];
+            let connection = activeConnections.filter(c => c.connectionId === connectionId)[0];
 
-            if (connection.options.database != database)
+            if (connection.options.database !== database)
             {
                 // Change the database in the connection
                 let connectionUri = await azdata.connection.getUriForConnection(connectionId);
@@ -33,11 +33,11 @@ export const activate = (context: vscode.ExtensionContext) => {
                 if (databaseChanged) 
                 {
                     activeConnections = await azdata.connection.getActiveConnections();
-                    connection = activeConnections.filter(c => c.connectionId == connectionId)[0];
+                    connection = activeConnections.filter(c => c.connectionId === connectionId)[0];
                 }
             }
 
-            if (connection != undefined)
+            if (connection !== undefined)
             {
                 const databaseName = connection.options.database;
 
@@ -56,6 +56,6 @@ export const activate = (context: vscode.ExtensionContext) => {
             }
         }
     }));
-}
+};
 
 export const deactivate = () => { };

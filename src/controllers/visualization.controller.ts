@@ -46,12 +46,12 @@ interface IOutgoingMessage {
 
 export const VisualizationController = async (webview: vscode.Webview, connection: azdata.connection.Connection) => {
     await renderWebviewContent(webview, connection);
-}
+};
 
 
 const postMessage = (webview: azdata.DashboardWebview | vscode.Webview, message: IOutgoingMessage) => {
     webview.postMessage(message);
-}
+};
 
 
 const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.connection.Connection) => {
@@ -107,10 +107,10 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
                     }
                     case 'changeRowsPage': {
                         if (
-                            data.rowsPageIndex != undefined
-                            && viewModel.rowsCount != undefined 
-                            && viewModel.rowsPageIndex != undefined
-                            && viewModel.rowsPageSize != undefined
+                            data.rowsPageIndex !== undefined
+                            && viewModel.rowsCount !== undefined 
+                            && viewModel.rowsPageIndex !== undefined
+                            && viewModel.rowsPageSize !== undefined
                         )
                         {
                             const pagesCount = Math.ceil(viewModel.rowsCount / viewModel.rowsPageSize);
@@ -123,12 +123,12 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
                                 }
                                 case 'prev': {
                                     pageIndex = viewModel.rowsPageIndex - 1;
-                                    if (pageIndex < 1) pageIndex = 1;
+                                    if (pageIndex < 1) {pageIndex = 1;}
                                     break;
                                 }
                                 case 'next': {
                                     pageIndex = viewModel.rowsPageIndex + 1;
-                                    if (pageIndex > pagesCount) pageIndex = pagesCount;
+                                    if (pageIndex > pagesCount) {pageIndex = pagesCount;}
                                     break;
                                 }
                                 case 'last': {
@@ -172,19 +172,19 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
     for (let key in vmUpdates) {
         switch (key) {
             case 'selectedObjectIndex':
-                viewModel.selectedObjectIndex = vmUpdates?.selectedObjectIndex != -1 ? vmUpdates?.selectedObjectIndex : undefined;
+                viewModel.selectedObjectIndex = vmUpdates?.selectedObjectIndex !== -1 ? vmUpdates?.selectedObjectIndex : undefined;
                 break;
             case 'selectedColumnIndex':
-                viewModel.selectedColumnIndex = vmUpdates?.selectedColumnIndex != -1 ? vmUpdates?.selectedColumnIndex : undefined;
+                viewModel.selectedColumnIndex = vmUpdates?.selectedColumnIndex !== -1 ? vmUpdates?.selectedColumnIndex : undefined;
                 break;
             case 'selectedRowRowIndex':
-                viewModel.selectedRowRowIndex = vmUpdates?.selectedRowRowIndex != -1 ? vmUpdates?.selectedRowRowIndex : undefined;
+                viewModel.selectedRowRowIndex = vmUpdates?.selectedRowRowIndex !== -1 ? vmUpdates?.selectedRowRowIndex : undefined;
                 break;
             case 'selectedRowColumnIndex':
-                viewModel.selectedRowColumnIndex = vmUpdates?.selectedRowColumnIndex != -1 ? vmUpdates?.selectedRowColumnIndex : undefined;
+                viewModel.selectedRowColumnIndex = vmUpdates?.selectedRowColumnIndex !== -1 ? vmUpdates?.selectedRowColumnIndex : undefined;
                 break;
             case 'selectedValueIndex':
-                viewModel.selectedValueIndex = vmUpdates?.selectedValueIndex != -1 ? vmUpdates?.selectedValueIndex : undefined;
+                viewModel.selectedValueIndex = vmUpdates?.selectedValueIndex !== -1 ? vmUpdates?.selectedValueIndex : undefined;
                 break;
             case 'filter':
                 viewModel.filter = vmUpdates?.filter;
@@ -252,9 +252,9 @@ const loadObjects = async (connectionId: string, webview: azdata.DashboardWebvie
     viewModel.selectedRowColumnIndex = undefined;
     viewModel.rowsPageIndex = 1;
 
-    if (viewModel.filterObjectsSchema != undefined
-        && viewModel.filterObjectsSchema != '*') {
-        viewModel.objects = viewModel.objects.filter(t => t.Schema == viewModel.filterObjectsSchema);
+    if (viewModel.filterObjectsSchema !== undefined
+        && viewModel.filterObjectsSchema !== '*') {
+        viewModel.objects = viewModel.objects.filter(t => t.Schema === viewModel.filterObjectsSchema);
 
         //viewModel.columns = undefined;
         //viewModel.values = undefined;
@@ -337,7 +337,7 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
 
     if (viewModel.sortRowsByColumnName) {
         orderByColumns = [ viewModel.sortRowsByColumnName ];
-        if (viewModel.sortRowsByColumnAscending != undefined) {
+        if (viewModel.sortRowsByColumnAscending !== undefined) {
             sortAscending = [ viewModel.sortRowsByColumnAscending ];
         }
         else {
@@ -393,7 +393,7 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
 
 const loadRowsCount = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel, index: number) => {
     const object = viewModel.objects ? viewModel.objects[index] : undefined;
-    if (object == undefined) {
+    if (object === undefined) {
         return;
     }
 

@@ -55,7 +55,7 @@
 
     try {
         vscode = acquireVsCodeApi();
-        if (vscode == undefined) {
+        if (vscode === undefined) {
             //showError("vscode API is undefined");
         }
     }
@@ -65,7 +65,7 @@
 
 
     function sendMessage(message) {
-        if (vscode != undefined && message != undefined) {
+        if (vscode !== undefined && message !== undefined) {
             vscode.postMessage(message);
         }
     }
@@ -92,18 +92,18 @@
             cKey = 67;
     
         $(document).keydown(function(e) {
-            if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = true;
+            if (e.keyCode === ctrlKey || e.keyCode === cmdKey) {ctrlDown = true;}
         }).keyup(function(e) {
-            if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = false;
+            if (e.keyCode === ctrlKey || e.keyCode === cmdKey) {ctrlDown = false;}
         });
     
         $(".no-copy-paste").keydown(function(e) {
-            if (ctrlDown && (e.keyCode == vKey || e.keyCode == cKey)) return false;
+            if (ctrlDown && (e.keyCode === vKey || e.keyCode === cKey)) {return false;}
         });
         
         // Document Ctrl + C/V 
         $(document).keydown(function(e) {
-            if (ctrlDown && (e.keyCode == cKey)) {
+            if (ctrlDown && (e.keyCode === cKey)) {
                 // Document catch Ctrl+C
 
                 let isTxtFilterFocused = $txtFilter.hasClass('focused');
@@ -118,7 +118,7 @@
 
                 sendMessage({
                     'command': 'copyText',
-                    'item': textToCopy == null ? 'NULL' : textToCopy
+                    'item': textToCopy === null ? 'NULL' : textToCopy
                 });
             }
         });
@@ -140,30 +140,30 @@
                 hideLoading();
             }
             else  {
-                if (e.data.databaseName != undefined) {
+                if (e.data.databaseName !== undefined) {
                     $databaseName.innerText = e.data.databaseName;
                 }                
-                if (e.data.objects != undefined) {
+                if (e.data.objects !== undefined) {
                     renderObjects(e.data.objects);
                     hideLoading();
                 }
-                if (e.data.objectsSchema != undefined) {
+                if (e.data.objectsSchema !== undefined) {
                     renderObjectsSchemaFilter(e.data.objectsSchema, e.data.filterObjectsSchema);
                     hideLoading();
                 }
-                if (e.data.columns != undefined) {
+                if (e.data.columns !== undefined) {
                     await renderColumns(e.data.columns);
                     hideLoading();
                 }
-                if (e.data.values != undefined) {
+                if (e.data.values !== undefined) {
                     renderValues(e.data.values, e.data.column, undefined, e.data.sortAscendingColumnValues, e.data.sortAscendingColumnValuesCount);
                     hideLoading();
                 }
-                if (e.data.rows != undefined) {
+                if (e.data.rows !== undefined) {
                     renderRows(e.data.rowsColumnsName, e.data.rows, e.data.rowsCount, e.data.rowsPageIndex, null, null, e.data.objectIndex, e.data.sortRowsByColumnName, e.data.sortRowsByColumnAscending);
                     hideLoading();
                 }
-                if (e.data.object != undefined && e.data.objectIndex != undefined) {
+                if (e.data.object !== undefined && e.data.objectIndex !== undefined) {
                     $('#objects .table-data .col3').eq(e.data.objectIndex).text(e.data.object.Count);
                 }
             }
@@ -181,7 +181,7 @@
     function showLoading(operationsCount = 1) {
         loadingCounters += operationsCount;
         $loadingOverlay.show();
-        if (loadingTimer == undefined) {
+        if (loadingTimer === undefined) {
             loadingTimer = setTimeout(() => {
                 $loading.show();
             },
@@ -192,8 +192,8 @@
 
     function hideLoading() {
         loadingCounters--;
-        if (loadingCounters < 0) loadingCounters = 0;
-        if (loadingCounters == 0)
+        if (loadingCounters < 0) {loadingCounters = 0;}
+        if (loadingCounters === 0)
         {
             if (loadingTimer) {
                 clearTimeout(loadingTimer);
@@ -224,21 +224,21 @@
 
     async function applyViewModel(vm) {
 
-        if ('columns' in vm) _columns = vm.columns;
+        if ('columns' in vm) {_columns = vm.columns;}
 
         _selectedObject = vm.selectedObject;
         _selectedColumn = vm.selectedColumn;
         _selectedValue = vm.selectedValue;
         _selectedRow = vm.selectedRow;
 
-        if (vm.databaseName != undefined) {
+        if (vm.databaseName !== undefined) {
             $databaseName.innerText = vm.databaseName;
         }
 
-        $cbTables.get(0).checked = vm.selectTables == true;
-        $cbViews.get(0).checked = vm.selectViews == true;
+        $cbTables.get(0).checked = vm.selectTables === true;
+        $cbViews.get(0).checked = vm.selectViews === true;
         
-        if (vm.objects != undefined) {
+        if (vm.objects !== undefined) {
             renderObjects(vm.objects, vm.selectedObjectIndex);
         }
         else {
@@ -248,19 +248,19 @@
             });
         }
 
-        if (vm.rowsPageSize != undefined) {
+        if (vm.rowsPageSize !== undefined) {
             $rowsPageSize.val(vm.rowsPageSize);
         }
         
-        if (vm.columns != undefined) {
+        if (vm.columns !== undefined) {
             await renderColumns(vm.columns, vm.selectedColumnIndex);
         }
         
-        if (vm.values != undefined) {
+        if (vm.values !== undefined) {
             renderValues(vm.values, _selectedColumn, vm.selectedValueIndex, vm.sortAscendingColumnValues, vm.sortAscendingColumnValuesCount);
         }
         
-        if (vm.rows != undefined) {
+        if (vm.rows !== undefined) {
             renderRows(
                 vm.rowsColumnsName, vm.rows, vm.rowsCount, vm.rowsPageIndex,
                 vm.selectedRowRowIndex, vm.selectedRowColumnIndex,
@@ -269,11 +269,11 @@
                 );
         }
         
-        if (vm.filter != undefined) {
+        if (vm.filter !== undefined) {
             $txtFilter.val(vm.filter);
         }
         
-        if (vm.autoApply != undefined) {
+        if (vm.autoApply !== undefined) {
             $autofilter.get(0).checked = vm.autoApply;
         }
 
@@ -285,8 +285,8 @@
             renderObjectsSchemaFilter(vm.objectsSchema, vm.filterObjectsSchema);
         }
 
-        $liveMonitoring.get(0).checked = vm.liveMonitoring == true;
-        $refreshTimer.val(vm.refreshTimer != undefined ? vm.refreshTimer : 30);
+        $liveMonitoring.get(0).checked = vm.liveMonitoring === true;
+        $refreshTimer.val(vm.refreshTimer !== undefined ? vm.refreshTimer : 30);
 
         setLiveMonitoring();
     }
@@ -297,7 +297,7 @@
 
     function renderCollection(collection, $container, $headerFunc, $elementFunc, selectedIndex) {
         let items = [];
-        if ($headerFunc != undefined && collection.length > 0) {
+        if ($headerFunc !== undefined && collection.length > 0) {
             items.push($headerFunc(collection));
         }
         collection.forEach((collectionItem, index) => {
@@ -305,7 +305,7 @@
                 $elementFunc(collectionItem, index)
                     .data('item', collectionItem)
                     .data('item-index', index)
-                    .toggleClass('selected', selectedIndex == index)
+                    .toggleClass('selected', selectedIndex === index)
             );
         });
         $container.empty().append(items);
@@ -313,17 +313,17 @@
 
 
     function renderValue(value, columnType) {
-        return value == null ? '[NULL]' : 
-               value == '' ? '[Empty string]' :
-               value == 0 && columnType == 'bit' ? 'False' :
-               value == 1 && columnType == 'bit' ? 'True' :
+        return value === null ? '[NULL]' : 
+               value === '' ? '[Empty string]' :
+               value === 0 && columnType === 'bit' ? 'False' :
+               value === 1 && columnType === 'bit' ? 'True' :
                value;
     }
 
 
     function renderObjects(objects, selectedIndex) {
-        let tablesCount = objects.filter(o => o.ObjectType == 0).length;
-        let viewsCount = objects.filter(o => o.ObjectType == 1).length
+        let tablesCount = objects.filter(o => o.ObjectType === 0).length;
+        let viewsCount = objects.filter(o => o.ObjectType === 1).length;
         $tablesCount.innerText = $cbTables.get(0).checked ? `(${tablesCount})` : '';
         $viewsCount.innerText = $cbViews.get(0).checked ? `(${viewsCount})` : '';
         renderCollection(objects,
@@ -339,7 +339,7 @@
                     .append(
                         $('<div class="col1"></div>')
                             .attr('title', object.Name)
-                            .append(`<i class="ms-Icon ms-Icon--${object.ObjectType == 1 ? 'DatabaseView' : 'Table'}"></i>`)
+                            .append(`<i class="ms-Icon ms-Icon--${object.ObjectType === 1 ? 'DatabaseView' : 'Table'}"></i>`)
                             .append('&nbsp;')
                             .append($('<span></span>').text(object.Name))
                     )
@@ -350,7 +350,7 @@
                     )
                     .append(
                         $('<div class="col3"></div>')
-                            .text(object.Count == undefined ? '' : object.Count)
+                            .text(object.Count === undefined ? '' : object.Count)
                     )
                     .click(objectClicked),
             selectedIndex
@@ -359,15 +359,15 @@
 
 
     function renderObjectsSchemaFilter(objectsSchema, filterValue) {
-        if (filterValue == undefined) {
+        if (filterValue === undefined) {
             filterValue = $objectSchemaFilter.val();
         }
-        else if (filterValue != '*' && objectsSchema.indexOf(filterValue) < 0) {
+        else if (filterValue !== '*' && objectsSchema.indexOf(filterValue) < 0) {
             objectsSchema.unshift(filterValue);
         }
 
         filterValue = filterValue || '*';
-        $objectFilters.toggleClass('schema', filterValue != '*');
+        $objectFilters.toggleClass('schema', filterValue !== '*');
 
         $objectSchemaFilter.empty().append('<option value="*"> </option>');
         for (let i = 0; i < objectsSchema.length; i++) {
@@ -383,7 +383,7 @@
 
     async function renderColumns(columns, selectedIndex) {
         _columns = columns;
-        $columnsCount.innerText = _selectedObject != undefined ? `(${columns.length})` : '';
+        $columnsCount.innerText = _selectedObject !== undefined ? `(${columns.length})` : '';
         renderCollection(columns,
             $('#columns .table'),
             () =>
@@ -445,10 +445,10 @@
 
     function setHeaderSorting($header, sortAscending) {
         $header.find('i').remove();        
-        if (sortAscending == true) {
+        if (sortAscending === true) {
             $header.data('sort', 'ascending').append('<i class="ms-Icon ms-Icon--CaretSolidUp"></i>');
         }
-        else if (sortAscending == false) {
+        else if (sortAscending === false) {
             $header.data('sort', '').append('<i class="ms-Icon ms-Icon--CaretSolidDown"></i>');
         }
         else {
@@ -459,7 +459,7 @@
 
     function valuesHeaderClicked() {
         let $this = $(this);
-        let sortAscending = $this.data('sort') != 'ascending';
+        let sortAscending = $this.data('sort') !== 'ascending';
         setHeaderSorting($('#values .table-header .col1'), sortAscending);
         setHeaderSorting($('#values .table-header .col2'), undefined);
 
@@ -476,7 +476,7 @@
 
     function valuesCountHeaderClicked() {
         let $this = $(this);
-        let sortAscending = $this.data('sort') != 'ascending';
+        let sortAscending = $this.data('sort') !== 'ascending';
         setHeaderSorting($('#values .table-header .col1'), undefined);
         setHeaderSorting($('#values .table-header .col2'), sortAscending);
 
@@ -500,7 +500,7 @@
         $rowsCount.innerText = `(${rowsCount})`;
 
         _rowsColumns = [];
-        rowsColumnsName.forEach(name => _rowsColumns.push(_columns.filter(c => c.Name == name)[0]));
+        rowsColumnsName.forEach(name => _rowsColumns.push(_columns.filter(c => c.Name === name)[0]));
         renderCollection(rows,
             $('#dataRows .table'),
             () => {
@@ -514,8 +514,8 @@
                     {
                         $header.addClass('sortable').data('column', name).data('sort', '').click(rowsHeaderClicked);
                     }
-                    if (name == sortRowsByColumnName) {
-                        if (sortRowsByColumnAscending == true) {
+                    if (name === sortRowsByColumnName) {
+                        if (sortRowsByColumnAscending === true) {
                             $header.data('sort', 'ascending').append('<i class="ms-Icon ms-Icon--CaretSolidUp"></i>');
                         }
                         else {
@@ -531,16 +531,16 @@
                     .dblclick(rowDblClicked);
 
                 $(`<div class="col row-index">${rowIndex + firstRow}</div>`)
-                    .toggleClass('cell-selected', rowIndex == selectedRowIndex && -1 == selectedColumnIndex)
+                    .toggleClass('cell-selected', rowIndex === selectedRowIndex && -1 === selectedColumnIndex)
                     .data('cell-value', `${rowIndex + firstRow}`)
                     .data('cell-index', -1)
                     .click(rowCellClicked)
                     .appendTo(element);
 
                 row.Values.forEach((value, index) => {
-                    if (_rowsColumns[index] != null) {
+                    if (_rowsColumns[index] !== null) {
                         $(`<div class="col"></div>`)
-                            .toggleClass('cell-selected', rowIndex == selectedRowIndex && index == selectedColumnIndex)
+                            .toggleClass('cell-selected', rowIndex === selectedRowIndex && index === selectedColumnIndex)
                             .text(renderValue(value, _rowsColumns[index].Type))
                             .data('cell-value', value)
                             .data('cell-index', index)
@@ -559,12 +559,12 @@
     function rowsHeaderClicked() {
         let $header = $(this);
         let colName = $header.data('column');
-        let sortAscending = $header.data('sort') != 'ascending';
+        let sortAscending = $header.data('sort') !== 'ascending';
 
         $('#dataRows .table-header i').remove();
         $('#dataRows .table-header .sortable').data('sort', '');
 
-        if (sortAscending == true) {
+        if (sortAscending === true) {
             $header.data('sort', 'ascending').append('<i class="ms-Icon ms-Icon--CaretSolidUp"></i>');
         }
         else {
@@ -585,7 +585,7 @@
     function renderPager(rowsCount, rowsPageIndex) {
         $rowsPager.find('li').removeClass('clicked');
 
-        if (rowsCount == 0) {
+        if (rowsCount === 0) {
             $rowsPager.hide();
             return;
         }
@@ -593,21 +593,21 @@
         const pageSize = parseInt($rowsPageSize.val());
         const pages = Math.ceil(rowsCount / pageSize);
 
-        if (pages == 1) {
+        if (pages === 1) {
             $rowsPager.hide();
             return;
         }
 
-        if (rowsPageIndex > pages) rowsPageIndex = pages;
+        if (rowsPageIndex > pages) {rowsPageIndex = pages;}
 
         let firstPage = rowsPageIndex - 2;
-        if (firstPage < 1) firstPage = 1;
+        if (firstPage < 1) {firstPage = 1;}
 
         let lastPage = firstPage + 4;
-        if (lastPage > pages) lastPage = pages;
+        if (lastPage > pages) {lastPage = pages;}
         if ((lastPage - firstPage + 1) < 5) {
             firstPage = lastPage - 4;
-            if (firstPage < 1) firstPage = 1;
+            if (firstPage < 1) {firstPage = 1;}
         }
 
         let elements = $rowsPager.find('li.page');
@@ -615,7 +615,7 @@
         for (let i = 0, page = firstPage; i < 5 && page <= lastPage; i++, page++) {
             let el = elements.eq(i);
             el.data('page', page);
-            el.toggleClass('selected', rowsPageIndex == page);
+            el.toggleClass('selected', rowsPageIndex === page);
             el.find('span').text(page);
             el.removeClass('hidden');
         }
@@ -809,12 +809,12 @@
 
         if (!isLiveMonitoringEnabled)
         {
-            if (liveMonitoringIntervalHandler != undefined) {
+            if (liveMonitoringIntervalHandler !== undefined) {
                 clearInterval(liveMonitoringIntervalHandler);
                 liveMonitoringIntervalHandler = undefined;
             }
         }
-        else if (liveMonitoringIntervalHandler == undefined) {
+        else if (liveMonitoringIntervalHandler === undefined) {
             
             let refreshFunc = () => {
                 let tables = $('#objects .table-data');
@@ -832,7 +832,7 @@
                     });
                 }
 
-                if (_selectedObject != undefined) {
+                if (_selectedObject !== undefined) {
                     tasks.push({
                         'message': {
                             'command': 'loadRows'
@@ -840,7 +840,7 @@
                     });
                 }
 
-                if (_selectedColumn != undefined) {
+                if (_selectedColumn !== undefined) {
                     tasks.push({
                         'message': {
                             'command': 'loadValues'
@@ -854,11 +854,11 @@
 
                         let task = tasks[idx];
 
-                        if (task.item != undefined) {
+                        if (task.item !== undefined) {
                             let currentTable = $('#objects .table-data').eq(idx).data('item');
                             if (
-                                currentTable == undefined 
-                                || (currentTable.Name != task.item.Name && currentTable.Schema != task.item.Schema)
+                                currentTable === undefined 
+                                || (currentTable.Name !== task.item.Name && currentTable.Schema !== task.item.Schema)
                             ) {
                                 idx++;
                                 setTimeout(() => {
@@ -876,7 +876,7 @@
                     }
                 };
                 execMessagesFunc();
-            }
+            };
 
             let tables = $('#objects .table-data');
             let intervalTableMs = pauseBetweenCommands * (tables.length + 1) + 1000;
@@ -884,7 +884,7 @@
             refreshFunc();
 
             setTimeout(() => {
-                if (liveMonitoringIntervalHandler != undefined) {
+                if (liveMonitoringIntervalHandler !== undefined) {
                     clearInterval(liveMonitoringIntervalHandler);
                     liveMonitoringIntervalHandler = undefined;
                 }
@@ -903,7 +903,7 @@
 
 
     function setRefreshTimer() {
-        if (liveMonitoringIntervalHandler != undefined) {
+        if (liveMonitoringIntervalHandler !== undefined) {
             clearInterval(liveMonitoringIntervalHandler);
             liveMonitoringIntervalHandler = undefined;
         }
@@ -934,7 +934,7 @@
             'selectedRowColumnIndex': -1,
             'selectedValueIndex': -1
         });
-        $objectFilters.toggleClass('schema', filterValue != '*');
+        $objectFilters.toggleClass('schema', filterValue !== '*');
         showLoading(1);
         sendMessage({
             'command': 'loadObjects'
@@ -1053,10 +1053,10 @@
 
     function AddFilter(operand) {
         let filter = $txtFilter.val().trim();
-        if (filter.length > 0) filter += " " + operand + " ";
+        if (filter.length > 0) {filter += " " + operand + " ";}
         let val = _selectedValue;
-        if (val == null || val == "[NULL]" || val == "[NOT NULL]") {
-            filter += "([" + _selectedColumn.Name + "] IS " + ((val == null || val == "[NULL]") ? "NULL" : "NOT NULL") + ")";
+        if (val === null || val === "[NULL]" || val === "[NOT NULL]") {
+            filter += "([" + _selectedColumn.Name + "] IS " + ((val === null || val === "[NULL]") ? "NULL" : "NOT NULL") + ")";
         }
         else {
             let type = _selectedColumn.Type;

@@ -39,7 +39,7 @@ export class ViewModel {
 
 
     get selectedObject(): DatabaseObject | undefined {
-        if (this.objects != undefined && this.selectedObjectIndex != undefined) {
+        if (this.objects !== undefined && this.selectedObjectIndex !== undefined) {
             return this.objects[this.selectedObjectIndex];
         }
         else {
@@ -48,7 +48,7 @@ export class ViewModel {
     }
 
     get selectedColumn(): DatabaseColumn | undefined {
-        if (this.columns != undefined && this.selectedColumnIndex != undefined) {
+        if (this.columns !== undefined && this.selectedColumnIndex !== undefined) {
             return this.columns[this.selectedColumnIndex];
         }
         else {
@@ -57,7 +57,7 @@ export class ViewModel {
     }
 
     get selectedValue(): string | undefined {
-        if (this.values != undefined && this.selectedValueIndex != undefined) {
+        if (this.values !== undefined && this.selectedValueIndex !== undefined) {
             return this.values[this.selectedValueIndex].Value;
         }
         else {
@@ -66,7 +66,7 @@ export class ViewModel {
     }
 
     get selectedRow(): DatabaseTableRow | undefined {
-        if (this.rows != undefined && this.selectedRowRowIndex != undefined) {
+        if (this.rows !== undefined && this.selectedRowRowIndex !== undefined) {
             return this.rows[this.selectedRowRowIndex];
         }
         else {
