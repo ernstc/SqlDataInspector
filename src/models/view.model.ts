@@ -23,10 +23,10 @@ export class ViewModel {
     refreshTimer?: number;
     selectTables?: boolean;
     selectViews?: boolean;
-    
+
     sortAscendingColumnValues?: boolean;
     sortAscendingColumnValuesCount?: boolean;
-    
+
     sortRowsByColumnName?: string;
     sortRowsByColumnAscending?: boolean;
 

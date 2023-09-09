@@ -61,15 +61,15 @@ export const getMssqlDbObjects = async (
             FROM sys.views
         )`;
 
-    const objectsQuery: string | null = 
-            tables && views ? tablesAndViewsQuery :
+    const objectsQuery: string | null =
+        tables && views ? tablesAndViewsQuery :
             tables ? tablesQuery :
-            views ? viewsQuery :
-            null;
+                views ? viewsQuery :
+                    null;
 
     if (objectsQuery === null) {
         return [];
-    } 
+    }
 
     const query = `
         SELECT 
@@ -197,7 +197,7 @@ export const getMssqlDbColumnValues = async (
     if (table === undefined || column === undefined) {
         return [];
     }
-    
+
     if (/binary|text|image|geography|geometry|variant|xml|json/.test(column.Type)) {
         return [];
     }
@@ -239,7 +239,7 @@ export const getMssqlDbColumnValuesWithCount = async (
     if (filter !== undefined && filter.indexOf(';') >= 0) {
         return [];
     }
-    
+
     if (/binary|text|image|geography|geometry|variant|xml|json/.test(column.Type)) {
         return [];
     }
@@ -249,11 +249,11 @@ export const getMssqlDbColumnValuesWithCount = async (
 
     if (sortAscendingColumnValues !== undefined) {
         sortColumn = `[${column.Name}]`;
-        if (sortAscendingColumnValues === false) {sortColumn += ' DESC';}
+        if (sortAscendingColumnValues === false) { sortColumn += ' DESC'; }
     }
     else if (sortAscendingColumnValuesCount !== undefined) {
         sortColumn = `COUNT(*)`;
-        if (sortAscendingColumnValuesCount === false) {sortColumn += ' DESC';}
+        if (sortAscendingColumnValuesCount === false) { sortColumn += ' DESC'; }
     }
     else {
         sortColumn = `[${column.Name}]`;
@@ -299,14 +299,14 @@ export const getMssqlDbTableRows = async (
         };
     }
 
-    if (pageIndex < 1) {pageIndex = 1;}
-    if (pageSize < 0) {pageSize = 20;}
+    if (pageIndex < 1) { pageIndex = 1; }
+    if (pageSize < 0) { pageSize = 20; }
 
     const hasOrderingColumns = orderByColumns !== undefined && orderByColumns.length > 0;
     if (hasOrderingColumns && sortAscending !== undefined) {
         orderByColumns = orderByColumns?.map((col, index) => sortAscending[index] ? col : col + ' DESC');
     }
-    
+
     const whereExpression = filter ? 'WHERE ' + filter : '';
     const orderBy = hasOrderingColumns ? `
         ORDER BY ${orderByColumns?.join(',')}
@@ -341,7 +341,7 @@ export const getMssqlDbTableRowsCount = async (
     table: DatabaseObject,
     filter: string
 ) => {
-    
+
     if (table === undefined) {
         return {
             count: 0

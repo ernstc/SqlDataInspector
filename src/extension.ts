@@ -17,28 +17,25 @@ export const activate = (context: vscode.ExtensionContext) => {
             let database: string = context.connectionProfile?.databaseName!;
 
             let activeConnections = await azdata.connection.getActiveConnections();
-            if (!activeConnections.some(c => c.connectionId === connectionId )) {
+            if (!activeConnections.some(c => c.connectionId === connectionId)) {
                 await azdata.connection.connect(context.connectionProfile!, false, false);
                 activeConnections = await azdata.connection.getActiveConnections();
             }
 
             let connection = activeConnections.filter(c => c.connectionId === connectionId)[0];
 
-            if (connection.options.database !== database)
-            {
+            if (connection.options.database !== database) {
                 // Change the database in the connection
                 let connectionUri = await azdata.connection.getUriForConnection(connectionId);
                 let connectionProvider: azdata.ConnectionProvider = azdata.dataprotocol.getProvider(connection.providerName, azdata.DataProviderType.ConnectionProvider);
                 let databaseChanged = await connectionProvider.changeDatabase(connectionUri, database);
-                if (databaseChanged) 
-                {
+                if (databaseChanged) {
                     activeConnections = await azdata.connection.getActiveConnections();
                     connection = activeConnections.filter(c => c.connectionId === connectionId)[0];
                 }
             }
 
-            if (connection !== undefined)
-            {
+            if (connection !== undefined) {
                 const databaseName = connection.options.database;
 
                 // Create and show a new webview

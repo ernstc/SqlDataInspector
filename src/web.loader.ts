@@ -14,7 +14,7 @@ export const loadWebView = () => {
     const indexScript = fs
         .readFileSync(path.join(__dirname, 'web', 'index.js'))
         .toString();
-    
+
     const styleCss = fs
         .readFileSync(path.join(__dirname, 'web', 'index.css'))
         .toString();

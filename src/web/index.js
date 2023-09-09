@@ -85,25 +85,25 @@
 
     let textToCopy;
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         var ctrlDown = false,
             ctrlKey = 17,
             cmdKey = 91,
             vKey = 86,
             cKey = 67;
-    
-        $(document).keydown(function(e) {
-            if (e.keyCode === ctrlKey || e.keyCode === cmdKey) {ctrlDown = true;}
-        }).keyup(function(e) {
-            if (e.keyCode === ctrlKey || e.keyCode === cmdKey) {ctrlDown = false;}
+
+        $(document).keydown(function (e) {
+            if (e.keyCode === ctrlKey || e.keyCode === cmdKey) { ctrlDown = true; }
+        }).keyup(function (e) {
+            if (e.keyCode === ctrlKey || e.keyCode === cmdKey) { ctrlDown = false; }
         });
-    
-        $(".no-copy-paste").keydown(function(e) {
-            if (ctrlDown && (e.keyCode === vKey || e.keyCode === cKey)) {return false;}
+
+        $(".no-copy-paste").keydown(function (e) {
+            if (ctrlDown && (e.keyCode === vKey || e.keyCode === cKey)) { return false; }
         });
-        
+
         // Document Ctrl + C/V 
-        $(document).keydown(function(e) {
+        $(document).keydown(function (e) {
             if (ctrlDown && (e.keyCode === cKey)) {
                 // Document catch Ctrl+C
 
@@ -111,9 +111,9 @@
 
                 if (isTxtFilterFocused) {
                     var textArea = $txtFilter.get(0);
-                    var text =textArea.value;
-                    var indexStart=textArea.selectionStart;
-                    var indexEnd=textArea.selectionEnd;
+                    var text = textArea.value;
+                    var indexStart = textArea.selectionStart;
+                    var indexEnd = textArea.selectionEnd;
                     textToCopy = text.substring(indexStart, indexEnd);
                 }
 
@@ -140,13 +140,13 @@
                 applyViewModel(e.data.viewModel);
                 hideLoading();
             }
-            else  {
+            else {
                 if (e.data.serverName !== undefined) {
                     $serverName.innerText = e.data.serverName;
-                }   
+                }
                 if (e.data.databaseName !== undefined) {
                     $databaseName.innerText = e.data.databaseName;
-                }                
+                }
                 if (e.data.objects !== undefined) {
                     renderObjects(e.data.objects);
                     hideLoading();
@@ -189,16 +189,15 @@
             loadingTimer = setTimeout(() => {
                 $loading.show();
             },
-            300);
+                300);
         }
     }
 
 
     function hideLoading() {
         loadingCounters--;
-        if (loadingCounters < 0) {loadingCounters = 0;}
-        if (loadingCounters === 0)
-        {
+        if (loadingCounters < 0) { loadingCounters = 0; }
+        if (loadingCounters === 0) {
             if (loadingTimer) {
                 clearTimeout(loadingTimer);
                 loadingTimer = undefined;
@@ -228,24 +227,24 @@
 
     async function applyViewModel(vm) {
 
-        if ('columns' in vm) {_columns = vm.columns;}
+        if ('columns' in vm) { _columns = vm.columns; }
 
         _selectedObject = vm.selectedObject;
         _selectedColumn = vm.selectedColumn;
         _selectedValue = vm.selectedValue;
         _selectedRow = vm.selectedRow;
 
-        if (vm.serverName!==undefined) {
+        if (vm.serverName !== undefined) {
             $serverName.innerText = vm.serverName;
         }
 
-        if (vm.databaseName!==undefined) {
+        if (vm.databaseName !== undefined) {
             $databaseName.innerText = vm.databaseName;
         }
 
         $cbTables.get(0).checked = vm.selectTables === true;
         $cbViews.get(0).checked = vm.selectViews === true;
-        
+
         if (vm.objects !== undefined) {
             renderObjects(vm.objects, vm.selectedObjectIndex);
         }
@@ -259,28 +258,28 @@
         if (vm.rowsPageSize !== undefined) {
             $rowsPageSize.val(vm.rowsPageSize);
         }
-        
+
         if (vm.columns !== undefined) {
             await renderColumns(vm.columns, vm.selectedColumnIndex);
         }
-        
+
         if (vm.values !== undefined) {
             renderValues(vm.values, _selectedColumn, vm.selectedValueIndex, vm.sortAscendingColumnValues, vm.sortAscendingColumnValuesCount);
         }
-        
+
         if (vm.rows !== undefined) {
             renderRows(
                 vm.rowsColumnsName, vm.rows, vm.rowsCount, vm.rowsPageIndex,
                 vm.selectedRowRowIndex, vm.selectedRowColumnIndex,
                 vm.selectedObjectIndex,
                 vm.sortRowsByColumnName, vm.sortRowsByColumnAscending
-                );
+            );
         }
-        
+
         if (vm.filter !== undefined) {
             $txtFilter.val(vm.filter);
         }
-        
+
         if (vm.autoApply !== undefined) {
             $autofilter.get(0).checked = vm.autoApply;
         }
@@ -321,11 +320,11 @@
 
 
     function renderValue(value, columnType) {
-        return value === null ? '[NULL]' : 
-               value === '' ? '[Empty string]' :
-               value === 0 && columnType === 'bit' ? 'False' :
-               value === 1 && columnType === 'bit' ? 'True' :
-               value;
+        return value === null ? '[NULL]' :
+            value === '' ? '[Empty string]' :
+                value === 0 && columnType === 'bit' ? 'False' :
+                    value === 1 && columnType === 'bit' ? 'True' :
+                        value;
     }
 
 
@@ -441,7 +440,7 @@
                 $(`<div class="col2"></div>`)
                     .text(value.Count)
                     .appendTo(element);
-                
+
                 return element;
             },
             selectedIndex
@@ -452,7 +451,7 @@
 
 
     function setHeaderSorting($header, sortAscending) {
-        $header.find('i').remove();        
+        $header.find('i').remove();
         if (sortAscending === true) {
             $header.data('sort', 'ascending').append('<i class="ms-Icon ms-Icon--CaretSolidUp"></i>');
         }
@@ -480,7 +479,7 @@
             'command': 'loadValues'
         });
     }
-    
+
 
     function valuesCountHeaderClicked() {
         let $this = $(this);
@@ -504,7 +503,7 @@
     function renderRows(rowsColumnsName, rows, rowsCount, rowsPageIndex, selectedRowIndex, selectedColumnIndex, objectIndex, sortRowsByColumnName, sortRowsByColumnAscending) {
         let pageSize = parseInt($rowsPageSize.val());
         let firstRow = (rowsPageIndex - 1) * pageSize + 1;
-        
+
         $rowsCount.innerText = `(${rowsCount})`;
 
         _rowsColumns = [];
@@ -513,13 +512,11 @@
             $('#dataRows .table'),
             () => {
                 let header = $(`<div class="table-header"><div class="col row-index">row #</div></div>`);
-                for (let index = 0; index < rowsColumnsName.length; index++)
-                {
+                for (let index = 0; index < rowsColumnsName.length; index++) {
                     let name = rowsColumnsName[index];
                     let $header = $(`<div class="col"></div>`).text(name).appendTo(header);
                     let colType = _rowsColumns[index].Type;
-                    if (_notSortableTypes.indexOf(colType) < 0)
-                    {
+                    if (_notSortableTypes.indexOf(colType) < 0) {
                         $header.addClass('sortable').data('column', name).data('sort', '').click(rowsHeaderClicked);
                     }
                     if (name === sortRowsByColumnName) {
@@ -528,7 +525,7 @@
                         }
                         else {
                             $header.data('sort', '').append('<i class="ms-Icon ms-Icon--CaretSolidDown"></i>');
-                        }                
+                        }
                     }
                 };
                 return header;
@@ -606,16 +603,16 @@
             return;
         }
 
-        if (rowsPageIndex > pages) {rowsPageIndex = pages;}
+        if (rowsPageIndex > pages) { rowsPageIndex = pages; }
 
         let firstPage = rowsPageIndex - 2;
-        if (firstPage < 1) {firstPage = 1;}
+        if (firstPage < 1) { firstPage = 1; }
 
         let lastPage = firstPage + 4;
-        if (lastPage > pages) {lastPage = pages;}
+        if (lastPage > pages) { lastPage = pages; }
         if ((lastPage - firstPage + 1) < 5) {
             firstPage = lastPage - 4;
-            if (firstPage < 1) {firstPage = 1;}
+            if (firstPage < 1) { firstPage = 1; }
         }
 
         let elements = $rowsPager.find('li.page');
@@ -815,21 +812,19 @@
             'refreshTimer': timerValue
         });
 
-        if (!isLiveMonitoringEnabled)
-        {
+        if (!isLiveMonitoringEnabled) {
             if (liveMonitoringIntervalHandler !== undefined) {
                 clearInterval(liveMonitoringIntervalHandler);
                 liveMonitoringIntervalHandler = undefined;
             }
         }
         else if (liveMonitoringIntervalHandler === undefined) {
-            
+
             let refreshFunc = () => {
                 let tables = $('#objects .table-data');
                 let tasks = [];
 
-                for (let index = 0; index < tables.length; index++)
-                {
+                for (let index = 0; index < tables.length; index++) {
                     let item = tables.eq(index).data('item');
                     tasks.push({
                         'item': item,
@@ -865,7 +860,7 @@
                         if (task.item !== undefined) {
                             let currentTable = $('#objects .table-data').eq(idx).data('item');
                             if (
-                                currentTable === undefined 
+                                currentTable === undefined
                                 || (currentTable.Name !== task.item.Name && currentTable.Schema !== task.item.Schema)
                             ) {
                                 idx++;
@@ -917,8 +912,8 @@
         }
         isLiveMonitoringEnabled = false;
         setTimeout(() => {
-            setLiveMonitoring();    
-        }, pauseBetweenCommands * 2);        
+            setLiveMonitoring();
+        }, pauseBetweenCommands * 2);
     }
 
 
@@ -1023,7 +1018,7 @@
             (row) => {
                 let column = row[0];
                 let value = row[1];
-                let element = 
+                let element =
                     $(`<div class="table-data"></div>`)
                         .append(
                             $('<div class="col1"></div>')
@@ -1061,7 +1056,7 @@
 
     function AddFilter(operand) {
         let filter = $txtFilter.val().trim();
-        if (filter.length > 0) {filter += " " + operand + " ";}
+        if (filter.length > 0) { filter += " " + operand + " "; }
         let val = _selectedValue;
         if (val === null || val === "[NULL]" || val === "[NOT NULL]") {
             filter += "([" + _selectedColumn.Name + "] IS " + ((val === null || val === "[NULL]") ? "NULL" : "NOT NULL") + ")";

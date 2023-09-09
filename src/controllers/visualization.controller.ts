@@ -111,27 +111,25 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
                     case 'changeRowsPage': {
                         if (
                             data.rowsPageIndex !== undefined
-                            && viewModel.rowsCount !== undefined 
+                            && viewModel.rowsCount !== undefined
                             && viewModel.rowsPageIndex !== undefined
                             && viewModel.rowsPageSize !== undefined
-                        )
-                        {
+                        ) {
                             const pagesCount = Math.ceil(viewModel.rowsCount / viewModel.rowsPageSize);
                             let pageIndex: number;
-                            switch (data.rowsPageIndex)
-                            {
+                            switch (data.rowsPageIndex) {
                                 case 'first': {
                                     pageIndex = 1;
                                     break;
                                 }
                                 case 'prev': {
                                     pageIndex = viewModel.rowsPageIndex - 1;
-                                    if (pageIndex < 1) {pageIndex = 1;}
+                                    if (pageIndex < 1) { pageIndex = 1; }
                                     break;
                                 }
                                 case 'next': {
                                     pageIndex = viewModel.rowsPageIndex + 1;
-                                    if (pageIndex > pagesCount) {pageIndex = pagesCount;}
+                                    if (pageIndex > pagesCount) { pageIndex = pagesCount; }
                                     break;
                                 }
                                 case 'last': {
@@ -144,7 +142,7 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
                             }
                             viewModel.rowsPageIndex = pageIndex;
                             await loadRows(connectionId, webview, viewModel);
-                        }                        
+                        }
                     }
                 }
             }
@@ -160,8 +158,8 @@ const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.
 
 const setViewModel = async (webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     postMessage(webview, {
-        viewModel: { 
-            ...viewModel, 
+        viewModel: {
+            ...viewModel,
             selectedObject: viewModel.selectedObject,
             selectedColumn: viewModel.selectedColumn,
             selectedValue: viewModel.selectedValue,
@@ -312,21 +310,21 @@ const loadValues = async (connectionId: string, webview: azdata.DashboardWebview
     const column = viewModel.selectedColumn!;
 
     viewModel.values = await getMssqlDbColumnValuesWithCount(
-        connectionId, 
-        object, column, 
-        viewModel.filter!, 
-        viewModel.sortAscendingColumnValues, 
+        connectionId,
+        object, column,
+        viewModel.filter!,
+        viewModel.sortAscendingColumnValues,
         viewModel.sortAscendingColumnValuesCount
-        );
+    );
 
     viewModel.selectedValueIndex = undefined;
-    
+
     postMessage(webview, {
         status: Status.RenderingData,
         values: viewModel.values,
         object: object,
         column: column,
-        sortAscendingColumnValues: viewModel.sortAscendingColumnValues, 
+        sortAscendingColumnValues: viewModel.sortAscendingColumnValues,
         sortAscendingColumnValuesCount: viewModel.sortAscendingColumnValuesCount
     });
 };
@@ -339,12 +337,12 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
     let sortAscending: boolean[] | undefined;
 
     if (viewModel.sortRowsByColumnName) {
-        orderByColumns = [ viewModel.sortRowsByColumnName ];
+        orderByColumns = [viewModel.sortRowsByColumnName];
         if (viewModel.sortRowsByColumnAscending !== undefined) {
-            sortAscending = [ viewModel.sortRowsByColumnAscending ];
+            sortAscending = [viewModel.sortRowsByColumnAscending];
         }
         else {
-            sortAscending = [ true ];
+            sortAscending = [true];
         }
     }
     else {
