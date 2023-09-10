@@ -9,7 +9,7 @@ import { loadWebView } from "../web.loader";
 import { Status } from "../models/status.enum";
 import { getMssqlDbObjects, getMssqlDbColumns, getMssqlDbColumnValues, getMssqlDbTableRows } from "../repositories/mssql.repository";
 import { ViewModel } from "../models/view.model";
-
+import { ConnectionContext } from '../connection-context';
 
 interface IIncomingMessage {
     command: string;
@@ -44,9 +44,8 @@ interface IOutgoingMessage {
     filterObjectsSchema?: string;
 }
 
-
-export const VisualizationController = async (webview: vscode.Webview, connection: azdata.connection.Connection) => {
-    await renderWebviewContent(webview, connection);
+export const VisualizationController = async (webview: vscode.Webview, connectionContext: ConnectionContext) => {
+    await renderWebviewContent(webview, connectionContext);
 };
 
 
@@ -55,22 +54,21 @@ const postMessage = (webview: azdata.DashboardWebview | vscode.Webview, message:
 };
 
 
-const renderWebviewContent = async (webview: vscode.Webview, connection: azdata.connection.Connection) => {
+const renderWebviewContent = async (webview: vscode.Webview, connectionContext: ConnectionContext) => {
     webview.html = loadWebView();
-    if (connection.options.database) {
-
-        const serverName = connection.options.server;
-        const databaseName = connection.options.database;
-        const connectionId = connection.connectionId;
+    if (connectionContext.connection?.options.database && connectionContext.connectionId) {
 
         let viewModel = new ViewModel();
-        viewModel.serverName = serverName;
-        viewModel.databaseName = databaseName;
+        viewModel.serverName = connectionContext.fqname?.serverName;
+        viewModel.databaseName = connectionContext.fqname?.databaseName;
+        viewModel.filterObjectsSchema = connectionContext.fqname?.schemaName;
         viewModel.autoApply = true;
         viewModel.selectTables = true;
         viewModel.selectViews = true;
         viewModel.rowsPageIndex = 1;
         viewModel.rowsPageSize = 20;
+
+        let connectionId = connectionContext.connectionId;
 
         webview.onDidReceiveMessage(async (data: IIncomingMessage) => {
             let commands = data.command.split('|');
@@ -246,6 +244,7 @@ const loadObjects = async (connectionId: string, webview: azdata.DashboardWebvie
     viewModel.rowsColumnsName = undefined;
     viewModel.rows = undefined;
     viewModel.rowsCount = undefined;
+    //TODO index
     viewModel.selectedObjectIndex = undefined;
     viewModel.selectedColumnIndex = undefined;
     viewModel.selectedValueIndex = undefined;

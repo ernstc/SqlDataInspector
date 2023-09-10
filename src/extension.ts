@@ -1,58 +1,106 @@
-import { connection } from 'azdata';
-import { Database } from './models/database.model';
-
 import * as vscode from 'vscode';
 import * as azdata from 'azdata';
 import { VisualizationController } from './controllers/visualization.controller';
+import { ConnectionContext } from './connection-context';
+import { FQName } from './FQName';
 
 export const activate = (context: vscode.ExtensionContext) => {
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
-    context.subscriptions.push(vscode.commands.registerCommand('sql-data-inspector.inspect-data', async (context: azdata.ObjectExplorerContext) => {
-        if (context.connectionProfile !== undefined) {
-
-            let connectionId = context.connectionProfile?.id;
-            let database: string = context.connectionProfile?.databaseName!;
-
-            let activeConnections = await azdata.connection.getActiveConnections();
-            if (!activeConnections.some(c => c.connectionId === connectionId)) {
-                await azdata.connection.connect(context.connectionProfile!, false, false);
-                activeConnections = await azdata.connection.getActiveConnections();
-            }
-
-            let connection = activeConnections.filter(c => c.connectionId === connectionId)[0];
-
-            if (connection.options.database !== database) {
-                // Change the database in the connection
-                let connectionUri = await azdata.connection.getUriForConnection(connectionId);
-                let connectionProvider: azdata.ConnectionProvider = azdata.dataprotocol.getProvider(connection.providerName, azdata.DataProviderType.ConnectionProvider);
-                let databaseChanged = await connectionProvider.changeDatabase(connectionUri, database);
-                if (databaseChanged) {
-                    activeConnections = await azdata.connection.getActiveConnections();
-                    connection = activeConnections.filter(c => c.connectionId === connectionId)[0];
-                }
-            }
-
-            if (connection !== undefined) {
-                const databaseName = connection.options.database;
-
-                // Create and show a new webview
-                const panel = vscode.window.createWebviewPanel(
-                    'sql-data-inspector', // Identifies the type of the webview. Used internally
-                    'Data Inspector - ' + databaseName, // Title of the panel displayed to the user
-                    vscode.ViewColumn.One, // Editor column to show the new webview panel in.
-                    {
-                        enableScripts: true
-                    } // Webview options. More on these later.
-                );
-
-                // And set its HTML content
-                await VisualizationController(panel.webview, connection);
-            }
-        }
-    }));
+    context.subscriptions.push(vscode.commands.registerCommand(
+        'sql-data-inspector.inspect-data',
+        loadVisualizationFromExplorer)
+    );
+    context.subscriptions.push(vscode.commands.registerCommand(
+        'sql-data-inspector.inspect-data-editor',
+        loadVisualizationFromEditor)
+    );
 };
 
 export const deactivate = () => { };
+
+const loadVisualizationFromExplorer = async (context: azdata.ObjectExplorerContext) => {
+    // Build and set the HTML content
+    try {
+
+        // Get the IconnectionProfile
+        let iConnProfile: azdata.IConnectionProfile | undefined = context.connectionProfile;
+        if (iConnProfile === undefined) {
+            throw new Error("No active connectionProfile");
+        }
+
+        // Get the fqn from the selected database in the explorer
+        let serverName: string = iConnProfile?.serverName!;
+        let databaseName: string = iConnProfile?.databaseName!;
+        let fqname = new FQName(serverName, databaseName);
+
+        // Get the active connection information
+        let connectionContext = await ConnectionContext.ExplorerContext(iConnProfile, fqname);
+
+        // Create and show a new webview
+        const panel = vscode.window.createWebviewPanel(
+            'sql-data-inspector', // Identifies the type of the webview. Used internally
+            'Data Inspector - ' + fqname.databaseName, // Title of the panel displayed to the user
+            vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+            {
+                enableScripts: true
+            } // Webview options. More on these later.
+        );
+
+        // And set its HTML content
+        await VisualizationController(
+            panel.webview,
+            connectionContext
+        );
+    }
+    catch (e) {
+        vscode.window.showErrorMessage(
+            (<Error>e).message
+        );
+    }
+};
+
+
+const loadVisualizationFromEditor = async (context: azdata.ObjectExplorerContext) => {
+    // Build and set the HTML content
+    try {
+
+        // Get the connectionProfile
+        let connProfile = await azdata.connection.getCurrentConnection();
+        if (connProfile === undefined) {
+            throw new Error("No active connectionProfile");
+        }
+
+        // Get fqname from the selected text
+        let selectedText = ConnectionContext.getSelectedEditorText();
+        let serverName = connProfile.serverName;
+        let fqname = new FQName(serverName, selectedText);
+
+        // Get the active connection information
+        let connectionContext = await ConnectionContext.EditerContext(connProfile, fqname);
+
+        // Create and show a new webview
+        const panel = vscode.window.createWebviewPanel(
+            'sql-data-inspector', // Identifies the type of the webview. Used internally
+            'Data Inspector - ' + fqname.databaseName, // Title of the panel displayed to the user
+            vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+            {
+                enableScripts: true
+            } // Webview options. More on these later.
+        );
+
+        // And set its HTML content
+        await VisualizationController(
+            panel.webview,
+            connectionContext
+        );
+    }
+    catch (e) {
+        vscode.window.showErrorMessage(
+            (<Error>e).message
+        );
+    }
+};
+

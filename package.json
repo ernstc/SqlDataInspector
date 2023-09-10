@@ -20,8 +20,7 @@
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [
-	],
+	"activationEvents": [],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"menus": {
@@ -36,11 +35,22 @@
 					"when": "connectionProvider == MSSQL && nodeType && nodeType == Server",
 					"group": "data"
 				}
+			],
+			"editor/context": [
+				{
+					"command": "sql-data-inspector.inspect-data-editor",
+					"group": "data",
+					"when": "true"
+				}
 			]
 		},
 		"commands": [
 			{
 				"command": "sql-data-inspector.inspect-data",
+				"title": "Inspect data"
+			},
+			{
+				"command": "sql-data-inspector.inspect-data-editor",
 				"title": "Inspect data"
 			}
 		]
