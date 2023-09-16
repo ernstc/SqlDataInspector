@@ -30,6 +30,7 @@ export class ViewModel {
     sortRowsByColumnName?: string;
     sortRowsByColumnAscending?: boolean;
 
+    selectedObjectName?: string;
     selectedObjectIndex?: number;
     selectedColumnIndex?: number;
     selectedValueIndex?: number;

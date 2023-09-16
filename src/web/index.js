@@ -148,7 +148,7 @@
                     $databaseName.innerText = e.data.databaseName;
                 }
                 if (e.data.objects !== undefined) {
-                    renderObjects(e.data.objects);
+                    renderObjects(e.data.objects, e.data.objectIndex);
                     hideLoading();
                 }
                 if (e.data.objectsSchema !== undefined) {
