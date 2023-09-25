@@ -1,6 +1,4 @@
 import { DatabaseColumnValue } from '../models/database-columnValue.model';
-import { connection } from 'azdata';
-import { Database } from "../models/database.model";
 import { DatabaseObject } from "../models/database-object.model";
 import { DatabaseObjectType } from "../models/database-objectType.model";
 import { runQuery } from "./base.repository";
@@ -28,6 +26,7 @@ interface DbColumnValuesResponse {
     value: string;
     count: number;
 }
+
 
 interface DbCountResponse {
     count: number;
@@ -63,9 +62,9 @@ export const getMssqlDbObjects = async (
 
     const objectsQuery: string | null =
         tables && views ? tablesAndViewsQuery :
-            tables ? tablesQuery :
-                views ? viewsQuery :
-                    null;
+        tables ? tablesQuery :
+        views ? viewsQuery :
+        null;
 
     if (objectsQuery === null) {
         return [];
@@ -128,7 +127,7 @@ export const getMssqlDbColumns = async (
     table: DatabaseObject
 ): Promise<DatabaseColumn[]> => {
 
-    if (table === undefined) {
+    if (table === undefined || table === null) {
         return [];
     }
 
@@ -194,7 +193,8 @@ export const getMssqlDbColumnValues = async (
     filter: string
 ): Promise<string[]> => {
 
-    if (table === undefined || column === undefined) {
+    if (table === undefined || table === null 
+        || column === undefined || column === null) {
         return [];
     }
 
@@ -231,12 +231,13 @@ export const getMssqlDbColumnValuesWithCount = async (
     sortAscendingColumnValuesCount?: boolean
 ): Promise<DatabaseColumnValue[]> => {
 
-    if (table === undefined || column === undefined) {
+    if (table === undefined || table === null 
+        || column === undefined || column === null) {
         return [];
     }
 
     // Very simple SQL Injection prevention.
-    if (filter !== undefined && filter.indexOf(';') >= 0) {
+    if (filter && filter.indexOf(';') >= 0) {
         return [];
     }
 
@@ -247,11 +248,11 @@ export const getMssqlDbColumnValuesWithCount = async (
     const whereExpression = filter ? 'WHERE ' + filter : '';
     let sortColumn: string;
 
-    if (sortAscendingColumnValues !== undefined) {
+    if (sortAscendingColumnValues !== undefined && sortAscendingColumnValues !== null) {
         sortColumn = `[${column.Name}]`;
         if (sortAscendingColumnValues === false) { sortColumn += ' DESC'; }
     }
-    else if (sortAscendingColumnValuesCount !== undefined) {
+    else if (sortAscendingColumnValuesCount !== undefined && sortAscendingColumnValuesCount !== null) {
         sortColumn = `COUNT(*)`;
         if (sortAscendingColumnValuesCount === false) { sortColumn += ' DESC'; }
     }
@@ -292,7 +293,7 @@ export const getMssqlDbTableRows = async (
     pageSize: number = 20
 ) => {
 
-    if (table === undefined) {
+    if (table === undefined || table === null) {
         return {
             rows: [],
             count: 0
@@ -302,7 +303,7 @@ export const getMssqlDbTableRows = async (
     if (pageIndex < 1) { pageIndex = 1; }
     if (pageSize < 0) { pageSize = 20; }
 
-    const hasOrderingColumns = orderByColumns !== undefined && orderByColumns.length > 0;
+    const hasOrderingColumns: boolean = orderByColumns !== undefined && orderByColumns.length > 0;
     if (hasOrderingColumns && sortAscending !== undefined) {
         orderByColumns = orderByColumns?.map((col, index) => sortAscending[index] ? col : col + ' DESC');
     }
@@ -342,7 +343,7 @@ export const getMssqlDbTableRowsCount = async (
     filter: string
 ) => {
 
-    if (table === undefined) {
+    if (table === undefined || table === null) {
         return {
             count: 0
         };
