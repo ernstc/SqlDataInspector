@@ -4,6 +4,7 @@ import { VisualizationController } from './controllers/visualization.controller'
 import { ConnectionContext } from './connection-context';
 import { FQName } from './FQName';
 
+
 export const activate = (context: vscode.ExtensionContext) => {
 
     // The command has been defined in the package.json file
@@ -19,7 +20,9 @@ export const activate = (context: vscode.ExtensionContext) => {
     );
 };
 
+
 export const deactivate = () => { };
+
 
 const loadVisualizationFromExplorer = async (context: azdata.ObjectExplorerContext) => {
     // Build and set the HTML content
@@ -32,9 +35,10 @@ const loadVisualizationFromExplorer = async (context: azdata.ObjectExplorerConte
         }
 
         // Get the fqn from the selected database in the explorer
-        let serverName: string = iConnProfile?.serverName!;
-        let databaseName: string = iConnProfile?.databaseName!;
-        let fqname = new FQName(serverName, databaseName);
+        let fqname: FQName = {
+            serverName: iConnProfile?.serverName,
+            databaseName: iConnProfile?.databaseName
+        };
 
         // Get the active connection information
         let connectionContext = await ConnectionContext.ExplorerContext(iConnProfile, fqname);
@@ -75,8 +79,15 @@ const loadVisualizationFromEditor = async (context: azdata.ObjectExplorerContext
 
         // Get fqname from the selected text
         let selectedText = ConnectionContext.getSelectedEditorText();
-        let serverName = connProfile.serverName;
-        let fqname = new FQName(serverName, selectedText);
+        let fqname = new FQName(selectedText);
+
+        if (fqname.serverName === undefined) {
+            fqname.serverName = connProfile.serverName;
+        }
+
+        if (fqname.databaseName === undefined) {
+            fqname.databaseName = connProfile.databaseName;
+        }
 
         // Get the active connection information
         let connectionContext = await ConnectionContext.EditerContext(connProfile, fqname);
