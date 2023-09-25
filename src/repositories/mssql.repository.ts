@@ -61,15 +61,15 @@ export const getMssqlDbObjects = async (
             FROM sys.views
         )`;
 
-    const objectsQuery: string | null = 
-            tables && views ? tablesAndViewsQuery :
+    const objectsQuery: string | null =
+        tables && views ? tablesAndViewsQuery :
             tables ? tablesQuery :
-            views ? viewsQuery :
-            null;
+                views ? viewsQuery :
+                    null;
 
-    if (objectsQuery == null) {
+    if (objectsQuery === null) {
         return [];
-    } 
+    }
 
     const query = `
         SELECT 
@@ -114,7 +114,7 @@ export const getMssqlDbObjects = async (
         const dbTable: DatabaseObject = {
             Name: element.name,
             Schema: element.SchemaName,
-            ObjectType: element.isView == '1' ? DatabaseObjectType.View : DatabaseObjectType.Table
+            ObjectType: element.isView === '1' ? DatabaseObjectType.View : DatabaseObjectType.Table
         };
 
         result.push(dbTable);
@@ -128,7 +128,7 @@ export const getMssqlDbColumns = async (
     table: DatabaseObject
 ): Promise<DatabaseColumn[]> => {
 
-    if (table == undefined) {
+    if (table === undefined) {
         return [];
     }
 
@@ -177,9 +177,9 @@ export const getMssqlDbColumns = async (
         const dbColumn: DatabaseColumn = {
             Name: element.name,
             Type: element.type,
-            IsPrimaryKey: element.is_primary_key == '1',
+            IsPrimaryKey: element.is_primary_key === '1',
             KeyOrdinal: parseInt(element.key_ordinal),
-            HasForeignKey: element.has_foreign_key == '1'
+            HasForeignKey: element.has_foreign_key === '1'
         };
         result.push(dbColumn);
     }
@@ -194,10 +194,10 @@ export const getMssqlDbColumnValues = async (
     filter: string
 ): Promise<string[]> => {
 
-    if (table == undefined || column == undefined) {
+    if (table === undefined || column === undefined) {
         return [];
     }
-    
+
     if (/binary|text|image|geography|geometry|variant|xml|json/.test(column.Type)) {
         return [];
     }
@@ -231,15 +231,15 @@ export const getMssqlDbColumnValuesWithCount = async (
     sortAscendingColumnValuesCount?: boolean
 ): Promise<DatabaseColumnValue[]> => {
 
-    if (table == undefined || column == undefined) {
+    if (table === undefined || column === undefined) {
         return [];
     }
 
     // Very simple SQL Injection prevention.
-    if (filter != undefined && filter.indexOf(';') >= 0) {
+    if (filter !== undefined && filter.indexOf(';') >= 0) {
         return [];
     }
-    
+
     if (/binary|text|image|geography|geometry|variant|xml|json/.test(column.Type)) {
         return [];
     }
@@ -247,13 +247,13 @@ export const getMssqlDbColumnValuesWithCount = async (
     const whereExpression = filter ? 'WHERE ' + filter : '';
     let sortColumn: string;
 
-    if (sortAscendingColumnValues != undefined) {
+    if (sortAscendingColumnValues !== undefined) {
         sortColumn = `[${column.Name}]`;
-        if (sortAscendingColumnValues == false) sortColumn += ' DESC';
+        if (sortAscendingColumnValues === false) { sortColumn += ' DESC'; }
     }
-    else if (sortAscendingColumnValuesCount != undefined) {
+    else if (sortAscendingColumnValuesCount !== undefined) {
         sortColumn = `COUNT(*)`;
-        if (sortAscendingColumnValuesCount == false) sortColumn += ' DESC';
+        if (sortAscendingColumnValuesCount === false) { sortColumn += ' DESC'; }
     }
     else {
         sortColumn = `[${column.Name}]`;
@@ -292,21 +292,21 @@ export const getMssqlDbTableRows = async (
     pageSize: number = 20
 ) => {
 
-    if (table == undefined) {
+    if (table === undefined) {
         return {
             rows: [],
             count: 0
         };
     }
 
-    if (pageIndex < 1) pageIndex = 1;
-    if (pageSize < 0) pageSize = 20;
+    if (pageIndex < 1) { pageIndex = 1; }
+    if (pageSize < 0) { pageSize = 20; }
 
-    const hasOrderingColumns = orderByColumns != undefined && orderByColumns.length > 0;
-    if (hasOrderingColumns && sortAscending != undefined) {
+    const hasOrderingColumns = orderByColumns !== undefined && orderByColumns.length > 0;
+    if (hasOrderingColumns && sortAscending !== undefined) {
         orderByColumns = orderByColumns?.map((col, index) => sortAscending[index] ? col : col + ' DESC');
     }
-    
+
     const whereExpression = filter ? 'WHERE ' + filter : '';
     const orderBy = hasOrderingColumns ? `
         ORDER BY ${orderByColumns?.join(',')}
@@ -341,8 +341,8 @@ export const getMssqlDbTableRowsCount = async (
     table: DatabaseObject,
     filter: string
 ) => {
-    
-    if (table == undefined) {
+
+    if (table === undefined) {
         return {
             count: 0
         };

@@ -1,6 +1,6 @@
-![GitHub All Releases](https://img.shields.io/github/downloads/ernstc/SqlDataInspector/total)
-
 # SQL Data Inspector
+
+![GitHub All Releases](https://img.shields.io/github/downloads/ernstc/SqlDataInspector/total)
 
 This extension makes it easy to inspect data with just a few clicks.
 
@@ -24,7 +24,8 @@ This extension makes it easy to inspect data with just a few clicks.
 
 The current release will be available through the Extensions Marketplace in Azure Data Studio.
 
-Current and Pre-releases will be available from the [Releases](https://github.com/ernstc/SqlDataInspector/releases) tab of the projects repository. Simply download the VSIX of the release you want, and use the ***Install Extension from VSIX Package*** option in Azure Data Studio.
+Current and Pre-releases will be available from the [Releases](https://github.com/ernstc/SqlDataInspector/releases) tab of the projects repository.
+Simply download the VSIX of the release you want, and use the ***Install Extension from VSIX Package*** option in Azure Data Studio.
 
 ## Change Log
 
@@ -36,7 +37,8 @@ If you find a bug or have an idea to improve this extension please create a new 
 
 ## Contributing
 
-You are more than welcome to help contribute to this project if you wish, please create a new fork of the main branch, then submit a pull request to the main branch after making your changes.
+You are more than welcome to help contribute to this project if you wish, please create a new fork of the main branch,
+then submit a pull request to the main branch after making your changes.
 
 ## License
 

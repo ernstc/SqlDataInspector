@@ -2,7 +2,7 @@
 	"name": "sql-data-inspector",
 	"displayName": "SQL Data Inspector",
 	"description": "This extension makes it easy to inspect data with just a few clicks.",
-	"version": "0.6.0",
+	"version": "0.6.2",
 	"publisher": "ernstc",
 	"license": "MIT",
 	"icon": "images/icon.png",
@@ -14,15 +14,13 @@
 		"url": "https://github.com/ernstc/SqlDataInspector/issues"
 	},
 	"engines": {
-		"vscode": "^1.59.0",
+		"vscode": "^1.79.2",
 		"azdata": "*"
 	},
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [
-		"onCommand:sql-data-inspector.inspect-data"
-	],
+	"activationEvents": [],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"menus": {
@@ -37,11 +35,22 @@
 					"when": "connectionProvider == MSSQL && nodeType && nodeType == Server",
 					"group": "data"
 				}
+			],
+			"editor/context": [
+				{
+					"command": "sql-data-inspector.inspect-data-editor",
+					"group": "data",
+					"when": "true"
+				}
 			]
 		},
 		"commands": [
 			{
 				"command": "sql-data-inspector.inspect-data",
+				"title": "Inspect data"
+			},
+			{
+				"command": "sql-data-inspector.inspect-data-editor",
 				"title": "Inspect data"
 			}
 		]
@@ -61,32 +70,32 @@
 		"pack": "vsce package"
 	},
 	"dependencies": {
-		"fs-extra": "^5.0.0",
-		"handlebars": "^4.5.3",
-		"vscode-nls": "^5.0.1"
+		"fs-extra": "^11.1.1",
+		"handlebars": "^4.7.8",
+		"vscode-nls": "^5.2.0"
 	},
 	"devDependencies": {
-		"@types/azdata": "^1.36.0",
-		"@types/fs-extra": "^5.0.0",
-		"@types/glob": "^7.1.1",
-		"@types/mocha": "^9.0.0",
-		"@types/node": "^17.0.0",
-		"@types/vscode": "^1.59.0",
-		"@typescript-eslint/eslint-plugin": "^5.24.0",
-		"@typescript-eslint/parser": "^5.24.0",
-		"ansi-regex": ">=5.0.1",
-		"eslint": "^8.15.0",
+		"@types/azdata": "^1.45.0",
+		"@types/fs-extra": "^11.0.1",
+		"@types/glob": "^8.1.0",
+		"@types/mocha": "^10.0.1",
+		"@types/node": "^20.5.6",
+		"@types/vscode": "^1.79.2",
+		"@typescript-eslint/eslint-plugin": "^6.4.1",
+		"@typescript-eslint/parser": "^6.4.1",
+		"ansi-regex": "6.0.1",
+		"eslint": "^8.48.0",
 		"glob": "^8.0.0",
 		"markdown-it": "^13.0.1",
-		"mkdirp": "^1.0.4",
-		"mocha": "^10.0.0",
+		"mkdirp": "^3.0.1",
+		"mocha": "^10.2.0",
 		"ncp": "^2.0.0",
-		"rimraf": "^3.0.2",
-		"ts-loader": "^9.2.8",
-		"typescript": "^4.6.4",
-		"vsce": "^2.0.0",
-		"vscode-test": "^1.5.0",
-		"webpack": "^5.70.0",
-		"webpack-cli": "^4.9.2"
+		"rimraf": "^5.0.1",
+		"ts-loader": "^9.4.4",
+		"typescript": "^5.2.2",
+		"vsce": "^2.15.0",
+		"vscode-test": "^1.6.1",
+		"webpack": "^5.88.2",
+		"webpack-cli": "^5.1.4"
 	}
 }
