@@ -205,31 +205,45 @@ export const getMssqlDbColumnValuesWithCount = async (
         return [];
     }
 
+    let query: string;
+
     if (/binary|text|image|geography|geometry|variant|xml|json/.test(column.Type)) {
-        return [];
-    }
-
-    const whereExpression = filter ? 'WHERE ' + filter : '';
-    let sortColumn: string;
-
-    if (sortAscendingColumnValues !== undefined && sortAscendingColumnValues !== null) {
-        sortColumn = `[${column.Name}]`;
-        if (sortAscendingColumnValues === false) { sortColumn += ' DESC'; }
-    }
-    else if (sortAscendingColumnValuesCount !== undefined && sortAscendingColumnValuesCount !== null) {
-        sortColumn = `COUNT(*)`;
-        if (sortAscendingColumnValuesCount === false) { sortColumn += ' DESC'; }
+        // Create a query for counting NULL and NOT NULL values.
+        const andWhereExpression = filter ? 'AND ' + filter : '';
+        
+        query = `
+            SELECT '[NULL]' as value, COUNT(*) as count 
+            FROM [${table.Schema}].[${table.Name}]
+            WHERE [${column.Name}] is NULL ${andWhereExpression}
+            UNION
+            SELECT '[NOT NULL]' as value, COUNT(*) as count 
+            FROM [${table.Schema}].[${table.Name}]
+            WHERE [${column.Name}] is NOT NULL ${andWhereExpression}`;
     }
     else {
-        sortColumn = `[${column.Name}]`;
-    }
+        // Create a query for counting distinct values.
+        let sortColumn: string;
+        if (sortAscendingColumnValues !== undefined && sortAscendingColumnValues !== null) {
+            sortColumn = `[${column.Name}]`;
+            if (sortAscendingColumnValues === false) { sortColumn += ' DESC'; }
+        }
+        else if (sortAscendingColumnValuesCount !== undefined && sortAscendingColumnValuesCount !== null) {
+            sortColumn = `COUNT(*)`;
+            if (sortAscendingColumnValuesCount === false) { sortColumn += ' DESC'; }
+        }
+        else {
+            sortColumn = `[${column.Name}]`;
+        }
 
-    const query = `
-        SELECT [${column.Name}] as value, COUNT(*) as count 
-        FROM [${table.Schema}].[${table.Name}]
-        ${whereExpression}
-        GROUP BY [${column.Name}]
-        ORDER BY ${sortColumn}`;
+        const whereExpression = filter ? 'WHERE ' + filter : '';
+
+        query = `
+            SELECT [${column.Name}] as value, COUNT(*) as count 
+            FROM [${table.Schema}].[${table.Name}]
+            ${whereExpression}
+            GROUP BY [${column.Name}]
+            ORDER BY ${sortColumn}`;
+    }
 
     let dbResult = await runQuery<DbColumnValuesResponse>(Provider.MSSQL, connectionId, query);
 
@@ -237,7 +251,7 @@ export const getMssqlDbColumnValuesWithCount = async (
     for (let index = 0; index < dbResult.length; index++) {
         const element = dbResult[index];
         const dbColumnValue: DatabaseColumnValue = {
-            Value: element.value,
+            Value: element.value === undefined ? '[NULL]' : element.value,
             Count: element.count
         };
         result.push(dbColumnValue);
@@ -250,6 +264,7 @@ export const getMssqlDbColumnValuesWithCount = async (
 export const getMssqlDbTableRows = async (
     connectionId: string,
     table: DatabaseObject,
+    columns: DatabaseColumn[] | undefined,
     filter: string,
     orderByColumns?: string[],
     sortAscending?: boolean[],
@@ -280,8 +295,22 @@ export const getMssqlDbTableRows = async (
 
     const top = !hasOrderingColumns ? `TOP(${pageSize})` : '';
 
+    let columnsExpression = '';
+    if (columns !== undefined && columns !== null && columns.length > 0) {
+        columnsExpression = columns.map(col => {
+            let statement = `[${col.Name}]`;
+            if (col.Type === 'geography') {
+                statement = `CONVERT(varchar(max), [${col.Name}].ToString()) as [${col.Name}]`;
+            }
+            return statement;
+        }).join(',');
+    }
+    else {
+        columnsExpression = '*';
+    }
+
     const queryRows = `
-        SELECT ${top} * 
+        SELECT ${top} ${columnsExpression}
         FROM [${table.Schema}].[${table.Name}]
         ${whereExpression}
         ${orderBy}`;

@@ -388,7 +388,7 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
         sortAscending = primaryKey?.map(p => true);
     }
 
-    const dbRows = await getMssqlDbTableRows(connectionId, object, viewModel.filter!, orderByColumns, sortAscending, viewModel.rowsPageIndex, viewModel.rowsPageSize);
+    const dbRows = await getMssqlDbTableRows(connectionId, object, viewModel.columns, viewModel.filter!, orderByColumns, sortAscending, viewModel.rowsPageIndex, viewModel.rowsPageSize);
     object.Count = dbRows.count.toString();
     let columnsName: string[] = [];
 
