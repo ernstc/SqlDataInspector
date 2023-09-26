@@ -16,7 +16,6 @@ export const runQuery = async <T>(provider: Provider, connectionId: string, quer
 };
 
 
-
 const mapResult = <T>(result: SimpleExecuteResult): T[] => result.rows.map(element => {
     const item: any = {};
     for (let columnIndex = 0; columnIndex < result.columnInfo.length; columnIndex++) {

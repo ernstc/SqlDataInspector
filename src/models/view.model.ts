@@ -39,6 +39,7 @@ export class ViewModel {
     selectedRowColumnIndex?: number;
 
     filterObjectsSchema?: string;
+    searchObjectName?: string;
 
 
     get selectedObject(): DatabaseObject | undefined {

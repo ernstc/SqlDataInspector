@@ -22,6 +22,8 @@
     const $liveMonitoring = $('#liveMonitoring input');
     const $refreshTimerDiv = $('#refreshTimer');
     const $refreshTimer = $('#refreshTimer select');
+    const $objectSearch = $('#objectSearch');
+    const $objectSearchInput = $('#objectSearch input');
     const $objectFilters = $('#objectFilters');
     const $objectSchemaFilter = $('#objectFilters select');
     const $rowsPageSize = $('#rowsPageSize select');
@@ -50,6 +52,13 @@
         .change(setPageSize);
     $rowsPager.find('li')
         .click(btnPageClicked);
+    $('#btnSearchObjects')
+        .click(btnSearchObjectsClicked);
+    $('#clearObjectSearch')
+        .click(clearObjectSearchClicked);
+    $objectSearchInput
+        .keyup(objectSearchInputChanged);
+
 
     // VSCode API for interacting with the extension back-end
     //*********************************************************** */
@@ -246,8 +255,17 @@
 
         renderSelectedObjectName(_selectedObject);
 
+        if (vm.searchObjectName !== undefined) {
+            $objectSearch.toggleClass('opened', true);
+            $objectSearchInput.val(vm.searchObjectName);
+        }
+
         $cbTables.get(0).checked = vm.selectTables === true;
         $cbViews.get(0).checked = vm.selectViews === true;
+
+        if (vm.objectsSchema) {
+            renderObjectsSchemaFilter(vm.objectsSchema, vm.filterObjectsSchema);
+        }
 
         if (vm.objects !== undefined) {
             renderObjects(vm.objects, vm.selectedObjectIndex);
@@ -290,10 +308,6 @@
 
         if (vm.showRecordDetails && _selectedRow && _columns) {
             showDatabaseTableRow(_selectedRow);
-        }
-
-        if (vm.objectsSchema) {
-            renderObjectsSchemaFilter(vm.objectsSchema, vm.filterObjectsSchema);
         }
 
         $liveMonitoring.get(0).checked = vm.liveMonitoring === true;
@@ -382,6 +396,7 @@
                     .click(objectClicked),
             selectedIndex
         );
+        filterObjectsData();
     }
 
 
@@ -651,8 +666,84 @@
     }
 
 
+    function filterObjectsData() {
+        let filterValue = $objectSearchInput.val().trim().toLowerCase();
+        let filterSchema = $objectSchemaFilter.val().toLowerCase();
+        let filterTables = $cbTables.get(0).checked;
+        let filterViews = $cbViews.get(0).checked;
+
+        let objects = $('#objects .table-data');
+        let objectsSchema = $('#objects .table-data .col2');
+        let objectsName = $('#objects .table-data .col1');
+
+        let tablesCount = 0;
+        let viewsCount = 0;
+
+        for (let index = 0; index < objects.length; index++) {
+            let object = objects.eq(index);
+            let objectSchema = objectsSchema.eq(index);
+            let objectName = objectsName.eq(index);
+
+            let isTable = objectName.find('i').hasClass('ms-Icon--Table');
+            let isView = objectName.find('i').hasClass('ms-Icon--DatabaseView');
+
+            let schema = objectSchema.text().toLowerCase();
+            let name = objectName.text().toLowerCase();
+
+            let show = true;
+            if (filterSchema !== '*' && schema !== filterSchema) {
+                show = false;
+            }
+            else if (filterValue !== '') {
+                show = name.indexOf(filterValue) >= 0;
+            }
+            else if (filterTables === false && filterViews === false) {
+                show = false;
+            }
+            else if (filterTables === false && isTable) {
+                show = false;
+            }
+            else if (filterViews === false && isView) {
+                show = false;
+            }
+
+            object.toggleClass('hidden', !show);
+
+            if (show) {
+                if (isTable) { tablesCount++; }
+                if (isView) { viewsCount++; }
+            }
+        }
+
+        $tablesCount.innerText = tablesCount > 0 ? `(${tablesCount})` : '';
+        $viewsCount.innerText = viewsCount > 0 ? `(${viewsCount})` : '';
+    }
+
+
     // Event handlers
     //*********************************************************** */
+
+    function btnSearchObjectsClicked() {
+        $objectSearch.toggleClass('opened', true);
+        $objectSearchInput.focus();
+    }
+
+
+    function clearObjectSearchClicked() {
+        $objectSearch.removeClass('opened');
+        $objectSearchInput.val('');
+        filterObjectsData();
+    }
+
+
+    function objectSearchInputChanged() {
+        filterObjectsData();
+        let filterValue = $objectSearchInput.val().trim().toLowerCase();
+        updateViewModel({
+            'searchObjectName': filterValue
+        });
+    }
+
 
     function autoFilterClicked() {
         updateViewModel({
@@ -939,56 +1030,20 @@
 
 
     function setObjectsSchemaFilter() {
+        filterObjectsData();
         var filterValue = $objectSchemaFilter.val();
-        _selectedObject = undefined;
-        _selectedColumn = undefined;
-        _selectedValue = undefined;
-        _selectedRow = undefined;
-
-        renderColumns([]);
-        renderValues([]);
-        renderRows([], [], 0);
-        textToCopy = ``;
-
-        updateViewModel({
-            'filterObjectsSchema': filterValue,
-            'selectedObjectIndex': -1,
-            'selectedColumnIndex': -1,
-            'selectedRowRowIndex': -1,
-            'selectedRowColumnIndex': -1,
-            'selectedValueIndex': -1
-        });
         $objectFilters.toggleClass('schema', filterValue !== '*');
-        showLoading(1);
-        sendMessage({
-            'command': 'loadObjects'
+        updateViewModel({
+            'filterObjectsSchema': filterValue
         });
     }
 
 
     function objectsChanged() {
-        _selectedObject = undefined;
-        _selectedColumn = undefined;
-        _selectedValue = undefined;
-        _selectedRow = undefined;
-
-        renderColumns([]);
-        renderValues([]);
-        renderRows([], [], 0);
-        textToCopy = ``;
-
+        filterObjectsData();
         updateViewModel({
-            'selectedObjectIndex': -1,
-            'selectedColumnIndex': -1,
-            'selectedRowRowIndex': -1,
-            'selectedRowColumnIndex': -1,
-            'selectedValueIndex': -1,
             'selectTables': $cbTables.get(0).checked,
             'selectViews': $cbViews.get(0).checked
-        });
-        showLoading(1);
-        sendMessage({
-            'command': 'loadObjects'
         });
     }
 

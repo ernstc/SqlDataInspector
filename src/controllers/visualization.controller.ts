@@ -233,6 +233,9 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
             case 'sortRowsByColumnAscending':
                 viewModel.sortRowsByColumnAscending = vmUpdates?.sortRowsByColumnAscending;
                 break;
+            case 'searchObjectName':
+                viewModel.searchObjectName = vmUpdates?.searchObjectName;
+                break;
         }
     }
 };
