@@ -186,42 +186,6 @@ export const getMssqlDbColumns = async (
 };
 
 
-export const getMssqlDbColumnValues = async (
-    connectionId: string,
-    table: DatabaseObject,
-    column: DatabaseColumn,
-    filter: string
-): Promise<string[]> => {
-
-    if (table === undefined || table === null 
-        || column === undefined || column === null) {
-        return [];
-    }
-
-    if (/binary|text|image|geography|geometry|variant|xml|json/.test(column.Type)) {
-        return [];
-    }
-
-    const whereExpression = filter ? 'WHERE ' + filter : '';
-
-    const query = `
-        SELECT DISTINCT [${column.Name}] 
-        FROM [${table.Schema}].[${table.Name}]
-        ${whereExpression}
-        ORDER BY [${column.Name}]`;
-
-    let dbResult = await runQuery<string>(Provider.MSSQL, connectionId, query);
-
-    const result: string[] = [];
-    for (let index = 0; index < dbResult.length; index++) {
-        const element = dbResult[index];
-        result.push(element[<any>column.Name]);
-    }
-
-    return result;
-};
-
-
 export const getMssqlDbColumnValuesWithCount = async (
     connectionId: string,
     table: DatabaseObject,

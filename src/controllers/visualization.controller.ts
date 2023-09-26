@@ -1,13 +1,12 @@
-import { DatabaseColumnValue } from '../models/database-columnValue.model';
-import { getMssqlDbColumnValuesWithCount, getMssqlDbTableRowsCount } from './../repositories/mssql.repository';
 import * as azdata from "azdata";
 import * as vscode from 'vscode';
 import { DatabaseObject } from '../models/database-object.model';
 import { DatabaseColumn } from "../models/database-column.model";
+import { DatabaseColumnValue } from '../models/database-columnValue.model';
 import { DatabaseTableRow } from "../models/database-table-row.model";
 import { loadWebView } from "../web.loader";
 import { Status } from "../models/status.enum";
-import { getMssqlDbObjects, getMssqlDbColumns, getMssqlDbColumnValues, getMssqlDbTableRows } from "../repositories/mssql.repository";
+import { getMssqlDbObjects, getMssqlDbColumns, getMssqlDbColumnValuesWithCount, getMssqlDbTableRows, getMssqlDbTableRowsCount } from "../repositories/mssql.repository";
 import { ViewModel } from "../models/view.model";
 import { ConnectionContext } from '../connection-context';
 
