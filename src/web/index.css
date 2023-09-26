@@ -302,9 +302,12 @@ label {
 }
 #header h1 {
   font-size: 14pt;
+  display: inline-block;
+  margin-right: 280px;
 }
-#header h1 div {
-  float: left;
+#header #objectNamePart {
+  display: none;
+  white-space: nowrap;
 }
 #navigation {
   display: flex;

@@ -5,6 +5,8 @@
 
     const $serverName = document.getElementById('serverName');
     const $databaseName = document.getElementById('databaseName');
+    const $objectNamePart = $('#objectNamePart');
+    const $objectName = document.getElementById('objectName');
     const $rowsCount = document.getElementById('rowsCount');
     const $tablesCount = document.getElementById('tablesCount');
     const $viewsCount = document.getElementById('viewsCount');
@@ -242,6 +244,8 @@
             $databaseName.innerText = vm.databaseName;
         }
 
+        renderSelectedObjectName(_selectedObject);
+
         $cbTables.get(0).checked = vm.selectTables === true;
         $cbViews.get(0).checked = vm.selectViews === true;
 
@@ -328,11 +332,27 @@
     }
 
 
+    function renderSelectedObjectName(object) {
+        if (object) {
+            $objectName.innerText = `[${object.Schema}].[${object.Name}]`;
+            $objectNamePart.show();
+        }
+        else {
+            objectName.innerText = '';
+            $objectNamePart.hide();
+        }
+    }
+
+
     function renderObjects(objects, selectedIndex) {
         let tablesCount = objects.filter(o => o.ObjectType === 0).length;
         let viewsCount = objects.filter(o => o.ObjectType === 1).length;
         $tablesCount.innerText = $cbTables.get(0).checked ? `(${tablesCount})` : '';
         $viewsCount.innerText = $cbViews.get(0).checked ? `(${viewsCount})` : '';
+        if (selectedIndex >= 0) {
+            _selectedObject = objects[selectedIndex];
+            renderSelectedObjectName(_selectedObject);
+        }
         renderCollection(objects,
             $('#objects .table'),
             () =>
@@ -661,6 +681,7 @@
         _selectedColumn = undefined;
         _selectedValue = undefined;
         _selectedRow = undefined;
+        renderSelectedObjectName(_selectedObject);
         showLoading(2);
         updateViewModel({
             'selectedObjectIndex': selectedItem.data('item-index'),
