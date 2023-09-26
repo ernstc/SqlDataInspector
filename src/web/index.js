@@ -533,7 +533,7 @@
     }
 
 
-    const _notSortableTypes = ['text', 'ntext', 'binary', 'varbinary', 'image', 'cursor', 'rowversion', 'hierarchyid', 'geometry', 'geography', 'sql_variant', 'table'];
+    const _notSortableTypes = ['text', 'ntext', 'xml', 'binary', 'varbinary', 'image', 'cursor', 'rowversion', 'hierarchyid', 'geometry', 'geography', 'sql_variant', 'table'];
 
     function renderRows(rowsColumnsName, rows, rowsCount, rowsPageIndex, selectedRowIndex, selectedColumnIndex, objectIndex, sortRowsByColumnName, sortRowsByColumnAscending) {
         let pageSize = parseInt($rowsPageSize.val());
