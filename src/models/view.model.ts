@@ -2,6 +2,7 @@ import { DatabaseColumnValue } from './database-columnValue.model';
 import { DatabaseObject } from "./database-object.model";
 import { DatabaseColumn } from "./database-column.model";
 import { DatabaseTableRow } from './database-table-row.model';
+import { FQName } from '../FQName';
 
 
 export class ViewModel {
@@ -30,7 +31,7 @@ export class ViewModel {
     sortRowsByColumnName?: string;
     sortRowsByColumnAscending?: boolean;
 
-    selectedObjectName?: string;
+    startWithObject?: FQName;
     selectedObjectIndex?: number;
     selectedColumnIndex?: number;
     selectedValueIndex?: number;
@@ -38,6 +39,7 @@ export class ViewModel {
     selectedRowColumnIndex?: number;
 
     filterObjectsSchema?: string;
+    searchObjectName?: string;
 
 
     get selectedObject(): DatabaseObject | undefined {

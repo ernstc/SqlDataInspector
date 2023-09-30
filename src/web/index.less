@@ -50,6 +50,22 @@ input[type=checkbox] {
     border-color: var(--vscode-checkbox-border);
 }
 
+input[type=text] {
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+}
+
+select {
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+}
+
+option {
+    background-color: var(--vscode-menu-background);
+    color: var(--vscode-menu-foreground);
+    font-size: 11pt;
+}
+
 textarea {
     resize: none;
     flex-grow: 1;
@@ -228,7 +244,11 @@ label {
         &:hover {
             background-color: var(--vscode-list-hoverBackground);
             color: var(--vscode-list-hoverForeground);
-        }        
+        }     
+        
+        &.hidden {
+            display: none;
+        }
     }
 
     .selected, .selected:hover {
@@ -269,13 +289,20 @@ label {
 
     h1 {
         font-size: 14pt;
+        display: inline-block;
+        margin-right: 280px;
+    }
+
+    #objectNamePart {
+        display: none;
+        white-space: nowrap;
     }
 }
 
 #navigation {    
-    display: flex;
-    flex-direction: row;
+    display: grid;
     flex-grow: 5;
+    grid-template-columns: 39% 26% 35%;
 
     select {
         position: absolute;
@@ -527,12 +554,34 @@ label {
     }
 }
 
+#objectTypes {
+    position: absolute;
+    left: 40px;
+}
+
 #objectFilters {
     position: absolute;
     top: 8px;
     right: 8px;
     white-space: nowrap;
     background-color: var(--vscode-editor-background);
+
+    i {
+        position: relative;
+        top: 1px;
+    }
+
+    span {
+        font-size: 9pt;
+    }
+
+    select {
+        position: unset;
+        width: auto;
+        min-width: 100px;
+        height: 18px;
+        font-size: 9pt;
+    }
 
     .ms-Icon--FilterSolid {
         display: none;
@@ -545,16 +594,63 @@ label {
     &.schema .ms-Icon--FilterSolid {
         display: inline-block;
     }
+}
 
-    span {
-        font-size: 9pt;
+#objectSearch {
+    position: absolute;
+    top: 9px;
+    left: 10px;
+    height: 18px;
+    background-color: var(--vscode-editor-background);
+    padding-top: 1px;
+    transition: width 0.15s;
+    width: 0%;
+    min-width: 20px;
+
+    &.opened {
+        width: 50%;
     }
 
-    select {
-        position: unset;
-        width: auto;
-        min-width: 100px;
-        font-size: 9pt;
+    i {
+        cursor: pointer;
+        position: relative;
+        top: 1px;
+    }
+
+    > div {
+        position: absolute;
+        top: 0px;
+        left: 20px;
+        right: 0px;
+        height: 18px;
+        overflow: hidden;
+    }
+
+    input {
+        border: 1px solid var(--vscode-panel-border);
+        font-size: 12px;
+        height: 18px;
+        padding: 3px;
+        width: 100%;
+    }
+
+    #clearObjectSearch {
+        position: absolute;
+        right: 2px;
+        top: 3px;
+        bottom: 0px;
+        cursor: pointer;
+        color: var(--vscode-input-foreground);
+        background-color: var(--vscode-input-background);
+
+        i {
+            top: 0px;
+        }
+
+        &:hover {
+            background-color: var(--vscode-input-foreground);
+            color: var(--vscode-input-background);
+        }
     }
 }
 

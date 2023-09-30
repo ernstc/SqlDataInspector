@@ -8,11 +8,12 @@ This extension makes it easy to inspect data with just a few clicks.
 
 ## Features
 
-* Start inspecting data from the database context menu using the menu item "Inspect data".
+* Start inspecting data from the database context menu using the menu item "Inspect data" or from the editor selecting the table name and using the command "Inspect data" from the context menu.
 * Shows the list of tables and views of the database.
 * Shows the list of columns of the selected table or view.
 * Shows all the distinct values of the selected column.
 * Shows the rows of the selected table or view with the capabilities to sort by columns and paging.
+* You can filter objects by name.
 * You can filter objects by schema.
 * You can edit the WHERE clause that will be applied to each query that retrieves data.
 * By double clicking on a distinct value, a filter on that value is automatically added in the "Filters" section.

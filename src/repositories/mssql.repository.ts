@@ -1,6 +1,4 @@
 import { DatabaseColumnValue } from '../models/database-columnValue.model';
-import { connection } from 'azdata';
-import { Database } from "../models/database.model";
 import { DatabaseObject } from "../models/database-object.model";
 import { DatabaseObjectType } from "../models/database-objectType.model";
 import { runQuery } from "./base.repository";
@@ -28,6 +26,7 @@ interface DbColumnValuesResponse {
     value: string;
     count: number;
 }
+
 
 interface DbCountResponse {
     count: number;
@@ -63,9 +62,9 @@ export const getMssqlDbObjects = async (
 
     const objectsQuery: string | null =
         tables && views ? tablesAndViewsQuery :
-            tables ? tablesQuery :
-                views ? viewsQuery :
-                    null;
+        tables ? tablesQuery :
+        views ? viewsQuery :
+        null;
 
     if (objectsQuery === null) {
         return [];
@@ -128,7 +127,7 @@ export const getMssqlDbColumns = async (
     table: DatabaseObject
 ): Promise<DatabaseColumn[]> => {
 
-    if (table === undefined) {
+    if (table === undefined || table === null) {
         return [];
     }
 
@@ -187,41 +186,6 @@ export const getMssqlDbColumns = async (
 };
 
 
-export const getMssqlDbColumnValues = async (
-    connectionId: string,
-    table: DatabaseObject,
-    column: DatabaseColumn,
-    filter: string
-): Promise<string[]> => {
-
-    if (table === undefined || column === undefined) {
-        return [];
-    }
-
-    if (/binary|text|image|geography|geometry|variant|xml|json/.test(column.Type)) {
-        return [];
-    }
-
-    const whereExpression = filter ? 'WHERE ' + filter : '';
-
-    const query = `
-        SELECT DISTINCT [${column.Name}] 
-        FROM [${table.Schema}].[${table.Name}]
-        ${whereExpression}
-        ORDER BY [${column.Name}]`;
-
-    let dbResult = await runQuery<string>(Provider.MSSQL, connectionId, query);
-
-    const result: string[] = [];
-    for (let index = 0; index < dbResult.length; index++) {
-        const element = dbResult[index];
-        result.push(element[<any>column.Name]);
-    }
-
-    return result;
-};
-
-
 export const getMssqlDbColumnValuesWithCount = async (
     connectionId: string,
     table: DatabaseObject,
@@ -231,40 +195,55 @@ export const getMssqlDbColumnValuesWithCount = async (
     sortAscendingColumnValuesCount?: boolean
 ): Promise<DatabaseColumnValue[]> => {
 
-    if (table === undefined || column === undefined) {
+    if (table === undefined || table === null 
+        || column === undefined || column === null) {
         return [];
     }
 
     // Very simple SQL Injection prevention.
-    if (filter !== undefined && filter.indexOf(';') >= 0) {
+    if (filter && filter.indexOf(';') >= 0) {
         return [];
     }
+
+    let query: string;
 
     if (/binary|text|image|geography|geometry|variant|xml|json/.test(column.Type)) {
-        return [];
-    }
-
-    const whereExpression = filter ? 'WHERE ' + filter : '';
-    let sortColumn: string;
-
-    if (sortAscendingColumnValues !== undefined) {
-        sortColumn = `[${column.Name}]`;
-        if (sortAscendingColumnValues === false) { sortColumn += ' DESC'; }
-    }
-    else if (sortAscendingColumnValuesCount !== undefined) {
-        sortColumn = `COUNT(*)`;
-        if (sortAscendingColumnValuesCount === false) { sortColumn += ' DESC'; }
+        // Create a query for counting NULL and NOT NULL values.
+        const andWhereExpression = filter ? 'AND ' + filter : '';
+        
+        query = `
+            SELECT '[NULL]' as value, COUNT(*) as count 
+            FROM [${table.Schema}].[${table.Name}]
+            WHERE [${column.Name}] is NULL ${andWhereExpression}
+            UNION
+            SELECT '[NOT NULL]' as value, COUNT(*) as count 
+            FROM [${table.Schema}].[${table.Name}]
+            WHERE [${column.Name}] is NOT NULL ${andWhereExpression}`;
     }
     else {
-        sortColumn = `[${column.Name}]`;
-    }
+        // Create a query for counting distinct values.
+        let sortColumn: string;
+        if (sortAscendingColumnValues !== undefined && sortAscendingColumnValues !== null) {
+            sortColumn = `[${column.Name}]`;
+            if (sortAscendingColumnValues === false) { sortColumn += ' DESC'; }
+        }
+        else if (sortAscendingColumnValuesCount !== undefined && sortAscendingColumnValuesCount !== null) {
+            sortColumn = `COUNT(*)`;
+            if (sortAscendingColumnValuesCount === false) { sortColumn += ' DESC'; }
+        }
+        else {
+            sortColumn = `[${column.Name}]`;
+        }
 
-    const query = `
-        SELECT [${column.Name}] as value, COUNT(*) as count 
-        FROM [${table.Schema}].[${table.Name}]
-        ${whereExpression}
-        GROUP BY [${column.Name}]
-        ORDER BY ${sortColumn}`;
+        const whereExpression = filter ? 'WHERE ' + filter : '';
+
+        query = `
+            SELECT [${column.Name}] as value, COUNT(*) as count 
+            FROM [${table.Schema}].[${table.Name}]
+            ${whereExpression}
+            GROUP BY [${column.Name}]
+            ORDER BY ${sortColumn}`;
+    }
 
     let dbResult = await runQuery<DbColumnValuesResponse>(Provider.MSSQL, connectionId, query);
 
@@ -272,7 +251,7 @@ export const getMssqlDbColumnValuesWithCount = async (
     for (let index = 0; index < dbResult.length; index++) {
         const element = dbResult[index];
         const dbColumnValue: DatabaseColumnValue = {
-            Value: element.value,
+            Value: element.value === undefined ? '[NULL]' : element.value,
             Count: element.count
         };
         result.push(dbColumnValue);
@@ -285,6 +264,7 @@ export const getMssqlDbColumnValuesWithCount = async (
 export const getMssqlDbTableRows = async (
     connectionId: string,
     table: DatabaseObject,
+    columns: DatabaseColumn[] | undefined,
     filter: string,
     orderByColumns?: string[],
     sortAscending?: boolean[],
@@ -292,7 +272,7 @@ export const getMssqlDbTableRows = async (
     pageSize: number = 20
 ) => {
 
-    if (table === undefined) {
+    if (table === undefined || table === null) {
         return {
             rows: [],
             count: 0
@@ -302,7 +282,7 @@ export const getMssqlDbTableRows = async (
     if (pageIndex < 1) { pageIndex = 1; }
     if (pageSize < 0) { pageSize = 20; }
 
-    const hasOrderingColumns = orderByColumns !== undefined && orderByColumns.length > 0;
+    const hasOrderingColumns: boolean = orderByColumns !== undefined && orderByColumns.length > 0;
     if (hasOrderingColumns && sortAscending !== undefined) {
         orderByColumns = orderByColumns?.map((col, index) => sortAscending[index] ? col : col + ' DESC');
     }
@@ -315,8 +295,22 @@ export const getMssqlDbTableRows = async (
 
     const top = !hasOrderingColumns ? `TOP(${pageSize})` : '';
 
+    let columnsExpression = '';
+    if (columns !== undefined && columns !== null && columns.length > 0) {
+        columnsExpression = columns.map(col => {
+            let statement = `[${col.Name}]`;
+            if (col.Type === 'geography' || col.Type === 'geometry') {
+                statement = `CONVERT(varchar(max), [${col.Name}].ToString()) as [${col.Name}]`;
+            }
+            return statement;
+        }).join(',');
+    }
+    else {
+        columnsExpression = '*';
+    }
+
     const queryRows = `
-        SELECT ${top} * 
+        SELECT ${top} ${columnsExpression}
         FROM [${table.Schema}].[${table.Name}]
         ${whereExpression}
         ${orderBy}`;
@@ -342,7 +336,7 @@ export const getMssqlDbTableRowsCount = async (
     filter: string
 ) => {
 
-    if (table === undefined) {
+    if (table === undefined || table === null) {
         return {
             count: 0
         };

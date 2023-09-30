@@ -4,20 +4,26 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
-## September 2023 Release (version 0.6.2)
+## September 2023 Release (version 0.7.0)
 
 ### Changes
 
-* Requires Azure Data Studio >= 1.79.2
-* Added server name to header
-* Added Data Inspect in editor
-* Added starting with the selected database name in editor
+* Added "**Inspect data**" menu item in the context menu of the editor. This menu item starts the extension showing immediately the object corresponding to the selected text in the editor #17. Thanks to @hjvdwijk.
+* Added server name to header.
+* Added selected table/view name to header.
+* Improved visualization of `geography` and `geometry` columns #13.
+* Implemented the filter by name on the list of tables/views #12.
+* Improved performance during objects filtering avoiding to query the database for refreshing the list.
+* Columns of type `binary|text|image|geography|geometry|variant|xml|json` now show the count of **NULL** and **NOT NULL** values in the "**Distinct Values**" section. Before this update no values where shown because these type of columns have not been considered for distinct values selection.
+* Requires Azure Data Studio >= 1.45.0
 
 ### Fixes
 
-* Updated npm modules and jQuery
-* Fixed ESLint warnings
-* Fixed markdownlint warnings
+* Fixed some theme color issues.
+* Disabled ordering of columns of type `xml`.
+* Updated dependecies with security warnings.
+* Fixed ESLint warnings.
+* Fixed markdownlint warnings.
 
 ---
 

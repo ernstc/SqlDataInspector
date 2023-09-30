@@ -12,9 +12,13 @@
     <div id="app">
         <div id="header">
             <h1>
-                <div id="serverName">Server Name</div>
-                <div>&emsp;-&emsp;</div>
-                <div id="databaseName">Database Name</div>
+                <span id="serverName">Server Name</span>
+                <span>&nbsp;&nbsp;&#150;&nbsp;&nbsp;</span>
+                <span id="databaseName">Database Name</span>
+                <span id="objectNamePart">
+                    <span>&nbsp;&nbsp;&#150;&nbsp;&nbsp;</span>
+                    <span id="objectName">Schema.Name</span>
+                </span>
             </h1>
             <div id="liveMonitoring"><label for="cbx1">Live Monitoring</label><input type="checkbox" id="cbx1"></div>
             <div id="refreshTimer">
@@ -31,10 +35,12 @@
         <div id="navigation">
             <div id="objects">
                 <h2>
-                    <input type="checkbox" id="cbTables">
-                    <label for="cbTables">Tables</label> <span id="tablesCount" class="count"></span>
-                    <input type="checkbox" id="cbViews">
-                    <label for="cbViews">Views</label> <span id="viewsCount" class="count"></span>
+                    <div id="objectTypes">
+                        <input type="checkbox" id="cbTables">
+                        <label for="cbTables">Tables</label> <span id="tablesCount" class="count"></span>
+                        <input type="checkbox" id="cbViews">
+                        <label for="cbViews">Views</label> <span id="viewsCount" class="count"></span>
+                    </div>
                     <div id="objectFilters">
                         <span><i class="ms-Icon ms-Icon--Filter"></i><i class="ms-Icon ms-Icon--FilterSolid"></i>
                             Schema</span>
@@ -44,6 +50,15 @@
                             <option>custom</option>-->
                         </select>
                     </div>
+                    <div id="objectSearch">
+                        <i id="btnSearchObjects" class="ms-Icon ms-Icon--Search"></i>
+                        <div>
+                            <input type="text" placeholder="Search" />
+                            <div id="clearObjectSearch">
+                                <i class="ms-Icon ms-Icon--Cancel"></i>
+                            </div>
+                        </div>
+                    </div>
                 </h2>
                 <div class="table">
                     <div class="table-header">
@@ -52,7 +67,7 @@
                         <div class="col3">Count</div>
                     </div>
                     <!--<div class="table-data">
-                        <div class="col1"><i class="ms-Icon ms-Icon--Table"></i> Award</div>
+                        <div class="col1"><i class="ms-Icon ms-Icon--Table"></i> TableName</div>
                         <div class="col2">Schema</div>
                         <div class="col3">100000</div>
                     </div>-->
