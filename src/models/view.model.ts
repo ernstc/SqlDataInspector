@@ -40,6 +40,7 @@ export class ViewModel {
 
     filterObjectsSchema?: string;
     searchObjectName?: string;
+    filtersPanelOpen?: boolean;
 
 
     get selectedObject(): DatabaseObject | undefined {

@@ -29,6 +29,8 @@
     const $rowsPageSize = $('#rowsPageSize select');
     const $rowsPager = $('#rowsPager');
     const $btnCopyValues = $('#btnCopyValues');
+    const $filtersHeader = $('#filtersHeader');
+    const $filters = $('#filters');
 
     $autofilter = $('#autofilter')
         .click(autoFilterClicked);
@@ -61,6 +63,8 @@
         .click(clearObjectSearchClicked);
     $objectSearchInput
         .keyup(objectSearchInputChanged);
+    $filtersHeader
+        .click(filtersHeaderClicked);
 
 
     // VSCode API for interacting with the extension back-end
@@ -305,6 +309,10 @@
 
         if (vm.filter !== undefined) {
             $txtFilter.val(vm.filter);
+        }
+
+        if (vm.filtersPanelOpen !== undefined) {
+            toggleFiltersPanel(vm.filtersPanelOpen);
         }
 
         if (vm.autoApply !== undefined) {
@@ -727,8 +735,28 @@
     }
 
 
+    function toggleFiltersPanel(open) {
+        if (arguments.length === 1) {
+            $filtersHeader.toggleClass('filter-closed', !open);
+            $filters.toggleClass('filter-closed', !open);
+        }
+        else {
+            $filtersHeader.toggleClass('filter-closed');
+            $filters.toggleClass('filter-closed');
+        }
+        updateViewModel({
+            'filtersPanelOpen': !$filtersHeader.hasClass('filter-closed')
+        });
+    }
+
+
     // Event handlers
     //*********************************************************** */
+
+    function filtersHeaderClicked() {
+        toggleFiltersPanel();
+    }
+
 
     function btnSearchObjectsClicked() {
         $objectSearch.toggleClass('opened', true);
@@ -837,6 +865,7 @@
 
     function valueDblClicked() {
         AddFilter('AND');
+        toggleFiltersPanel(true);
     }
 
 
@@ -892,6 +921,7 @@
 
     function btnRemoveFilterClicked() {
         $txtFilter.val('');
+        toggleFiltersPanel(false);
         txtFilterChanged();
         updateViewModel({
             'filter': ''
@@ -1169,6 +1199,14 @@
     // Filter clause composition
     //*********************************************************** */
 
+    function getBaseType(type) {
+        let baseType = type.split(' ')[0];
+        if (baseType.indexOf(':') > 0) {
+            baseType = baseType.substring(baseType.indexOf(':') + 1);
+        }
+        return baseType;
+    }
+
     function AddFilter(operand) {
         let filter = $txtFilter.val().trim();
         if (filter.length > 0) { filter += " " + operand + " "; }
@@ -1177,11 +1215,7 @@
             filter += "([" + _selectedColumn.Name + "] IS " + ((val === null || val === "[NULL]") ? "NULL" : "NOT NULL") + ")";
         }
         else {
-            let type = _selectedColumn.Type;
-            if (type.indexOf(':') > 0) {
-                type = type.split(':')[1];
-            }
-
+            let type = getBaseType(_selectedColumn.Type);
             switch (type) {
                 case "uniqueidentifier":
                     {

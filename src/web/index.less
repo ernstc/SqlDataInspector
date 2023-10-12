@@ -299,10 +299,15 @@ label {
     }
 }
 
+#workspace {
+    display: grid;
+    grid-template-rows: 40% 60%;
+    height: 100%;
+}
+
 #navigation {    
     display: grid;
-    flex-grow: 5;
-    grid-template-columns: 39% 26% 35%;
+    grid-template-columns: 37% 28% 35%;
 
     select {
         position: absolute;
@@ -318,20 +323,24 @@ label {
     }
 }
 
+#data {
+    display: flex;
+    flex-direction: column;
+}
+
 #objects {
-    flex-grow: 4;
     position: relative;
 
     .col1 {
-        width: 45%;
+        width: 50%;
     }
     
     .col2 {
-        width: 25%;
+        width: 30%;
     }
 
     .col3 {
-        width: 30%;
+        width: 20%;
     }
 
     h2 {
@@ -348,7 +357,6 @@ label {
 }
 
 #columns {
-    flex-grow: 3;
     position: relative;
 
     .col1 {
@@ -365,7 +373,6 @@ label {
 }
 
 #values {
-    flex-grow: 4;
     position: relative;
 
     .col1 {
@@ -414,17 +421,56 @@ label {
 }
 
 #filters {
-    flex-grow: 1;
     display: flex;
     flex-direction: row;
     min-height: 128px;
+
+    &.filter-closed {
+        display: none;
+    }
+}
+
+#filtersHeader {
+    cursor: pointer;
+    margin: 8px 8px 0 8px;
+
+    .btn-hide-filters {
+        display: inline-block;
+    }
+
+    .btn-show-filters {
+        display: none;
+    }
+
+    i {
+        margin-right: 4px;
+        padding: 3px;
+        width: 20px;
+    }
+
+    &:hover {
+        color: var(--vscode-button-secondaryForeground);
+        background-color: var(--vscode-button-secondaryHoverBackground);
+    }
+
+    &.filter-closed {
+        background-color: var(--vscode-titleBar-activeBackground);
+
+        .btn-hide-filters {
+            display: none;
+        }
+
+        .btn-show-filters {
+            display: inline-block;
+        }
+    }
 }
 
 #filtersArea {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    padding: 8px;
+    padding: 0 8px 8px 8px;
 
     > div {
         height: 100%;
@@ -442,7 +488,7 @@ label {
 
     .controls {
         position: absolute;
-        top: 30px;
+        top: 3px;
         left: 8px;
         right: 8px
     }
@@ -454,7 +500,7 @@ label {
 }
 
 #dataRows {
-    flex-grow: 4;
+    flex-grow: 1;
     position: relative;
 
     h2 {

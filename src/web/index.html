@@ -32,151 +32,158 @@
                 </select>
             </div>
         </div>
-        <div id="navigation">
-            <div id="objects">
-                <h2>
-                    <div id="objectTypes">
-                        <input type="checkbox" id="cbTables">
-                        <label for="cbTables">Tables</label> <span id="tablesCount" class="count"></span>
-                        <input type="checkbox" id="cbViews">
-                        <label for="cbViews">Views</label> <span id="viewsCount" class="count"></span>
+        <div id="workspace">
+            <div id="navigation">
+                <div id="objects">
+                    <h2>
+                        <div id="objectTypes">
+                            <input type="checkbox" id="cbTables">
+                            <label for="cbTables">Tables</label> <span id="tablesCount" class="count"></span>
+                            <input type="checkbox" id="cbViews">
+                            <label for="cbViews">Views</label> <span id="viewsCount" class="count"></span>
+                        </div>
+                        <div id="objectFilters">
+                            <span><i class="ms-Icon ms-Icon--Filter"></i><i class="ms-Icon ms-Icon--FilterSolid"></i>
+                                Schema</span>
+                            <select aria-label="schema">
+                                <option value="*"> </option>
+                                <!--<option>dbo</option>
+                                <option>custom</option>-->
+                            </select>
+                        </div>
+                        <div id="objectSearch">
+                            <i id="btnSearchObjects" class="ms-Icon ms-Icon--Search"></i>
+                            <div>
+                                <input type="text" placeholder="Search" />
+                                <div id="clearObjectSearch">
+                                    <i class="ms-Icon ms-Icon--Cancel"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </h2>
+                    <div class="table">
+                        <div class="table-header">
+                            <div class="col1">Name</div>
+                            <div class="col2">Schema</div>
+                            <div class="col3">Count</div>
+                        </div>
+                        <!--<div class="table-data">
+                            <div class="col1"><i class="ms-Icon ms-Icon--Table"></i> TableName</div>
+                            <div class="col2">Schema</div>
+                            <div class="col3">100000</div>
+                        </div>-->
                     </div>
-                    <div id="objectFilters">
-                        <span><i class="ms-Icon ms-Icon--Filter"></i><i class="ms-Icon ms-Icon--FilterSolid"></i>
-                            Schema</span>
-                        <select aria-label="schema">
-                            <option value="*"> </option>
-                            <!--<option>dbo</option>
-                            <option>custom</option>-->
-                        </select>
+                </div>
+                <div id="columns">
+                    <h2>Columns <span id="columnsCount" class="count"></span></h2>
+                    <div class="table">
+                        <div class="table-header">
+                            <div class="col1">Name</div>
+                            <div class="col2">Type</div>
+                        </div>
+                        <!--<div class="table-data">
+                            <div class="col1"><i class="ms-Icon ms-Icon--Column"></i> <span class="primary-key">colName</span></div>
+                            <div class="col2">colType</div>
+                        </div>-->
                     </div>
-                    <div id="objectSearch">
-                        <i id="btnSearchObjects" class="ms-Icon ms-Icon--Search"></i>
+                </div>
+                <div id="values">
+                    <h2>Distinct Values <span id="valuesCount" class="count"></span> <button id="btnCopyValues" type="button"><i class="ms-Icon ms-Icon--Copy"></i><span>Copy All</span></button></h2>
+                    <div class="table">
+                        <div class="table-header">
+                            <div class="col1 sortable">Value
+                                <!--<i class="ms-Icon ms-Icon--CaretSolidUp"></i>-->
+                            </div>
+                            <div class="col2 sortable">Count
+                                <!--<i class="ms-Icon ms-Icon--CaretSolidDown"></i>-->
+                            </div>
+                        </div>
+                        <!--<div class="table-data">
+                            <div class="col1">value</div>
+                            <div class="col2">100</div>
+                        </div>-->
+                    </div>
+                </div>
+            </div>
+            <div id="data">
+                <div id="filtersHeader" class="filter-closed">
+                    <h2><i class="ms-Icon ms-Icon--ChevronFold10 btn-hide-filters"></i><i class="ms-Icon ms-Icon--ChevronUnfold10 btn-show-filters"></i><label>Filters <span class="sub">(WHERE statement)</span></label></h2>
+                </div>
+                <div id="filters" class="filter-closed">
+                    <div id="filtersArea">
                         <div>
-                            <input type="text" placeholder="Search" />
-                            <div id="clearObjectSearch">
-                                <i class="ms-Icon ms-Icon--Cancel"></i>
+                            <textarea id="txtFilter" spellcheck="false" autocomplete="off" autocorrect="off"></textarea>
+                        </div>
+                    </div>
+                    <div id="filterActions">
+                        <div class="controls">
+                            <div>
+                                <input id="autofilter" type="checkbox" value="1" /> <label for="autofilter">Auto filter</label>
+                            </div>
+                            <div>
+                                <button id="btnApplyFilter" class="default">Apply</button>
+                            </div>
+                            <div>
+                                <button id="btnRemoveFilter">Remove</button>
                             </div>
                         </div>
                     </div>
-                </h2>
-                <div class="table">
-                    <div class="table-header">
-                        <div class="col1">Name</div>
-                        <div class="col2">Schema</div>
-                        <div class="col3">Count</div>
-                    </div>
-                    <!--<div class="table-data">
-                        <div class="col1"><i class="ms-Icon ms-Icon--Table"></i> TableName</div>
-                        <div class="col2">Schema</div>
-                        <div class="col3">100000</div>
-                    </div>-->
                 </div>
-            </div>
-            <div id="columns">
-                <h2>Columns <span id="columnsCount" class="count"></span></h2>
-                <div class="table">
-                    <div class="table-header">
-                        <div class="col1">Name</div>
-                        <div class="col2">Type</div>
-                    </div>
-                    <!--<div class="table-data">
-                        <div class="col1"><i class="ms-Icon ms-Icon--Column"></i> <span class="primary-key">colName</span></div>
-                        <div class="col2">colType</div>
-                    </div>-->
-                </div>
-            </div>
-            <div id="values">
-                <h2>Distinct Values <span id="valuesCount" class="count"></span> <button id="btnCopyValues" type="button"><i class="ms-Icon ms-Icon--Copy"></i><span>Copy All</span></button></h2>
-                <div class="table">
-                    <div class="table-header">
-                        <div class="col1 sortable">Value
-                            <!--<i class="ms-Icon ms-Icon--CaretSolidUp"></i>-->
+                <div id="dataRows">
+                    <h2>
+                        Rows <span id="rowsCount" class="count"></span>
+                        <div id="rowsPageSize">
+                            <span>Page size</span>
+                            <select aria-label="Page size">
+                                <option value="10">10</option>
+                                <option value="20" selected>20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
                         </div>
-                        <div class="col2 sortable">Count
-                            <!--<i class="ms-Icon ms-Icon--CaretSolidDown"></i>-->
+                        <ul id="rowsPager">
+                            <li class="left-button" data-page="first"><i class="ms-Icon ms-Icon--ChevronLeftEnd6"></i></li>
+                            <li class="left-button" data-page="prev"><i class="ms-Icon ms-Icon--ChevronLeftSmall"></i></li>
+                            <li class="page hidden" data-page="1"><span>1</span></li>
+                            <li class="page hidden" data-page="2"><span>2</span></li>
+                            <li class="page hidden" data-page="3"><span>3</span></li>
+                            <li class="page hidden" data-page="4"><span>4</span></li>
+                            <li class="page hidden" data-page="5"><span>5</span></li>
+                            <li class="right-button" data-page="next"><i class="ms-Icon ms-Icon--ChevronRightSmall"></i></li>
+                            <li class="right-button" data-page="last"><i class="ms-Icon ms-Icon--ChevronRightEnd6"></i></li>
+                        </ul>
+                    </h2>
+                    <div class="table">
+                        <!--<div class="table-header">
+                            <div class="col sortable">Name1</div>
+                            <div class="col sortable">Name2</div>
+                            <div class="col">Name3</div>
+                            <div class="col">Name4</div>
+                            <div class="col">Name1</div>
+                            <div class="col">Name2</div>
+                            <div class="col">Name3</div>
+                            <div class="col">Name4</div>
+                            <div class="col">Name1</div>
+                            <div class="col">Name2</div>
+                            <div class="col">Name3</div>
+                            <div class="col">Name4</div>
                         </div>
-                    </div>
-                    <!--<div class="table-data">
-                        <div class="col1">value</div>
-                    </div>-->
-                </div>
-            </div>
-        </div>
-        <div id="filters">
-            <div id="filtersArea">
-                <h2><label for="txtFilter">Filter <span class="sub">(WHERE statement)</span></label></h2>
-                <div>
-                    <textarea id="txtFilter" spellcheck="false" autocomplete="off" autocorrect="off"></textarea>
-                </div>
-            </div>
-            <div id="filterActions">
-                <div class="controls">
-                    <div>
-                        <input id="autofilter" type="checkbox" value="1" /> <label for="autofilter">Auto filter</label>
-                    </div>
-                    <div>
-                        <button id="btnApplyFilter" class="default">Apply</button>
-                    </div>
-                    <div>
-                        <button id="btnRemoveFilter">Remove</button>
+                        <div class="table-data">
+                            <div class="col">Col1</div>
+                            <div class="col">Col2</div>
+                            <div class="col">Col3</div>
+                            <div class="col">Col4</div>
+                            <div class="col">Col1</div>
+                            <div class="col">Col2</div>
+                            <div class="col">Col3</div>
+                            <div class="col">Col4</div>
+                            <div class="col">Col1</div>
+                            <div class="col">Col2</div>
+                            <div class="col">Col3</div>
+                            <div class="col">Col4</div>
+                        </div>-->
                     </div>
                 </div>
-            </div>
-        </div>
-        <div id="dataRows">
-            <h2>
-                Rows <span id="rowsCount" class="count"></span>
-                <div id="rowsPageSize">
-                    <span>Page size</span>
-                    <select aria-label="Page size">
-                        <option value="10">10</option>
-                        <option value="20" selected>20</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
-                </div>
-                <ul id="rowsPager">
-                    <li class="left-button" data-page="first"><i class="ms-Icon ms-Icon--ChevronLeftEnd6"></i></li>
-                    <li class="left-button" data-page="prev"><i class="ms-Icon ms-Icon--ChevronLeftSmall"></i></li>
-                    <li class="page hidden" data-page="1"><span>1</span></li>
-                    <li class="page hidden" data-page="2"><span>2</span></li>
-                    <li class="page hidden" data-page="3"><span>3</span></li>
-                    <li class="page hidden" data-page="4"><span>4</span></li>
-                    <li class="page hidden" data-page="5"><span>5</span></li>
-                    <li class="right-button" data-page="next"><i class="ms-Icon ms-Icon--ChevronRightSmall"></i></li>
-                    <li class="right-button" data-page="last"><i class="ms-Icon ms-Icon--ChevronRightEnd6"></i></li>
-                </ul>
-            </h2>
-            <div class="table">
-                <!--<div class="table-header">
-                    <div class="col sortable">Name1</div>
-                    <div class="col sortable">Name2</div>
-                    <div class="col">Name3</div>
-                    <div class="col">Name4</div>
-                    <div class="col">Name1</div>
-                    <div class="col">Name2</div>
-                    <div class="col">Name3</div>
-                    <div class="col">Name4</div>
-                    <div class="col">Name1</div>
-                    <div class="col">Name2</div>
-                    <div class="col">Name3</div>
-                    <div class="col">Name4</div>
-                </div>
-                <div class="table-data">
-                    <div class="col">Col1</div>
-                    <div class="col">Col2</div>
-                    <div class="col">Col3</div>
-                    <div class="col">Col4</div>
-                    <div class="col">Col1</div>
-                    <div class="col">Col2</div>
-                    <div class="col">Col3</div>
-                    <div class="col">Col4</div>
-                    <div class="col">Col1</div>
-                    <div class="col">Col2</div>
-                    <div class="col">Col3</div>
-                    <div class="col">Col4</div>
-                </div>-->
             </div>
         </div>
         <div id="overlay" class="hidden"></div>

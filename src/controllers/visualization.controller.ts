@@ -67,6 +67,7 @@ const renderWebviewContent = async (webview: vscode.Webview, connectionContext: 
         viewModel.selectViews = true;
         viewModel.rowsPageIndex = 1;
         viewModel.rowsPageSize = 20;
+        viewModel.filtersPanelOpen = false;
 
         let connectionId = connectionContext.connectionId;
 
@@ -238,6 +239,9 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
                 break;
             case 'searchObjectName':
                 viewModel.searchObjectName = vmUpdates?.searchObjectName;
+                break;
+            case 'filtersPanelOpen':
+                viewModel.filtersPanelOpen = vmUpdates?.filtersPanelOpen;
                 break;
         }
     }

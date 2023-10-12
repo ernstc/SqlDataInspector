@@ -388,10 +388,14 @@ label {
   display: none;
   white-space: nowrap;
 }
+#workspace {
+  display: grid;
+  grid-template-rows: 40% 60%;
+  height: 100%;
+}
 #navigation {
   display: grid;
-  flex-grow: 5;
-  grid-template-columns: 39% 26% 35%;
+  grid-template-columns: 37% 28% 35%;
 }
 #navigation select {
   position: absolute;
@@ -404,18 +408,21 @@ label {
 #navigation > div {
   padding: 8px;
 }
+#data {
+  display: flex;
+  flex-direction: column;
+}
 #objects {
-  flex-grow: 4;
   position: relative;
 }
 #objects .col1 {
-  width: 45%;
+  width: 50%;
 }
 #objects .col2 {
-  width: 25%;
+  width: 30%;
 }
 #objects .col3 {
-  width: 30%;
+  width: 20%;
 }
 #objects h2 label {
   font-weight: 10pt;
@@ -426,7 +433,6 @@ label {
   top: 2px;
 }
 #columns {
-  flex-grow: 3;
   position: relative;
 }
 #columns .col1 {
@@ -439,7 +445,6 @@ label {
   font-weight: bold;
 }
 #values {
-  flex-grow: 4;
   position: relative;
 }
 #values .col1 {
@@ -477,16 +482,46 @@ label {
   display: none;
 }
 #filters {
-  flex-grow: 1;
   display: flex;
   flex-direction: row;
   min-height: 128px;
+}
+#filters.filter-closed {
+  display: none;
+}
+#filtersHeader {
+  cursor: pointer;
+  margin: 8px 8px 0 8px;
+}
+#filtersHeader .btn-hide-filters {
+  display: inline-block;
+}
+#filtersHeader .btn-show-filters {
+  display: none;
+}
+#filtersHeader i {
+  margin-right: 4px;
+  padding: 3px;
+  width: 20px;
+}
+#filtersHeader:hover {
+  color: var(--vscode-button-secondaryForeground);
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+#filtersHeader.filter-closed {
+  background-color: var(--vscode-titleBar-activeBackground);
+}
+#filtersHeader.filter-closed .btn-hide-filters {
+  display: none;
+}
+#filtersHeader.filter-closed .btn-show-filters {
+  display: inline-block;
 }
 #filtersArea {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  padding: 8px;
+  padding: 0 8px 8px 8px;
 }
 #filtersArea > div {
   height: 100%;
@@ -501,7 +536,7 @@ label {
 }
 #filterActions .controls {
   position: absolute;
-  top: 30px;
+  top: 3px;
   left: 8px;
   right: 8px;
 }
@@ -510,7 +545,7 @@ label {
   margin-top: 6px;
 }
 #dataRows {
-  flex-grow: 4;
+  flex-grow: 1;
   position: relative;
 }
 #dataRows h2 {
