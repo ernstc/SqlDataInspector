@@ -10,6 +10,7 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 * Added column information such as nullability (indicated with a question mark "?"), size and precision #19.
 * Added new feature for copying all the values of the selected column and their corresponding counts. Copied values can be pasted on Excel for further analysis.
+* The filters panel is now collapsible. This makes the usage of the workspace area more efficient when no filters are defined.
 * Values for columns of type **date** are sorted descending by default. This can be useful for monitoring columns with datetime for creations, updates and similar.
 
 ### Fixes
