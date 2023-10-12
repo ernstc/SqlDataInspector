@@ -28,6 +28,7 @@
     const $objectSchemaFilter = $('#objectFilters select');
     const $rowsPageSize = $('#rowsPageSize select');
     const $rowsPager = $('#rowsPager');
+    const $btnCopyValues = $('#btnCopyValues');
 
     $autofilter = $('#autofilter')
         .click(autoFilterClicked);
@@ -35,6 +36,8 @@
         .click(btnApplyFilterClicked);
     $('#btnRemoveFilter')
         .click(btnRemoveFilterClicked);
+    $btnCopyValues
+        .click(btnCopyValuesClicked);
     $txtFilter
         .keyup(txtFilterChanged)
         .click(txtFilterClicked);
@@ -138,6 +141,8 @@
         sendMessage({
             'command': 'viewIsReady'
         });
+
+        document.oncontextmenu = document.body.oncontextmenu = function() { return false; }
     });
 
 
@@ -450,6 +455,7 @@
                     .click(columnClicked),
             selectedIndex
         );
+        $btnCopyValues.hide();
     }
 
 
@@ -482,6 +488,7 @@
         );
         setHeaderSorting($table.find('.table-header .col1').click(valuesHeaderClicked), sortAscendingValues);
         setHeaderSorting($table.find('.table-header .col2').click(valuesCountHeaderClicked), sortAscendingValuesCount);
+        $btnCopyValues.toggle(Array.isArray(values) && values.length > 0);
     }
 
 
@@ -891,6 +898,26 @@
         });
         if ($autofilter.get(0).checked) {
             applyFilter();
+        }
+    }
+
+
+    function btnCopyValuesClicked() {
+        let values = $('#values .table-data');
+        if (values.length > 0) { 
+            let text = 'Value\tCount\n';
+            for (let index = 0; index < values.length; index++) {
+                let item = values.eq(index).data('item');
+                text += `${item.Value}\t${item.Count}\n`;
+            }
+            sendMessage({
+                'command': 'copyText',
+                'item': text
+            });
+            sendMessage({
+                'command': 'showMessage',
+                'item': 'Values copied to clipboard.'
+            });
         }
     }
 

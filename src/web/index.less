@@ -375,6 +375,42 @@ label {
     .col2 {
         width: 20%;
     }
+
+    .count {
+        display: inline-block;
+        min-width: auto;
+        margin-right: 10px;
+    }
+
+    h2 {
+        button {
+            cursor: pointer;
+            padding: 2px 4px;
+            float: right;
+            border: none;
+
+            span {
+                margin-left: 6px;
+                font-size: 9pt;
+                position: relative;
+                top: -1px;
+            }
+
+            i {
+                position: relative;
+                top: 1px;
+            }
+    
+            &:hover {
+                color: var(--vscode-button-secondaryForeground);
+                background-color: var(--vscode-button-secondaryHoverBackground);
+            }
+        }
+    }
+}
+
+#btnCopyValues {
+    display: none;
 }
 
 #filters {
@@ -614,7 +650,13 @@ label {
     i {
         cursor: pointer;
         position: relative;
-        top: 1px;
+        top: -1px;
+        padding: 2px;
+
+        &:hover {
+            color: var(--vscode-button-secondaryForeground);
+            background-color: var(--vscode-button-secondaryHoverBackground);
+        }
     }
 
     > div {

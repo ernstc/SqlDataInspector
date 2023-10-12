@@ -111,6 +111,10 @@ const renderWebviewContent = async (webview: vscode.Webview, connectionContext: 
                         vscode.env.clipboard.writeText(data.item);
                         break;
                     }
+                    case 'showMessage': {
+                        vscode.window.showInformationMessage(data.item);
+                        break;
+                    }
                     case 'changeRowsPage': {
                         if (
                             data.rowsPageIndex !== undefined
