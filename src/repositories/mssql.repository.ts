@@ -310,7 +310,11 @@ export const getMssqlDbTableRows = async (
     if (columns !== undefined && columns !== null && columns.length > 0) {
         columnsExpression = columns.map(col => {
             let statement = `[${col.Name}]`;
-            if (col.Type === 'geography' || col.Type === 'geometry') {
+            let colType = col.Type.split(' ')[0];
+            if (colType.indexOf(':') > 0) {
+                colType = colType.substring(colType.indexOf(':') + 1);
+            }
+            if (colType === 'geography' || colType === 'geometry') {
                 statement = `CONVERT(varchar(max), [${col.Name}].ToString()) as [${col.Name}]`;
             }
             return statement;
