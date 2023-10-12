@@ -831,11 +831,7 @@
         showLoading();
         // Determines if the column should be sorted ascending or descending by default
         var sortAscendingColumnValues = true;
-        var columnType = _selectedColumn.Type;
-        var semicolonIndex = columnType.indexOf(':');
-        if (semicolonIndex > 0) {
-            columnType = columnType.substring(0, semicolonIndex);
-        }
+        var columnType = getBaseType(_selectedColumn.Type);
         if (columnType.startsWith('date')) {
             sortAscendingColumnValues = false;
         }
