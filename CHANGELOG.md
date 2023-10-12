@@ -4,11 +4,12 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
-## October 2023 Pre-Release (version 0.7.1)
+## October 2023 Release (version 0.7.1)
 
 ### Changes
 
-* Added column information such as length and nullable
+* Added column information such as nullability (indicated with a question mark "?"), size and precision.
+* Values for columns of type **date** are sorted descending by default. This can be useful for monitoring columns with datetime for creations, updates and similar.
 
 ### Fixes
 

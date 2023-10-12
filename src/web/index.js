@@ -794,9 +794,19 @@
         _selectedColumn = selectedItem.data('item');
         _selectedValue = undefined;
         showLoading();
+        // Determines if the column should be sorted ascending or descending by default
+        var sortAscendingColumnValues = true;
+        var columnType = _selectedColumn.Type;
+        var semicolonIndex = columnType.indexOf(':');
+        if (semicolonIndex > 0) {
+            columnType = columnType.substring(0, semicolonIndex);
+        }
+        if (columnType.startsWith('date')) {
+            sortAscendingColumnValues = false;
+        }
         updateViewModel({
             'selectedColumnIndex': selectedItem.data('item-index'),
-            'sortAscendingColumnValues': true,
+            'sortAscendingColumnValues': sortAscendingColumnValues,
             'sortAscendingColumnValuesCount': null,
         });
         sendMessage({
