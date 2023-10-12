@@ -134,7 +134,18 @@ export const getMssqlDbColumns = async (
     const query = `
         SELECT distinct
             c.name
-            , CASE WHEN ut.system_type_id = ut.user_type_id OR st.name IS NULL THEN ut.name ELSE ut.name + ':' + st.name END as type
+            , CASE WHEN ut.system_type_id = ut.user_type_id OR st.name IS NULL THEN ut.name ELSE ut.name + ':' + st.name END  
+				+ CASE WHEN c.is_nullable = 1 THEN ' ?' ELSE '' END
+                + CASE WHEN st.name IN ('varchar', 'char', 'varbinary', 'binary', 'text')
+                       THEN ' (' + CASE WHEN c.max_length = -1 THEN 'max' ELSE CAST(c.max_length AS VARCHAR(5)) END + ')'
+                     WHEN st.name IN ('nvarchar', 'nchar', 'ntext')
+                       THEN ' (' + CASE WHEN c.max_length = -1 THEN 'max' ELSE CAST(c.max_length / 2 AS VARCHAR(5)) END + ')'
+                     WHEN st.name IN ('datetime2', 'time2', 'datetimeoffset') 
+                       THEN ' (' + CAST(c.scale AS VARCHAR(5)) + ')'
+                    WHEN st.name IN ('decimal', 'numeric')
+                       THEN ' (' + CAST(c.[precision] AS VARCHAR(5)) + ',' + CAST(c.scale AS VARCHAR(5)) + ')'
+                    ELSE ''
+                END AS type
             , ISNULL(i.is_primary_key, 0) AS is_primary_key
             , ISNULL(i.key_ordinal, 0) as key_ordinal
             , CASE WHEN fk.parent_column_id IS NOT NULL THEN 1 ELSE 0 END AS has_foreign_key

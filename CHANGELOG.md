@@ -4,6 +4,16 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
+## October 2023 Pre-Release (version 0.7.1)
+
+### Changes
+
+* Added column information such as length and nullable
+
+### Fixes
+
+---
+
 ## September 2023 Release (version 0.7.0)
 
 ### Changes
