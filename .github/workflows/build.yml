@@ -2,11 +2,14 @@ name: build
 
 on:
   push:
-    branches:
-      - 'main'  
+    branches: [ main ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
+
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js
