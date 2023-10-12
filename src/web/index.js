@@ -970,16 +970,17 @@
         else if (liveMonitoringIntervalHandler === undefined) {
 
             let refreshFunc = () => {
-                let tables = $('#objects .table-data');
+                let tables = $('#objects .table-data:not(.hidden)');
                 let tasks = [];
 
                 for (let index = 0; index < tables.length; index++) {
-                    let item = tables.eq(index).data('item');
+                    let table = tables.eq(index);
+                    let item = table.data('item');
                     tasks.push({
                         'item': item,
                         'message': {
                             'command': 'loadRowsCount',
-                            'index': index
+                            'index': table.data('item-index')
                         }
                     });
                 }
@@ -1007,7 +1008,8 @@
                         let task = tasks[idx];
 
                         if (task.item !== undefined) {
-                            let currentTable = $('#objects .table-data').eq(idx).data('item');
+                            let tables = $('#objects .table-data:not(.hidden)');
+                            let currentTable = tables.eq(idx).data('item');
                             if (
                                 currentTable === undefined
                                 || (currentTable.Name !== task.item.Name && currentTable.Schema !== task.item.Schema)
@@ -1030,7 +1032,7 @@
                 execMessagesFunc();
             };
 
-            let tables = $('#objects .table-data');
+            let tables = $('#objects .table-data:not(.hidden)');
             let intervalTableMs = pauseBetweenCommands * (tables.length + 1) + 1000;
 
             refreshFunc();
@@ -1041,7 +1043,7 @@
                     liveMonitoringIntervalHandler = undefined;
                 }
                 if (isLiveMonitoringEnabled) {
-                    let tables = $('#objects .table-data');
+                    let tables = $('#objects .table-data:not(.hidden)');
                     let intervalTableMs = pauseBetweenCommands * (tables.length + 1) + 1000;
                     let intervalMs = timerValue * 1000;
                     if (intervalMs < intervalTableMs) {
