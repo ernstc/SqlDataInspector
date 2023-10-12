@@ -33,6 +33,15 @@ interface DbCountResponse {
 }
 
 
+const getBaseType = (type: string): string => {
+    let baseType = type.split(' ')[0];
+    if (baseType.indexOf(':') > 0) {
+        baseType = baseType.substring(baseType.indexOf(':') + 1);
+    }
+    return baseType;
+}
+
+
 export const getMssqlDbObjects = async (
     connectionId: string,
     tables: boolean = true,
@@ -310,10 +319,7 @@ export const getMssqlDbTableRows = async (
     if (columns !== undefined && columns !== null && columns.length > 0) {
         columnsExpression = columns.map(col => {
             let statement = `[${col.Name}]`;
-            let colType = col.Type.split(' ')[0];
-            if (colType.indexOf(':') > 0) {
-                colType = colType.substring(colType.indexOf(':') + 1);
-            }
+            let colType = getBaseType(col.Type);
             if (colType === 'geography' || colType === 'geometry') {
                 statement = `CONVERT(varchar(max), [${col.Name}].ToString()) as [${col.Name}]`;
             }
