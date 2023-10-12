@@ -87,7 +87,7 @@
         "@vscode/vsce": "^2.21.1",
 		"ansi-regex": "6.0.1",
 		"eslint": "^8.51.0",
-		"glob": "^10.3.10",
+		"glob": "^8.1.0",
 		"markdown-it": "^13.0.2",
 		"mkdirp": "^3.0.1",
 		"mocha": "^10.2.0",
