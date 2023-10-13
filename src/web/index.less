@@ -86,6 +86,7 @@ button {
     font-size: 9pt;
     cursor: pointer;
     border-radius: 0;
+    transition: background-color 0.15s;
 
     &.default {
         font-weight: bold;
@@ -228,6 +229,7 @@ label {
         display: table;
         table-layout: fixed;
         width: 100%;
+        transition: color 0.15s, background-color 0.15s;
         
         > div {
             text-overflow: ellipsis;
@@ -395,6 +397,7 @@ label {
             padding: 2px 4px;
             float: right;
             border: none;
+            transition: color 0.15s, background-color 0.15s;
 
             span {
                 margin-left: 6px;
@@ -417,7 +420,7 @@ label {
 }
 
 #btnCopyValues {
-    display: none;
+    //display: none;
 }
 
 #filters {
@@ -433,6 +436,7 @@ label {
 #filtersHeader {
     cursor: pointer;
     margin: 8px 8px 0 8px;
+    transition: color 0.15s, background-color 0.15s;
 
     .btn-hide-filters {
         display: inline-block;
@@ -624,10 +628,20 @@ label {
             top: 0;
             right: 0;
             height: 30px;
-            background-color: rgb(201, 5, 63);
+            background-color: #c9053f;
             border-color: var(--vscode-titleBar-activeBackground);
             color: white;
             padding: 4px 8px;
+            transition: background-color 0.15s;
+
+            &:hover {
+                background-color: #e81123;
+            }
+
+            i {
+                position: relative;
+                top: 2px;
+            }
         }
     }
 
@@ -681,7 +695,7 @@ label {
 #objectSearch {
     position: absolute;
     top: 9px;
-    left: 10px;
+    left: 8px;
     height: 18px;
     background-color: var(--vscode-editor-background);
     padding-top: 1px;
@@ -693,11 +707,14 @@ label {
         width: 50%;
     }
 
-    i {
+    button {
+        border: none;
         cursor: pointer;
+        padding: 3px;
+        margin: 0;
+        transition: color 0.15s, background-color 0.15s;
         position: relative;
         top: -1px;
-        padding: 2px;
 
         &:hover {
             color: var(--vscode-button-secondaryForeground);
@@ -720,19 +737,28 @@ label {
         height: 18px;
         padding: 3px;
         width: 100%;
+        outline: none;
     }
 
     #clearObjectSearch {
         position: absolute;
-        right: 2px;
+        right: 1px;
         top: 3px;
         bottom: 0px;
         cursor: pointer;
         color: var(--vscode-input-foreground);
         background-color: var(--vscode-input-background);
+        transition: color 0.15s, background-color 0.15s;
+        width: 16px;
+        height: 16px;
+        overflow: hidden;
+        box-sizing: border-box;
+        padding: 2px;
 
         i {
-            top: 0px;
+            font-size: 12px;
+            position: relative;
+            top: -3px;
         }
 
         &:hover {
@@ -763,6 +789,7 @@ label {
         height: 21px;
         text-align: center;
         cursor: pointer;
+        transition: color 0.15s, background-color 0.15s;
 
         &:hover, &.clicked {
             background-color: var(--vscode-list-hoverBackground);

@@ -191,6 +191,7 @@ button {
   font-size: 9pt;
   cursor: pointer;
   border-radius: 0;
+  transition: background-color 0.15s;
 }
 button.default {
   font-weight: bold;
@@ -327,6 +328,7 @@ label {
   display: table;
   table-layout: fixed;
   width: 100%;
+  transition: color 0.15s, background-color 0.15s;
 }
 .table .table-data > div {
   text-overflow: ellipsis;
@@ -463,6 +465,7 @@ label {
   padding: 2px 4px;
   float: right;
   border: none;
+  transition: color 0.15s, background-color 0.15s;
 }
 #values h2 button span {
   margin-left: 6px;
@@ -478,9 +481,6 @@ label {
   color: var(--vscode-button-secondaryForeground);
   background-color: var(--vscode-button-secondaryHoverBackground);
 }
-#btnCopyValues {
-  display: none;
-}
 #filters {
   display: flex;
   flex-direction: row;
@@ -492,6 +492,7 @@ label {
 #filtersHeader {
   cursor: pointer;
   margin: 8px 8px 0 8px;
+  transition: color 0.15s, background-color 0.15s;
 }
 #filtersHeader .btn-hide-filters {
   display: inline-block;
@@ -659,6 +660,14 @@ label {
   border-color: var(--vscode-titleBar-activeBackground);
   color: white;
   padding: 4px 8px;
+  transition: background-color 0.15s;
+}
+.dialog .title button.close:hover {
+  background-color: #e81123;
+}
+.dialog .title button.close i {
+  position: relative;
+  top: 2px;
 }
 .dialog .body {
   padding: 8px;
@@ -700,7 +709,7 @@ label {
 #objectSearch {
   position: absolute;
   top: 9px;
-  left: 10px;
+  left: 8px;
   height: 18px;
   background-color: var(--vscode-editor-background);
   padding-top: 1px;
@@ -711,13 +720,16 @@ label {
 #objectSearch.opened {
   width: 50%;
 }
-#objectSearch i {
+#objectSearch button {
+  border: none;
   cursor: pointer;
+  padding: 3px;
+  margin: 0;
+  transition: color 0.15s, background-color 0.15s;
   position: relative;
   top: -1px;
-  padding: 2px;
 }
-#objectSearch i:hover {
+#objectSearch button:hover {
   color: var(--vscode-button-secondaryForeground);
   background-color: var(--vscode-button-secondaryHoverBackground);
 }
@@ -735,18 +747,27 @@ label {
   height: 18px;
   padding: 3px;
   width: 100%;
+  outline: none;
 }
 #objectSearch #clearObjectSearch {
   position: absolute;
-  right: 2px;
+  right: 1px;
   top: 3px;
   bottom: 0px;
   cursor: pointer;
   color: var(--vscode-input-foreground);
   background-color: var(--vscode-input-background);
+  transition: color 0.15s, background-color 0.15s;
+  width: 16px;
+  height: 16px;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 2px;
 }
 #objectSearch #clearObjectSearch i {
-  top: 0px;
+  font-size: 12px;
+  position: relative;
+  top: -3px;
 }
 #objectSearch #clearObjectSearch:hover {
   background-color: var(--vscode-input-foreground);
@@ -772,6 +793,7 @@ label {
   height: 21px;
   text-align: center;
   cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
 }
 #rowsPager li:hover,
 #rowsPager li.clicked {
