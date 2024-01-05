@@ -40,6 +40,19 @@ Please leave a ⭐ as motivation if this tool is helpful for you!
 
 ![Example of dashboard](https://raw.githubusercontent.com/ernstc/SqlDataInspector/main/images/screen-073.png)
 
+### Extension settings
+
+This extension has the some custom settings that let the user to customize the extension behaviour:
+
+* Order columns alphabetically in the columns and the data inspector views.
+* Shows primary key columns first in the columns and the data inspector views.
+* Default refresh interval in seconds for the live monitoring view.
+* The number of rows to show in the data inspector view.
+* Show tables in the objects list.
+* Show views in the objects list.
+
+
+
 ## Installation
 
 The current release will be available through the Extensions Marketplace in Azure Data Studio.
