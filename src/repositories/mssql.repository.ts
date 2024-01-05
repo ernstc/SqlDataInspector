@@ -4,6 +4,7 @@ import { DatabaseObjectType } from "../models/database-objectType.model";
 import { runQuery } from "./base.repository";
 import { Provider } from "../models/provider.enum";
 import { DatabaseColumn } from '../models/database-column.model';
+import { VscodeSettings } from '../vscodeSettings';
 
 
 interface DbObjectResponse {
@@ -140,7 +141,9 @@ export const getMssqlDbColumns = async (
         return [];
     }
 
-    const query = `
+    const vscodeSettings = VscodeSettings.getInstance();
+
+    let query = `
         SELECT distinct
             c.name
             , CASE WHEN ut.system_type_id = ut.user_type_id OR st.name IS NULL THEN ut.name ELSE ut.name + ':' + st.name END  
@@ -158,6 +161,7 @@ export const getMssqlDbColumns = async (
             , ISNULL(i.is_primary_key, 0) AS is_primary_key
             , ISNULL(i.key_ordinal, 0) as key_ordinal
             , CASE WHEN fk.parent_column_id IS NOT NULL THEN 1 ELSE 0 END AS has_foreign_key
+            , c.column_id
         FROM
             sys.columns c
             INNER JOIN sys.objects o ON c.object_id = o.object_id 
@@ -186,7 +190,9 @@ export const getMssqlDbColumns = async (
             (o.name = N'${table.Name}') 
             and (schema_Name(o.schema_id) = N'${table.Schema}')
         ORDER BY
-            c.name`;
+            ${vscodeSettings.columnsShowPrimaryKeyFirst ? 'is_primary_key desc,' : ''}
+            ${vscodeSettings.columnsOrderAlphabetically ? 'c.name' : 'c.column_id'}
+    `;
 
     let dbResult = await runQuery<DbColumnsResponse>(Provider.MSSQL, connectionId, query);
 
