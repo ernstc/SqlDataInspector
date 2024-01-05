@@ -9,6 +9,7 @@ import { Status } from "../models/status.enum";
 import { getMssqlDbObjects, getMssqlDbColumns, getMssqlDbColumnValuesWithCount, getMssqlDbTableRows, getMssqlDbTableRowsCount } from "../repositories/mssql.repository";
 import { ViewModel } from "../models/view.model";
 import { ConnectionContext } from '../connection-context';
+import { VscodeSettings } from "../vscodeSettings";
 
 
 interface IIncomingMessage {
@@ -58,15 +59,16 @@ const renderWebviewContent = async (webview: vscode.Webview, connectionContext: 
     webview.html = loadWebView();
     if (connectionContext.connection?.options.database && connectionContext.connectionId) {
 
+        let vscodeSettings = VscodeSettings.getInstance();
         let viewModel = new ViewModel();
         viewModel.serverName = connectionContext.fqname.serverName;
         viewModel.databaseName = connectionContext.fqname.databaseName;
         viewModel.startWithObject = connectionContext.fqname;
         viewModel.autoApply = true;
-        viewModel.selectTables = true;
-        viewModel.selectViews = true;
+        viewModel.selectTables = vscodeSettings.showTables;
+        viewModel.selectViews = vscodeSettings.showViews;
         viewModel.rowsPageIndex = 1;
-        viewModel.rowsPageSize = 20;
+        viewModel.rowsPageSize = vscodeSettings.pageSize;
         viewModel.filtersPanelOpen = false;
 
         let connectionId = connectionContext.connectionId;
@@ -178,6 +180,7 @@ const setViewModel = async (webview: azdata.DashboardWebview | vscode.Webview, v
 
 
 const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
+    let vscodeSettings = VscodeSettings.getInstance();
     for (let key in vmUpdates) {
         switch (key) {
             case 'selectedObjectIndex':
@@ -220,15 +223,18 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
                 viewModel.filterObjectsSchema = vmUpdates?.filterObjectsSchema;
                 break;
             case 'selectTables':
+                vscodeSettings.setShowTables(vmUpdates?.selectTables ?? true);
                 viewModel.selectTables = vmUpdates?.selectTables;
                 break;
             case 'selectViews':
+                vscodeSettings.setShowViews(vmUpdates?.selectViews ?? true);
                 viewModel.selectViews = vmUpdates?.selectViews;
                 break;
             case 'rowsPageIndex':
                 viewModel.rowsPageIndex = vmUpdates?.rowsPageIndex;
                 break;
             case 'rowsPageSize':
+                vscodeSettings.setPageSize(vmUpdates?.rowsPageSize);
                 viewModel.rowsPageSize = vmUpdates?.rowsPageSize;
                 break;
             case 'sortRowsByColumnName':
@@ -253,7 +259,7 @@ const loadObjects = async (connectionId: string, webview: azdata.DashboardWebvie
         status: Status.GettingObjectsData,
     });
 
-    viewModel.objects = await getMssqlDbObjects(connectionId, viewModel.selectTables, viewModel.selectViews);
+    viewModel.objects = await getMssqlDbObjects(connectionId);
     viewModel.objectsSchema = [...new Set(viewModel.objects.map(t => t.Schema))];
     viewModel.columns = undefined;
     viewModel.values = undefined;
