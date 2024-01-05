@@ -380,7 +380,12 @@ const loadValues = async (connectionId: string, webview: azdata.DashboardWebview
 
 
 const loadRows = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
-    const object = viewModel.selectedObject!;
+    if (viewModel.selectedObject === undefined) {
+        await setViewModel(webview, viewModel);
+        return;
+    }
+
+    const object = viewModel.selectedObject;
 
     let orderByColumns: string[] | undefined;
     let sortAscending: boolean[] | undefined;
