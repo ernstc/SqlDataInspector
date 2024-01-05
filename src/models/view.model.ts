@@ -25,6 +25,8 @@ export class ViewModel {
     selectTables?: boolean;
     selectViews?: boolean;
 
+    sortColumnNames?: string;
+
     sortAscendingColumnValues?: boolean;
     sortAscendingColumnValuesCount?: boolean;
 

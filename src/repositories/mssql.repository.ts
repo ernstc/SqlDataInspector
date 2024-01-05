@@ -134,7 +134,8 @@ export const getMssqlDbObjects = async (
 
 export const getMssqlDbColumns = async (
     connectionId: string,
-    table: DatabaseObject
+    table: DatabaseObject,
+    sortColumnNames?: string
 ): Promise<DatabaseColumn[]> => {
 
     if (table === undefined || table === null) {
@@ -142,6 +143,20 @@ export const getMssqlDbColumns = async (
     }
 
     const vscodeSettings = VscodeSettings.getInstance();
+
+    let sortingExpression = '';
+    if (sortColumnNames === 'ascending') {
+        sortingExpression = 'c.name';
+    }
+    else if (sortColumnNames === 'descending') {
+        sortingExpression = 'c.name DESC';
+    }
+    else {
+        sortingExpression = `
+            ${vscodeSettings.columnsShowPrimaryKeyFirst ? 'is_primary_key desc,' : ''}
+            ${vscodeSettings.columnsOrderAlphabetically ? 'c.name' : 'c.column_id'}
+        `;
+    }
 
     let query = `
         SELECT distinct
@@ -190,8 +205,7 @@ export const getMssqlDbColumns = async (
             (o.name = N'${table.Name}') 
             and (schema_Name(o.schema_id) = N'${table.Schema}')
         ORDER BY
-            ${vscodeSettings.columnsShowPrimaryKeyFirst ? 'is_primary_key desc,' : ''}
-            ${vscodeSettings.columnsOrderAlphabetically ? 'c.name' : 'c.column_id'}
+            ${sortingExpression}
     `;
 
     let dbResult = await runQuery<DbColumnsResponse>(Provider.MSSQL, connectionId, query);

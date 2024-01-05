@@ -176,7 +176,7 @@
                     hideLoading();
                 }
                 if (e.data.columns !== undefined) {
-                    await renderColumns(e.data.columns);
+                    await renderColumns(e.data.columns, undefined, e.data.sortColumnNames);
                     hideLoading();
                 }
                 if (e.data.values !== undefined) {
@@ -291,7 +291,7 @@
         }
 
         if (vm.columns !== undefined) {
-            await renderColumns(vm.columns, vm.selectedColumnIndex);
+            await renderColumns(vm.columns, vm.selectedColumnIndex, vm.sortColumnNames);
         }
 
         if (vm.values !== undefined) {
@@ -371,6 +371,26 @@
     }
 
 
+    const sortingTypes = ['', 'ascending', 'descending'];
+
+    function setHeaderCircularSorting($header) {
+        let sort = $header.data('sort');
+        if (sort === undefined || sort === null || sortingTypes.indexOf(sort) < 0) {
+            sort = '';
+            $header.data('sort', sort);
+        }
+        $header.find('i').remove();
+        switch (sort) {
+            case 'ascending': 
+                $header.append('<i class="ms-Icon ms-Icon--CaretSolidUp"></i>');
+                break;
+            case 'descending':
+                $header.append('<i class="ms-Icon ms-Icon--CaretSolidDown"></i>');
+                break;
+        }
+    }
+
+
     function renderObjects(objects, selectedIndex) {
         let tablesCount = objects.filter(o => o.ObjectType === 0).length;
         let viewsCount = objects.filter(o => o.ObjectType === 1).length;
@@ -436,14 +456,15 @@
     }
 
 
-    async function renderColumns(columns, selectedIndex) {
+    async function renderColumns(columns, selectedIndex, sortColumnNames) {
         _columns = columns;
         $columnsCount.innerText = _selectedObject !== undefined ? `(${columns.length})` : '';
+        let $table;
         renderCollection(columns,
-            $('#columns .table'),
+            $table = $('#columns .table'),
             () =>
                 $(`<div class="table-header">
-                    <div class="col1">Name</div>
+                    <div class="col1 sortable">Name</div>
                     <div class="col2">Type</div>
                 </div>`),
             (column) =>
@@ -463,7 +484,25 @@
                     .click(columnClicked),
             selectedIndex
         );
+        setHeaderCircularSorting($table.find('.table-header .col1').data('sort', sortColumnNames).click(columnsHeaderNameClicked));
         $btnCopyValues.hide();
+    }
+
+
+    function columnsHeaderNameClicked() {
+        let $this = $(this);
+        let sort = $this.data('sort') ?? '';
+        let sortIndex = sortingTypes.indexOf(sort);
+        sort = sortingTypes[(sortIndex + 1) % sortingTypes.length];
+        $this.data('sort', sort);
+        setHeaderCircularSorting($this);
+        showLoading();
+        updateViewModel({
+            'sortColumnNames': sort
+        });
+        sendMessage({
+            'command': 'loadColumns|loadRows'
+        });
     }
 
 

@@ -29,6 +29,7 @@ interface IOutgoingMessage {
     objects?: DatabaseObject[];
     objectsSchema?: string[];
     columns?: DatabaseColumn[];
+    sortColumnNames?: string;
     values?: DatabaseColumnValue[];
     rows?: DatabaseTableRow[];
     rowsColumnsName?: string[];
@@ -213,6 +214,9 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
             case 'showRecordDetails':
                 viewModel.showRecordDetails = vmUpdates?.showRecordDetails;
                 break;
+            case 'sortColumnNames':
+                viewModel.sortColumnNames = vmUpdates?.sortColumnNames;
+                break;
             case 'sortAscendingColumnValues':
                 viewModel.sortAscendingColumnValues = vmUpdates?.sortAscendingColumnValues;
                 break;
@@ -341,7 +345,7 @@ const loadObjects = async (connectionId: string, webview: azdata.DashboardWebvie
 const loadColumns = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     const object = viewModel.selectedObject!;
 
-    viewModel.columns = await getMssqlDbColumns(connectionId, object);
+    viewModel.columns = await getMssqlDbColumns(connectionId, object, viewModel.sortColumnNames);
     viewModel.values = undefined;
     viewModel.selectedColumnIndex = undefined;
     viewModel.selectedValueIndex = undefined;
@@ -349,6 +353,7 @@ const loadColumns = async (connectionId: string, webview: azdata.DashboardWebvie
     postMessage(webview, {
         status: Status.RenderingData,
         columns: viewModel.columns,
+        sortColumnNames: viewModel.sortColumnNames,
         object: object
     });
 };
