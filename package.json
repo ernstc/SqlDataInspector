@@ -1,101 +1,150 @@
 {
-	"name": "sql-data-inspector",
-	"displayName": "SQL Data Inspector",
-	"description": "This extension makes it easy to inspect data with just a few clicks.",
-	"version": "0.7.1",
-	"publisher": "ernstc",
-	"license": "MIT",
-	"icon": "images/icon.png",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/ernstc/SqlDataInspector.git"
-	},
-	"bugs": {
-		"url": "https://github.com/ernstc/SqlDataInspector/issues"
-	},
-	"engines": {
-		"vscode": "^1.79.1",
-		"azdata": "*"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [],
-	"main": "./dist/extension.js",
-	"contributes": {
-		"menus": {
-			"objectExplorer/item/context": [
-				{
-					"command": "sql-data-inspector.inspect-data",
-					"when": "connectionProvider == MSSQL && nodeType && nodeType == Database",
-					"group": "data"
-				},
-				{
-					"command": "sql-data-inspector.inspect-data",
-					"when": "connectionProvider == MSSQL && nodeType && nodeType == Server",
-					"group": "data"
-				}
-			],
-			"editor/context": [
-				{
-					"command": "sql-data-inspector.inspect-data-editor",
-					"group": "data",
-					"when": "true"
-				}
-			]
-		},
-		"commands": [
-			{
-				"command": "sql-data-inspector.inspect-data",
-				"title": "Inspect data"
-			},
-			{
-				"command": "sql-data-inspector.inspect-data-editor",
-				"title": "Inspect data"
-			}
-		]
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run clean && npm run copy-web && npm run package",
-		"compile": "tsc -p ./",
-		"lint": "eslint src --ext ts",
-		"watch": "npm run copy-web && webpack --watch",
-		"debug": "npm run copy-web && tsc -watch -p ./",
-		"package": "webpack --mode production --devtool hidden-source-map",
-		"pretest": "npm run compile && npm run lint",
-		"test": "node ./dist/test/runTest.js",
-		"proposedapi": "node installTypings.js",
-		"copy-web": "mkdirp ./dist/web && ncp ./src/web ./dist/web",
-		"clean": "rimraf ./dist",
-		"pack": "vsce package"
-	},
-	"dependencies": {
-		"fs-extra": "^11.1.1",
-		"handlebars": "^4.7.8",
-		"vscode-nls": "^5.2.0"
-	},
-	"devDependencies": {
-		"@types/azdata": "^1.46.1",
-		"@types/fs-extra": "^11.0.2",
-		"@types/glob": "^8.1.0",
-		"@types/mocha": "^10.0.2",
-		"@types/node": "^20.8.3",
-		"@types/vscode": "^1.79.1",
-		"@typescript-eslint/eslint-plugin": "^6.7.4",
-		"@typescript-eslint/parser": "^6.7.4",
+    "name": "sql-data-inspector",
+    "displayName": "SQL Data Inspector",
+    "description": "This extension makes it easy to inspect data with just a few clicks.",
+    "version": "0.7.2",
+    "publisher": "ernstc",
+    "license": "MIT",
+    "icon": "images/icon.png",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ernstc/SqlDataInspector.git"
+    },
+    "bugs": {
+        "url": "https://github.com/ernstc/SqlDataInspector/issues"
+    },
+    "engines": {
+        "vscode": "^1.79.1",
+        "azdata": "*"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "menus": {
+            "objectExplorer/item/context": [
+                {
+                    "command": "sql-data-inspector.inspect-data",
+                    "when": "connectionProvider == MSSQL && nodeType && nodeType == Database",
+                    "group": "data"
+                },
+                {
+                    "command": "sql-data-inspector.inspect-data",
+                    "when": "connectionProvider == MSSQL && nodeType && nodeType == Server",
+                    "group": "data"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "sql-data-inspector.inspect-data-editor",
+                    "group": "data",
+                    "when": "true"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "sql-data-inspector.inspect-data",
+                "title": "Inspect data"
+            },
+            {
+                "command": "sql-data-inspector.inspect-data-editor",
+                "title": "Inspect data"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "SQL Data Inspector",
+            "properties": {
+                "sqlDataInspector.columns.orderAlphabetically": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "Order columns alphabetically in the columns and the data inspector views."
+                },
+                "sqlDataInspector.columns.showPrimaryKeyFirst": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "Shows primary key columns first in the columns and the data inspector views."
+                },
+                "sqlDataInspector.liveMonitoringRefreshInterval": {
+                    "type": "string",
+                    "default": "30",
+                    "markdownDescription": "The refresh interval in seconds for the live monitoring view. The default is 30 seconds.",
+                    "enum": [
+                        "5",
+                        "10",
+                        "30",
+                        "60",
+                        "300"
+                    ]
+                },
+                "sqlDataInspector.pageSize": {
+                    "type": "string",
+                    "default": "20",
+                    "markdownDescription": "The number of rows to show in the data inspector view. The default is 20. The maximum is 100.",
+                    "enum": [
+                        "10",
+                        "20",
+                        "50",
+                        "100"
+                    ]
+                },
+                "sqlDataInspector.showTables": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "Show tables in the objects list."
+                },
+                "sqlDataInspector.showViews": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "Show views in the objects list."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run clean && npm run copy-web && npm run package",
+        "compile": "tsc -p ./",
+        "lint": "eslint src --ext ts",
+        "watch": "npm run copy-web && webpack --watch",
+        "debug": "npm run copy-web && tsc -watch -p ./",
+        "package": "webpack --mode production --devtool hidden-source-map",
+        "pretest": "npm run compile && npm run lint",
+        "test": "node ./dist/test/runTest.js",
+        "proposedapi": "node installTypings.js",
+        "copy-web": "mkdirp ./dist/web && ncp ./src/web ./dist/web",
+        "clean": "rimraf ./dist",
+        "pack": "vsce package"
+    },
+    "dependencies": {
+        "fs-extra": "^11.1.1",
+        "handlebars": "^4.7.8",
+        "vscode-nls": "^5.2.0"
+    },
+    "devDependencies": {
+        "@types/azdata": "^1.46.1",
+        "@types/fs-extra": "^11.0.2",
+        "@types/glob": "^8.1.0",
+        "@types/mocha": "^10.0.2",
+        "@types/node": "^20.8.3",
+        "@types/vscode": "^1.79.1",
+        "@typescript-eslint/eslint-plugin": "^6.7.4",
+        "@typescript-eslint/parser": "^6.7.4",
         "@vscode/test-electron": "^2.3.5",
         "@vscode/vsce": "^2.21.1",
-		"ansi-regex": "6.0.1",
-		"eslint": "^8.51.0",
-		"glob": "^8.1.0",
-		"markdown-it": "^13.0.2",
-		"mkdirp": "^3.0.1",
-		"mocha": "^10.2.0",
-		"ncp": "^2.0.0",
-		"rimraf": "^5.0.5",
-		"ts-loader": "^9.5.0",
-		"typescript": "^5.2.2",
-		"webpack": "^5.88.2",
-		"webpack-cli": "^5.1.4"
-	}
+        "ansi-regex": "6.0.1",
+        "eslint": "^8.51.0",
+        "glob": "^8.1.0",
+        "markdown-it": "^13.0.2",
+        "mkdirp": "^3.0.1",
+        "mocha": "^10.2.0",
+        "ncp": "^2.0.0",
+        "rimraf": "^5.0.5",
+        "ts-loader": "^9.5.0",
+        "typescript": "^5.2.2",
+        "webpack": "^5.88.2",
+        "webpack-cli": "^5.1.4"
+    }
 }
