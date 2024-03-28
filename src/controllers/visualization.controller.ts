@@ -29,6 +29,7 @@ interface IOutgoingMessage {
     objects?: DatabaseObject[];
     objectsSchema?: string[];
     columns?: DatabaseColumn[];
+    selectedColumnIndex?: number;
     sortColumnNames?: string;
     values?: DatabaseColumnValue[];
     rows?: DatabaseTableRow[];
@@ -97,6 +98,10 @@ const renderWebviewContent = async (webview: vscode.Webview, connectionContext: 
                     }
                     case 'loadColumns': {
                         await loadColumns(connectionId, webview, viewModel);
+                        break;
+                    }
+                    case 'reorderColumns': {
+                        await reorderColumns(connectionId, webview, viewModel);
                         break;
                     }
                     case 'loadValues': {
@@ -216,6 +221,9 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
                 break;
             case 'sortColumnNames':
                 viewModel.sortColumnNames = vmUpdates?.sortColumnNames;
+                break;
+            case 'values':
+                viewModel.values = vmUpdates?.values;
                 break;
             case 'sortAscendingColumnValues':
                 viewModel.sortAscendingColumnValues = vmUpdates?.sortAscendingColumnValues;
@@ -353,6 +361,29 @@ const loadColumns = async (connectionId: string, webview: azdata.DashboardWebvie
     postMessage(webview, {
         status: Status.RenderingData,
         columns: viewModel.columns,
+        sortColumnNames: viewModel.sortColumnNames,
+        object: object
+    });
+};
+
+
+const reorderColumns = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+    const object = viewModel.selectedObject!;
+
+    const selectedColumnName = (viewModel.columns != undefined && viewModel.selectedColumnIndex != undefined) ? 
+        viewModel.columns![viewModel.selectedColumnIndex!].Name :
+        undefined;
+
+    viewModel.columns = await getMssqlDbColumns(connectionId, object, viewModel.sortColumnNames);
+
+    viewModel.selectedColumnIndex = selectedColumnName != undefined ? 
+        viewModel.columns.findIndex(c => c.Name === selectedColumnName) :
+        undefined;
+
+    postMessage(webview, {
+        status: Status.RenderingData,
+        columns: viewModel.columns,
+        selectedColumnIndex: viewModel.selectedColumnIndex,
         sortColumnNames: viewModel.sortColumnNames,
         object: object
     });
