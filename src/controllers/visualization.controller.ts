@@ -6,7 +6,7 @@ import { DatabaseColumnValue } from '../models/database-columnValue.model';
 import { DatabaseTableRow } from "../models/database-table-row.model";
 import { loadWebView } from "../web.loader";
 import { Status } from "../models/status.enum";
-import { getMssqlDbObjects, getMssqlDbColumns, getMssqlDbColumnValuesWithCount, getMssqlDbTableRows, getMssqlDbTableRowsCount } from "../repositories/mssql.repository";
+import { IDbRepository } from './../repositories/db.repository';
 import { ViewModel } from "../models/view.model";
 import { ConnectionContext } from '../connection-context';
 import { VscodeSettings } from "../vscodeSettings";
@@ -59,7 +59,7 @@ const postMessage = (webview: azdata.DashboardWebview | vscode.Webview, message:
 
 const renderWebviewContent = async (webview: vscode.Webview, connectionContext: ConnectionContext) => {
     webview.html = loadWebView();
-    if (connectionContext.connection?.options.database && connectionContext.connectionId) {
+    if (/*connectionContext.connection?.options.database &&*/ connectionContext.connectionId) {
 
         let vscodeSettings = VscodeSettings.getInstance();
         let viewModel = new ViewModel();
@@ -73,10 +73,9 @@ const renderWebviewContent = async (webview: vscode.Webview, connectionContext: 
         viewModel.rowsPageSize = vscodeSettings.pageSize;
         viewModel.filtersPanelOpen = false;
 
-        let connectionId = connectionContext.connectionId;
-
         webview.onDidReceiveMessage(async (data: IIncomingMessage) => {
-            let commands = data.command.split('|');
+            const repository: IDbRepository = connectionContext.repository!;
+            const commands = data.command.split('|');
             for (let i = 0; i < commands.length; i++) {
                 switch (commands[i]) {
                     case 'viewIsReady': {
@@ -88,32 +87,32 @@ const renderWebviewContent = async (webview: vscode.Webview, connectionContext: 
                         break;
                     }
                     case 'loadObjects': {
-                        await loadObjects(connectionId, webview, viewModel);
+                        await loadObjects(repository, webview, viewModel);
                         // also load the columns and rows when starting with a selected table
                         if (connectionContext.fqname.tableName !== undefined) {
-                            await loadColumns(connectionId, webview, viewModel);
-                            await loadRows(connectionId, webview, viewModel);
+                            await loadColumns(repository, webview, viewModel);
+                            await loadRows(repository, webview, viewModel);
                         }
                         break;
                     }
                     case 'loadColumns': {
-                        await loadColumns(connectionId, webview, viewModel);
+                        await loadColumns(repository, webview, viewModel);
                         break;
                     }
                     case 'reorderColumns': {
-                        await reorderColumns(connectionId, webview, viewModel);
+                        await reorderColumns(repository, webview, viewModel);
                         break;
                     }
                     case 'loadValues': {
-                        await loadValues(connectionId, webview, viewModel);
+                        await loadValues(repository, webview, viewModel);
                         break;
                     }
                     case 'loadRows': {
-                        await loadRows(connectionId, webview, viewModel);
+                        await loadRows(repository, webview, viewModel);
                         break;
                     }
                     case 'loadRowsCount': {
-                        await loadRowsCount(connectionId, webview, viewModel, data.index!);
+                        await loadRowsCount(repository, webview, viewModel, data.index!);
                         break;
                     }
                     case 'copyText': {
@@ -157,7 +156,7 @@ const renderWebviewContent = async (webview: vscode.Webview, connectionContext: 
                                 }
                             }
                             viewModel.rowsPageIndex = pageIndex;
-                            await loadRows(connectionId, webview, viewModel);
+                            await loadRows(repository, webview, viewModel);
                         }
                     }
                 }
@@ -266,12 +265,12 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
 };
 
 
-const loadObjects = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const loadObjects = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     postMessage(webview, {
         status: Status.GettingObjectsData,
     });
 
-    viewModel.objects = await getMssqlDbObjects(connectionId);
+    viewModel.objects = await repository.getDbObjects();
     viewModel.objectsSchema = [...new Set(viewModel.objects.map(t => t.Schema))];
     viewModel.columns = undefined;
     viewModel.values = undefined;
@@ -350,10 +349,10 @@ const loadObjects = async (connectionId: string, webview: azdata.DashboardWebvie
 };
 
 
-const loadColumns = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const loadColumns = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     const object = viewModel.selectedObject!;
 
-    viewModel.columns = await getMssqlDbColumns(connectionId, object, viewModel.sortColumnNames);
+    viewModel.columns = await repository.getDbColumns(object, viewModel.sortColumnNames);
     viewModel.values = undefined;
     viewModel.selectedColumnIndex = undefined;
     viewModel.selectedValueIndex = undefined;
@@ -367,14 +366,14 @@ const loadColumns = async (connectionId: string, webview: azdata.DashboardWebvie
 };
 
 
-const reorderColumns = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const reorderColumns = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     const object = viewModel.selectedObject!;
 
     const selectedColumnName = (viewModel.columns != undefined && viewModel.selectedColumnIndex != undefined) ? 
         viewModel.columns![viewModel.selectedColumnIndex!].Name :
         undefined;
 
-    viewModel.columns = await getMssqlDbColumns(connectionId, object, viewModel.sortColumnNames);
+    viewModel.columns = await repository.getDbColumns(object, viewModel.sortColumnNames);
 
     viewModel.selectedColumnIndex = selectedColumnName != undefined ? 
         viewModel.columns.findIndex(c => c.Name === selectedColumnName) :
@@ -390,12 +389,11 @@ const reorderColumns = async (connectionId: string, webview: azdata.DashboardWeb
 };
 
 
-const loadValues = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const loadValues = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     const object = viewModel.selectedObject!;
     const column = viewModel.selectedColumn!;
 
-    viewModel.values = await getMssqlDbColumnValuesWithCount(
-        connectionId,
+    viewModel.values = await repository.getDbColumnValuesWithCount(
         object, column,
         viewModel.filter!,
         viewModel.sortAscendingColumnValues,
@@ -415,7 +413,7 @@ const loadValues = async (connectionId: string, webview: azdata.DashboardWebview
 };
 
 
-const loadRows = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const loadRows = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     if (viewModel.selectedObject === undefined) {
         await setViewModel(webview, viewModel);
         return;
@@ -443,7 +441,7 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
         sortAscending = primaryKey?.map(p => true);
     }
 
-    const dbRows = await getMssqlDbTableRows(connectionId, object, viewModel.columns, viewModel.filter!, orderByColumns, sortAscending, viewModel.rowsPageIndex, viewModel.rowsPageSize);
+    const dbRows = await repository.getDbTableRows(object, viewModel.columns, viewModel.filter!, orderByColumns, sortAscending, viewModel.rowsPageIndex, viewModel.rowsPageSize);
     object.Count = dbRows.count.toString();
     let columnsName: string[] = [];
 
@@ -482,13 +480,13 @@ const loadRows = async (connectionId: string, webview: azdata.DashboardWebview |
 };
 
 
-const loadRowsCount = async (connectionId: string, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel, index: number) => {
+const loadRowsCount = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel, index: number) => {
     const object = viewModel.objects ? viewModel.objects[index] : undefined;
     if (object === undefined) {
         return;
     }
 
-    const dbRowsCount = await getMssqlDbTableRowsCount(connectionId, object, viewModel.filter!);
+    const dbRowsCount = await repository.getDbTableRowsCount(object, viewModel.filter!);
     object.Count = dbRowsCount.count.toString();
 
     postMessage(webview, {

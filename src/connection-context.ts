@@ -1,3 +1,4 @@
+import { IDbRepository } from './repositories/db.repository';
 import * as vscode from "vscode";
 import * as azdata from "azdata";
 import { FQName } from "./FQName";
@@ -13,6 +14,7 @@ export class ConnectionContext {
     public connection: azdata.connection.Connection;
     public connectionId: string;
     public fqname: FQName;
+    public repository?: IDbRepository;
 
     public constructor(fqname: FQName, connection: azdata.connection.Connection) {
         this.fqname = fqname;

@@ -3,6 +3,7 @@ import * as azdata from 'azdata';
 import { VisualizationController } from './controllers/visualization.controller';
 import { ConnectionContext } from './connection-context';
 import { FQName } from './FQName';
+import { DbRepository } from './repositories/db.repository';
 
 
 export const activate = (context: vscode.ExtensionContext) => {
@@ -42,6 +43,9 @@ const loadVisualizationFromExplorer = async (context: azdata.ObjectExplorerConte
 
         // Get the active connection information
         let connectionContext = await ConnectionContext.ExplorerContext(iConnProfile, fqname);
+
+        // Inizialize the DbRepository
+        DbRepository.create(connectionContext);
 
         // Create and show a new webview
         const panel = vscode.window.createWebviewPanel(
