@@ -176,10 +176,13 @@
                     hideLoading();
                 }
                 if (e.data.columns !== undefined) {
-                    await renderColumns(e.data.columns, undefined, e.data.sortColumnNames);
+                    await renderColumns(e.data.columns, e.data.selectedColumnIndex, e.data.sortColumnNames);
                     hideLoading();
                 }
                 if (e.data.values !== undefined) {
+                    _values = e.data.values;
+                    _sortAscendingColumnValues = e.data.sortAscendingColumnValues;
+                    _sortAscendingColumnValuesCount = e.data.sortAscendingColumnValuesCount;
                     renderValues(e.data.values, e.data.column, undefined, e.data.sortAscendingColumnValues, e.data.sortAscendingColumnValuesCount);
                     hideLoading();
                 }
@@ -243,6 +246,10 @@
     let _selectedColumn;
     let _selectedValue;
     let _selectedRow;
+    let _values;
+    let _selectedValueIndex;
+    let _sortAscendingColumnValues;
+    let _sortAscendingColumnValuesCount;
 
 
     async function applyViewModel(vm) {
@@ -295,7 +302,11 @@
         }
 
         if (vm.values !== undefined) {
-            renderValues(vm.values, _selectedColumn, vm.selectedValueIndex, vm.sortAscendingColumnValues, vm.sortAscendingColumnValuesCount);
+            _values = vm.values;
+            _selectedValueIndex = vm.selectedValueIndex;
+            _sortAscendingColumnValues = vm.sortAscendingColumnValues;
+            _sortAscendingColumnValuesCount = vm.sortAscendingColumnValuesCount;
+            renderValues(_values, _selectedColumn, _selectedValueIndex, _sortAscendingColumnValues, _sortAscendingColumnValuesCount);
         }
 
         if (vm.rows !== undefined) {
@@ -485,7 +496,9 @@
             selectedIndex
         );
         setHeaderCircularSorting($table.find('.table-header .col1').data('sort', sortColumnNames).click(columnsHeaderNameClicked));
-        $btnCopyValues.hide();
+        if (selectedIndex == undefined) {
+            $btnCopyValues.hide();
+        }
     }
 
 
@@ -501,7 +514,7 @@
             'sortColumnNames': sort
         });
         sendMessage({
-            'command': 'loadColumns|loadRows'
+            'command': 'reorderColumns|loadRows'
         });
     }
 
@@ -555,34 +568,69 @@
 
     function valuesHeaderClicked() {
         let $this = $(this);
-        let sortAscending = $this.data('sort') !== 'ascending';
-        setHeaderSorting($('#values .table-header .col1'), sortAscending);
+        _sortAscendingColumnValues = $this.data('sort') !== 'ascending';
+        setHeaderSorting($('#values .table-header .col1'), _sortAscendingColumnValues);
         setHeaderSorting($('#values .table-header .col2'), undefined);
 
-        showLoading();
-        updateViewModel({
-            'sortAscendingColumnValues': sortAscending,
-            'sortAscendingColumnValuesCount': null,
+        const type = getBaseType(_selectedColumn.Type);
+        const valueFunc = getSortableValueFunction(type);
+
+        _values.sort((a, b) => {
+            if (a.Value === '[NULL]') { return -1; }
+            else if (b.Value === '[NULL]') { return 1; }
+            else {
+                const aValue = valueFunc(a.Value);
+                const bValue = valueFunc(b.Value);
+                if (_sortAscendingColumnValues) {
+                    return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+                }
+                else {
+                    return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+                }
+            }
         });
-        sendMessage({
-            'command': 'loadValues'
+
+        renderValues(_values, _selectedColumn, _selectedValueIndex, _sortAscendingColumnValues, undefined);
+
+        updateViewModel({
+            'values': _values,
+            'sortAscendingColumnValues': _sortAscendingColumnValues,
+            'sortAscendingColumnValuesCount': null,
         });
     }
 
 
     function valuesCountHeaderClicked() {
         let $this = $(this);
-        let sortAscending = $this.data('sort') !== 'ascending';
+        _sortAscendingColumnValuesCount = $this.data('sort') !== 'ascending';
         setHeaderSorting($('#values .table-header .col1'), undefined);
-        setHeaderSorting($('#values .table-header .col2'), sortAscending);
+        setHeaderSorting($('#values .table-header .col2'), _sortAscendingColumnValuesCount);
 
-        showLoading();
+        if (_sortAscendingColumnValuesCount) {
+            _values.sort((a, b) => {
+                let aCount = parseInt(a.Count, 10);
+                let bCount = parseInt(b.Count, 10);
+                return aCount < bCount ? -1 : 
+                    aCount > bCount ? 1 :
+                    0;
+            });
+        }
+        else {
+            _values.sort((a, b) => {
+                let aCount = parseInt(a.Count, 10);
+                let bCount = parseInt(b.Count, 10);
+                return aCount > bCount ? -1 : 
+                    aCount < bCount ? 1 :
+                    0;
+            });         
+        }
+
+        renderValues(_values, _selectedColumn, _selectedValueIndex, undefined, _sortAscendingColumnValuesCount);
+
         updateViewModel({
+            'values': _values,
             'sortAscendingColumnValues': null,
-            'sortAscendingColumnValuesCount': sortAscending,
-        });
-        sendMessage({
-            'command': 'loadValues'
+            'sortAscendingColumnValuesCount': _sortAscendingColumnValuesCount,
         });
     }
 
@@ -1301,6 +1349,90 @@
             });
             applyFilter();
         }
+    }
+
+
+    // Sorting utility
+    //*********************************************************** */
+
+    function getSortableValueFunction(columntType) {
+        switch (columntType) {
+            case "int":
+            case "byte":
+            case "tinyint":
+            case "smallint":
+            case "bigint":
+            case "bit":
+                {
+                    return (value) => parseInt(value, 10);
+                }
+            case "float":
+            case "double":
+            case "real":
+            case "decimal":
+            case "money":
+            case "smallmoney":
+                {
+                    return (value) => parseFloat(value);
+                }
+            case "date":
+            case "datetime":
+            case "datetime2":
+            case "datetimeoffset":
+            case "smalldatetime":
+                {
+                    // parse date in format 'yyyy-MM-dd HH:mm:ss.SS +00:00'
+                    return (value) => {
+                        let date;
+                        let [datePart, timePart, timeZone] = value.split(' ');
+                        let [year, month, day] = datePart.split('-').map(Number);
+                        if (timePart !== undefined) {
+                            if (timePart[0] === '+' || timePart[0] === '-') {
+                                // date with timezone offset
+                                date = new Date(Date.UTC(year, month - 1, day));
+                                timeZone = timePart;
+                            }
+                            else {
+                                // date with time
+                                let [timeWithoutMilliseconds, milliseconds] = timePart.split('.');
+                                let [hour, minute, second] = timeWithoutMilliseconds.split(':').map(Number);
+                                date = new Date(Date.UTC(year, month - 1, day, hour, minute, second || 0));
+                                if (milliseconds !== undefined) {
+                                    date.setMilliseconds(parseInt(milliseconds, 10));
+                                }
+                            }
+                            if (timeZone !== undefined) {
+                                // handle timezone offset
+                                let sign = timeZone[0];
+                                let [hoursOffset, minutesOffset] = timeZone.slice(1).split(':').map(Number);
+                                let totalMinutesOffset = hoursOffset * 60 + minutesOffset;
+                                totalMinutesOffset = (sign === '+' ? -1 : 1) * totalMinutesOffset;
+                                date.setMinutes(date.getMinutes() + totalMinutesOffset);
+                            }
+                        }
+                        else {
+                            // only date
+                            date = new Date(Date.UTC(year, month - 1, day));
+                        }                
+                        return date;
+                    };
+                }
+            case "time":
+                {   
+                    // parse time in format 'HH:mm:ss.SS'
+                    return (value) => {
+                        let [timeWithoutMilliseconds, milliseconds] = value.split('.');
+                        let [hour, minute, second] = timeWithoutMilliseconds.split(':').map(Number);
+                        let date = new Date(0);
+                        date.setUTCHours(hour, minute, second || 0);
+                        if (milliseconds !== undefined) {
+                            date.setMilliseconds(parseInt(milliseconds, 10));
+                        }
+                        return date;
+                    };
+                }
+        };
+        return (value) => value;
     }
 
 })(jQuery);

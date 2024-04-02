@@ -8,14 +8,14 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ### New Features
 
-* Added extension settings that will let the user to customize the extension behaviour. @ernstc 
-* Columns ordering can be changed from the extension settings. Until now the columns have been ordered alphabetically by default. From now on, the default ordering will be the ordinal ordering, but from the settings is possible to enable the alphabetical ordering. It is also possible to choose if the primary key columns must be shown as first columns. #21 @ernstc 
-* Columns ordering can also be changed by clicking on the header of names column. This overrides the settings, but once enabled, can be disabled repeating the click on the header until the sorting icon disappears. #21 @ernstc
-* The status of some controls is now persisted in the extension settings. The persisted controls are: `page size`, `show tables`, `show views`, `live monitoring refresh rate`. @ernstc 
+* Added extension settings that will let the user to customize the extension behaviour.  
+* Columns ordering can be changed from the extension settings. Until now the columns have been ordered alphabetically by default. From now on, the default ordering will be the ordinal ordering, but from the settings is possible to enable the alphabetical ordering. It is also possible to choose if the primary key columns must be shown as first columns. 
+* Columns ordering can also be changed by clicking on the header of names column. This overrides the settings, but once enabled, can be disabled repeating the click on the header until the sorting icon disappears.
+* The status of some controls is now persisted in the extension settings. The persisted controls are: `page size`, `show tables`, `show views`, `live monitoring refresh rate`. 
 
 ### Fixes
 
-* Fixed behaviour when changing the page size when no object has already been selected. @ernstc 
+* Fixed behaviour when changing the page size when no object has already been selected. 
 
 ---
 
