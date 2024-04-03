@@ -2,8 +2,9 @@ import { connection, dataprotocol, DataProviderType, QueryProvider, SimpleExecut
 import { DatabaseColumn } from '../models/database-column.model';
 import { DatabaseColumnValue } from '../models/database-columnValue.model';
 import { DatabaseObject } from "../models/database-object.model";
-import { DbRepositoryMSSQL } from "./db.repository.mssql";
 import { ConnectionContext } from "../connection-context";
+import { DbRepositoryMSSQL } from "./db.repository.mssql";
+import { DbRepositoryMySQL } from "./db.repository.mysql";
 
 
 export type DbProviderType = "MSSQL" | "MySQL";
@@ -68,6 +69,8 @@ export class DbRepository {
                 connectionContext.repository = new DbRepositoryMSSQL(connectionContext);
                 break;
             case "MySQL":
+                connectionContext.repository = new DbRepositoryMySQL(connectionContext);
+                break;
             default:
                 throw new Error(`Provider "${provider}" not supported`);
         }
