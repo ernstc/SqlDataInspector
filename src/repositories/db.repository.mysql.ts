@@ -296,19 +296,13 @@ export class DbRepositoryMySQL implements IDbRepository{
         const whereExpression = filter ? 'WHERE ' + filter : '';
         const orderBy = hasOrderingColumns ? `
             ORDER BY ${orderByColumns?.join(',')}
-            OFFSET ${(pageIndex - 1) * pageSize} ROWS FETCH NEXT ${pageSize} ROWS ONLY
+            LIMIT ${(pageIndex - 1) * pageSize}, ${pageSize}
             ` : '';
-    
-        const top = !hasOrderingColumns ? `TOP(${pageSize})` : '';
     
         let columnsExpression = '';
         if (columns !== undefined && columns !== null && columns.length > 0) {
             columnsExpression = columns.map(col => {
                 let statement = `${col.Name}`;
-                //let colType = getBaseType(col.Type);
-                //if (colType === 'geography' || colType === 'geometry') {
-                //    statement = `CONVERT(varchar(max), [${col.Name}].ToString()) as [${col.Name}]`;
-                //}
                 return statement;
             }).join(',');
         }
@@ -317,7 +311,7 @@ export class DbRepositoryMySQL implements IDbRepository{
         }
     
         const queryRows = `
-            SELECT ${top} ${columnsExpression}
+            SELECT ${columnsExpression}
             FROM ${table.Schema}.${table.Name}
             ${whereExpression}
             ${orderBy}`;
