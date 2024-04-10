@@ -1,6 +1,7 @@
 import { DbRepository, IDbRepository } from './db.repository';
 import { DatabaseColumn } from '../models/database-column.model';
 import { DatabaseColumnValue } from '../models/database-columnValue.model';
+import { DatabaseInfo } from '../models/database-info.model';
 import { DatabaseObject } from '../models/database-object.model';
 import { DatabaseObjectType } from '../models/database-objectType.model';
 import { VscodeSettings } from '../vscodeSettings';
@@ -48,6 +49,22 @@ export class DbRepositoryMSSQL implements IDbRepository{
     constructor(
         private connectionContext: ConnectionContext
     ) { }
+
+    
+    async getDatabaseInfo(): Promise<DatabaseInfo> {
+        const query = `SELECT @@VERSION AS version`;
+        let dbResult = await DbRepository.runQuery<{ version: string }>(this.connectionContext, query);
+        let version = dbResult.length > 0 ? dbResult[0].version : '';
+        let versionMatch = version.match(/\b\d+(\.\d+){0,3}\b/);
+        let parsedVersion = versionMatch ? versionMatch[0] : '';
+        return {
+            Provider: 'MSSQL',
+            NameEncloserStart: '[',
+            NameEncloserEnd: ']',
+            Version: parsedVersion
+        };
+    }
+
 
     async getDbObjects(
         tables: boolean = true,

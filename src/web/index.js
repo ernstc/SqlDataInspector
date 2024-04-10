@@ -143,12 +143,22 @@
         });
 
         sendMessage({
-            'command': 'viewIsReady'
+            'command': 'viewIsReady|databaseInfo'
         });
 
         document.oncontextmenu = document.body.oncontextmenu = function() { return false; }
     });
 
+
+    // Database Info
+    //*********************************************************** */
+
+    let _databaseInfo = {
+        Provider: '',
+        NameEncloserStart: '', 
+        NameEncloserEnd: '',
+        Version: ''
+    };
 
 
     // Message handler
@@ -161,6 +171,10 @@
                 hideLoading();
             }
             else {
+                if (e.data.databaseInfo !== undefined) {
+                    _databaseInfo = e.data.databaseInfo;
+                    console.log('Database: ', _databaseInfo);
+                }
                 if (e.data.serverName !== undefined) {
                     $serverName.innerText = e.data.serverName;
                 }
@@ -372,7 +386,7 @@
 
     function renderSelectedObjectName(object) {
         if (object) {
-            $objectName.innerText = `[${object.Schema}].[${object.Name}]`;
+            $objectName.innerText = `${_databaseInfo.NameEncloserStart}${object.Schema}${_databaseInfo.NameEncloserEnd}.${_databaseInfo.NameEncloserStart}${object.Name}${_databaseInfo.NameEncloserEnd}`;
             $objectNamePart.show();
         }
         else {
@@ -905,7 +919,7 @@
             'command': 'loadColumns|loadRows'
         });
         renderValues([]);
-        textToCopy = `[${_selectedObject.Schema}].[${_selectedObject.Name}]`;
+        textToCopy = `${_databaseInfo.NameEncloserStart}${_selectedObject.Schema}${_databaseInfo.NameEncloserEnd}.${_databaseInfo.NameEncloserStart}${_selectedObject.Name}${_databaseInfo.NameEncloserEnd}`;
     }
 
 
@@ -930,7 +944,7 @@
         sendMessage({
             'command': 'loadValues'
         });
-        textToCopy = `[${_selectedColumn.Name}]`;
+        textToCopy = `${_databaseInfo.NameEncloserStart}${_selectedColumn.Name}${_databaseInfo.NameEncloserEnd}`;
     }
 
 
@@ -1295,7 +1309,8 @@
         if (filter.length > 0) { filter += " " + operand + " "; }
         let val = _selectedValue;
         if (val === null || val === "[NULL]" || val === "[NOT NULL]") {
-            filter += "([" + _selectedColumn.Name + "] IS " + ((val === null || val === "[NULL]") ? "NULL" : "NOT NULL") + ")";
+            //filter += "([" + _selectedColumn.Name + "] IS " + ((val === null || val === "[NULL]") ? "NULL" : "NOT NULL") + ")";
+            filter += `(${_databaseInfo.NameEncloserStart}${_selectedColumn.Name}${_databaseInfo.NameEncloserEnd} IS ${(val === null || val === "[NULL]") ? "NULL" : "NOT NULL"})`;
         }
         else {
             let type = getBaseType(_selectedColumn.Type);
@@ -1338,7 +1353,8 @@
                         break;
                     }
             };
-            filter += "([" + _selectedColumn.Name + "] = " + val + ")";
+            //filter += "([" + _selectedColumn.Name + "] = " + val + ")";
+            filter += `(${_databaseInfo.NameEncloserStart}${_selectedColumn.Name}${_databaseInfo.NameEncloserEnd} = ${val})`;
         }
         $txtFilter.val(filter);
         txtFilterChanged();

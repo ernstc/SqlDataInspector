@@ -1,11 +1,11 @@
 import { DbRepository, IDbRepository } from './db.repository';
 import { DatabaseColumn } from '../models/database-column.model';
 import { DatabaseColumnValue } from '../models/database-columnValue.model';
+import { DatabaseInfo } from '../models/database-info.model';
 import { DatabaseObject } from '../models/database-object.model';
 import { DatabaseObjectType } from '../models/database-objectType.model';
 import { VscodeSettings } from '../vscodeSettings';
 import { ConnectionContext } from '../connection-context';
-
 
 
 interface DbObjectResponse {
@@ -18,6 +18,7 @@ interface DbObjectResponse {
 interface DbColumnsResponse {
     name: string;
     type: string;
+    is_nullable: string;
     is_primary_key: string;
     key_ordinal: string;
     has_foreign_key: string
@@ -35,14 +36,27 @@ interface DbCountResponse {
 }
 
 
-
-
-
 export class DbRepositoryMySQL implements IDbRepository{
 
     constructor(
         private connectionContext: ConnectionContext
     ) { }
+
+
+    async getDatabaseInfo(): Promise<DatabaseInfo> {
+
+        const query = 'SELECT VERSION() as mysqlVersion';
+
+        let dbResult = await DbRepository.runQuery<any>(this.connectionContext, query);
+
+        return {
+            Provider: 'MySQL',
+            NameEncloserStart: '`',
+            NameEncloserEnd: '`',
+            Version: dbResult.length > 0 ? dbResult[0].mysqlVersion : ''
+        };
+    }
+
 
     async getDbObjects(
         tables: boolean = true,
@@ -99,7 +113,7 @@ export class DbRepositoryMySQL implements IDbRepository{
             return [];
         }
        
-        let dbResult = await DbRepository.runQuery<any>(this.connectionContext, query);
+        let dbResult = await DbRepository.runQuery<DbObjectResponse>(this.connectionContext, query);
 
         const result: DatabaseObject[] = [];
         for (let index = 0; index < dbResult.length; index++) {
@@ -169,7 +183,7 @@ export class DbRepositoryMySQL implements IDbRepository{
                 ${sortingExpression}
         `;
     
-        let dbResult = await DbRepository.runQuery<any>(this.connectionContext, query);
+        let dbResult = await DbRepository.runQuery<DbColumnsResponse>(this.connectionContext, query);
     
         const result: DatabaseColumn[] = [];
         for (let index = 0; index < dbResult.length; index++) {
@@ -221,18 +235,18 @@ export class DbRepositoryMySQL implements IDbRepository{
             
             query = `
                 SELECT '[NULL]' as value, COUNT(*) as count 
-                FROM ${table.Schema}.${table.Name}
-                WHERE ${column.Name} is NULL ${andWhereExpression}
+                FROM \`${table.Schema}\`.\`${table.Name}\`
+                WHERE \`${column.Name}\` is NULL ${andWhereExpression}
                 UNION
                 SELECT '[NOT NULL]' as value, COUNT(*) as count 
-                FROM ${table.Schema}.${table.Name}
-                WHERE ${column.Name} is NOT NULL ${andWhereExpression}`;
+                FROM \`${table.Schema}\`.\`${table.Name}\`
+                WHERE \`${column.Name}\` is NOT NULL ${andWhereExpression}`;
         }
         else {
             // Create a query for counting distinct values.
             let sortColumn: string;
             if (sortAscendingColumnValues !== undefined && sortAscendingColumnValues !== null) {
-                sortColumn = `${column.Name}`;
+                sortColumn = `\`${column.Name}\``;
                 if (sortAscendingColumnValues === false) { sortColumn += ' DESC'; }
             }
             else if (sortAscendingColumnValuesCount !== undefined && sortAscendingColumnValuesCount !== null) {
@@ -240,20 +254,20 @@ export class DbRepositoryMySQL implements IDbRepository{
                 if (sortAscendingColumnValuesCount === false) { sortColumn += ' DESC'; }
             }
             else {
-                sortColumn = `${column.Name}`;
+                sortColumn = `\`${column.Name}\``;
             }
     
             const whereExpression = filter ? 'WHERE ' + filter : '';
     
             query = `
-                SELECT ${column.Name} as value, COUNT(*) as count 
-                FROM ${table.Schema}.${table.Name}
+                SELECT \`${column.Name}\` as value, COUNT(*) as count 
+                FROM \`${table.Schema}\`.\`${table.Name}\`
                 ${whereExpression}
-                GROUP BY ${column.Name}
+                GROUP BY \`${column.Name}\`
                 ORDER BY ${sortColumn}`;
         }
     
-        let dbResult = await DbRepository.runQuery<any>(this.connectionContext, query);
+        let dbResult = await DbRepository.runQuery<DbColumnValuesResponse>(this.connectionContext, query);
     
         const result: DatabaseColumnValue[] = [];
         for (let index = 0; index < dbResult.length; index++) {
@@ -290,7 +304,7 @@ export class DbRepositoryMySQL implements IDbRepository{
     
         const hasOrderingColumns: boolean = orderByColumns !== undefined && orderByColumns.length > 0;
         if (hasOrderingColumns && sortAscending !== undefined) {
-            orderByColumns = orderByColumns?.map((col, index) => sortAscending[index] ? col : col + ' DESC');
+            orderByColumns = orderByColumns?.map((col, index) => sortAscending[index] ? `\`${col}\`` : `\`${col}\`` + ' DESC');
         }
     
         const whereExpression = filter ? 'WHERE ' + filter : '';
@@ -302,7 +316,7 @@ export class DbRepositoryMySQL implements IDbRepository{
         let columnsExpression = '';
         if (columns !== undefined && columns !== null && columns.length > 0) {
             columnsExpression = columns.map(col => {
-                let statement = `${col.Name}`;
+                let statement = `\`${col.Name}\``;
                 return statement;
             }).join(',');
         }
@@ -312,13 +326,13 @@ export class DbRepositoryMySQL implements IDbRepository{
     
         const queryRows = `
             SELECT ${columnsExpression}
-            FROM ${table.Schema}.${table.Name}
+            FROM \`${table.Schema}\`.\`${table.Name}\`
             ${whereExpression}
             ${orderBy}`;
     
         const queryCount = `
             SELECT COUNT(*) as count
-            FROM ${table.Schema}.${table.Name}
+            FROM \`${table.Schema}\`.\`${table.Name}\`
             ${whereExpression}`;
     
         let dbRowsResult = await DbRepository.runQuery<any>(this.connectionContext, queryRows);
@@ -346,7 +360,7 @@ export class DbRepositoryMySQL implements IDbRepository{
     
         const queryCount = `
             SELECT COUNT(*) as count
-            FROM ${table.Schema}.${table.Name}
+            FROM \`${table.Schema}\`.\`${table.Name}\`
             ${whereExpression}`;
     
         let dbCountResult = await DbRepository.runQuery<DbCountResponse>(this.connectionContext, queryCount);

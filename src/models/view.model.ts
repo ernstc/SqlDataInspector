@@ -1,6 +1,7 @@
-import { DatabaseColumnValue } from './database-columnValue.model';
-import { DatabaseObject } from "./database-object.model";
 import { DatabaseColumn } from "./database-column.model";
+import { DatabaseColumnValue } from './database-columnValue.model';
+import { DatabaseInfo } from './database-info.model';
+import { DatabaseObject } from "./database-object.model";
 import { DatabaseTableRow } from './database-table-row.model';
 import { FQName } from '../FQName';
 
@@ -8,6 +9,7 @@ import { FQName } from '../FQName';
 export class ViewModel {
     serverName?: string;
     databaseName?: string;
+    databaseInfo?: DatabaseInfo;
     objects?: DatabaseObject[];
     objectsSchema?: string[];
     columns?: DatabaseColumn[];

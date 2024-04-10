@@ -1,6 +1,7 @@
 import { connection, dataprotocol, DataProviderType, QueryProvider, SimpleExecuteResult } from "azdata";
 import { DatabaseColumn } from '../models/database-column.model';
 import { DatabaseColumnValue } from '../models/database-columnValue.model';
+import { DatabaseInfo } from "../models/database-info.model";
 import { DatabaseObject } from "../models/database-object.model";
 import { ConnectionContext } from "../connection-context";
 import { DbRepositoryMSSQL } from "./db.repository.mssql";
@@ -11,6 +12,8 @@ export type DbProviderType = "MSSQL" | "MySQL";
 
 
 export interface IDbRepository {
+
+    getDatabaseInfo(): Promise<DatabaseInfo>;
 
     getDbObjects(
         tables?: boolean,

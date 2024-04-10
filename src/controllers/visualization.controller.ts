@@ -1,8 +1,9 @@
 import * as azdata from "azdata";
 import * as vscode from 'vscode';
-import { DatabaseObject } from '../models/database-object.model';
 import { DatabaseColumn } from "../models/database-column.model";
 import { DatabaseColumnValue } from '../models/database-columnValue.model';
+import { DatabaseInfo } from "../models/database-info.model";
+import { DatabaseObject } from '../models/database-object.model';
 import { DatabaseTableRow } from "../models/database-table-row.model";
 import { loadWebView } from "../web.loader";
 import { Status } from "../models/status.enum";
@@ -23,6 +24,7 @@ interface IIncomingMessage {
 
 interface IOutgoingMessage {
     status?: string;
+    databaseInfo?: DatabaseInfo;
     errors?: any[];
     serverName?: string;
     databaseName?: string;
@@ -84,6 +86,10 @@ const renderWebviewContent = async (webview: vscode.Webview, connectionContext: 
                     }
                     case 'viewUpdated': {
                         updateViewModel(viewModel, data.viewModel);
+                        break;
+                    }
+                    case 'databaseInfo': {
+                        await getDatabaseInfo(repository, webview, viewModel);
                         break;
                     }
                     case 'loadObjects': {
@@ -260,8 +266,23 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
             case 'filtersPanelOpen':
                 viewModel.filtersPanelOpen = vmUpdates?.filtersPanelOpen;
                 break;
+            case 'databaseInfo':
+                viewModel.databaseInfo = vmUpdates?.databaseInfo;
+                break;
         }
     }
+};
+
+
+const getDatabaseInfo = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+    if (viewModel.databaseInfo === undefined) {
+        const databaseInfo = await repository.getDatabaseInfo();
+        viewModel.databaseInfo = databaseInfo;
+    }
+    postMessage(webview, {
+        status: Status.GettingObjectsData,
+        databaseInfo: viewModel.databaseInfo
+    });
 };
 
 
@@ -495,3 +516,4 @@ const loadRowsCount = async (repository: IDbRepository, webview: azdata.Dashboar
         objectIndex: index
     });
 };
+
