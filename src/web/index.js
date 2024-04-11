@@ -275,6 +275,10 @@
         _selectedValue = vm.selectedValue;
         _selectedRow = vm.selectedRow;
 
+        if (vm.databaseInfo !== undefined) {
+            _databaseInfo = vm.databaseInfo;
+        }
+
         if (vm.serverName !== undefined) {
             $serverName.innerText = vm.serverName;
         }
