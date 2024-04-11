@@ -39,6 +39,11 @@
                     "command": "sql-data-inspector.inspect-data",
                     "when": "connectionProvider == MySQL && nodeType && nodeType == Database",
                     "group": "data"
+                },
+                {
+                    "command": "sql-data-inspector.inspect-data",
+                    "when": "connectionProvider == PGSQL && nodeType && nodeType == Database",
+                    "group": "data"
                 }
             ],
             "editor/context": [

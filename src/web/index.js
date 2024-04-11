@@ -1326,9 +1326,10 @@
                     }
                 case "char":
                 case "nchar":
+                case "bpchar": // PostgreSQL
                 case "varchar":
                 case "nvarchar":
-                case "enum": // MySQL
+                case "enum": // MySQL | PostgreSQL
                     {
                         val = "N'" + val.replace(/\'/g, "''") + "'";
                         break;
@@ -1337,8 +1338,11 @@
                 case "datetime":
                 case "datetime2":
                 case "datetimeoffset":
+                case "name": // PostgreSQL
                 case "smalldatetime":
                 case "time":
+                case "timestamp": // MySQL | PostgreSQL
+                case "uuid": // PostgreSQL
                     {
                         val = "'" + val + "'";
                         break;

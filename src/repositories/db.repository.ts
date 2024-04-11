@@ -6,9 +6,10 @@ import { DatabaseObject } from "../models/database-object.model";
 import { ConnectionContext } from "../connection-context";
 import { DbRepositoryMSSQL } from "./db.repository.mssql";
 import { DbRepositoryMySQL } from "./db.repository.mysql";
+import { DbRepositoryPGSQL } from "./db.repository.pgsql";
 
 
-export type DbProviderType = "MSSQL" | "MySQL";
+export type DbProviderType = "MSSQL" | "MySQL" | "PGSQL";
 
 
 export interface IDbRepository {
@@ -79,6 +80,9 @@ export class DbRepository {
                 break;
             case "MySQL":
                 connectionContext.repository = new DbRepositoryMySQL(connectionContext);
+                break;
+            case "PGSQL":
+                connectionContext.repository = new DbRepositoryPGSQL(connectionContext);
                 break;
             default:
                 throw new Error(`Provider "${provider}" not supported`);
