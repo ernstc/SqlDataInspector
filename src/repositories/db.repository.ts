@@ -61,6 +61,12 @@ const mapResult = <T>(result: SimpleExecuteResult): T[] => result.rows.map(eleme
 
 const undefinedOrValue = (value: string) => value !== 'NULL' ? value : undefined;
 
+// This regular expression works by looking for a semicolon (;) followed by any number of characters 
+// that are not a quote ([^"']), then a quote ((['"])), then any number of characters that are not 
+// a quote ([^"']), then the same quote that was matched before (\1), repeated any number of times ((?:...)*), 
+// followed by any number of characters that are not a quote ([^"']*), until the end of the string ($). 
+// This ensures that the semicolon is not within quotes.
+const sqlInjectionTestRegex = /;(?=(?:[^"'`]*(['"`])[^"'`]*\1)*[^"'`]*$)/;
 
 
 export class DbRepository {
@@ -90,5 +96,12 @@ export class DbRepository {
             console.error(e.message);
             return [] as T[];
         }
-    }    
+    }
+
+    public static hasPotentialSqlInjection(value: string): boolean {
+        if (value && sqlInjectionTestRegex.test(value)) {
+            return true;
+        }
+        return false;
+    }
 }
