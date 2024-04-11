@@ -218,12 +218,9 @@ export class DbRepositoryMySQL implements IDbRepository{
     ): Promise<DatabaseColumnValue[]> {
 
         if (table === undefined || table === null 
-            || column === undefined || column === null) {
-            return [];
-        }
-    
-        // Very simple SQL Injection prevention.
-        if (filter && filter.indexOf(';') >= 0) {
+            || column === undefined || column === null
+            || DbRepository.hasPotentialSqlInjection(filter)
+        ) {
             return [];
         }
     
@@ -236,11 +233,11 @@ export class DbRepositoryMySQL implements IDbRepository{
             query = `
                 SELECT '[NULL]' as value, COUNT(*) as count 
                 FROM \`${table.Schema}\`.\`${table.Name}\`
-                WHERE \`${column.Name}\` is NULL ${andWhereExpression}
+                WHERE \`${column.Name}\` IS NULL ${andWhereExpression}
                 UNION
                 SELECT '[NOT NULL]' as value, COUNT(*) as count 
                 FROM \`${table.Schema}\`.\`${table.Name}\`
-                WHERE \`${column.Name}\` is NOT NULL ${andWhereExpression}`;
+                WHERE \`${column.Name}\` IS NOT NULL ${andWhereExpression}`;
         }
         else {
             // Create a query for counting distinct values.
@@ -292,7 +289,9 @@ export class DbRepositoryMySQL implements IDbRepository{
         pageSize: number = 20
     ): Promise<{ rows: any[]; count: number; }> {
 
-        if (table === undefined || table === null) {
+        if (table === undefined || table === null 
+            || DbRepository.hasPotentialSqlInjection(filter)
+        ) {
             return {
                 rows: [],
                 count: 0
@@ -308,10 +307,7 @@ export class DbRepositoryMySQL implements IDbRepository{
         }
     
         const whereExpression = filter ? 'WHERE ' + filter : '';
-        const orderBy = hasOrderingColumns ? `
-            ORDER BY ${orderByColumns?.join(',')}
-            LIMIT ${(pageIndex - 1) * pageSize}, ${pageSize}
-            ` : '';
+        const orderBy = hasOrderingColumns ? `ORDER BY ${orderByColumns?.join(',')}` : '';
     
         let columnsExpression = '';
         if (columns !== undefined && columns !== null && columns.length > 0) {
@@ -328,7 +324,8 @@ export class DbRepositoryMySQL implements IDbRepository{
             SELECT ${columnsExpression}
             FROM \`${table.Schema}\`.\`${table.Name}\`
             ${whereExpression}
-            ${orderBy}`;
+            ${orderBy}
+            LIMIT ${(pageIndex - 1) * pageSize}, ${pageSize}`;
     
         const queryCount = `
             SELECT COUNT(*) as count
@@ -350,7 +347,9 @@ export class DbRepositoryMySQL implements IDbRepository{
         filter: string
     ): Promise<{ count: number; }> {
 
-        if (table === undefined || table === null) {
+        if (table === undefined || table === null
+            || DbRepository.hasPotentialSqlInjection(filter)
+        ) {
             return {
                 count: 0
             };

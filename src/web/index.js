@@ -1324,6 +1324,7 @@
                 case "nchar":
                 case "varchar":
                 case "nvarchar":
+                case "enum": // MySQL
                     {
                         val = "N'" + val.replace(/\'/g, "''") + "'";
                         break;
