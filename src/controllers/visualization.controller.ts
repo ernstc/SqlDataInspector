@@ -15,6 +15,7 @@ import { VscodeSettings } from "../vscodeSettings";
 
 interface IIncomingMessage {
     command: string;
+    commandSessionId: string;
     item?: any;
     viewModel?: ViewModel;
     index?: number;
@@ -61,7 +62,7 @@ const postMessage = (webview: azdata.DashboardWebview | vscode.Webview, message:
 
 const renderWebviewContent = async (webview: vscode.Webview, connectionContext: ConnectionContext) => {
     webview.html = loadWebView();
-    if (/*connectionContext.connection?.options.database &&*/ connectionContext.connectionId) {
+    if (connectionContext.connectionId) {
 
         let vscodeSettings = VscodeSettings.getInstance();
         let viewModel = new ViewModel();
@@ -96,29 +97,29 @@ const renderWebviewContent = async (webview: vscode.Webview, connectionContext: 
                         await loadObjects(repository, webview, viewModel);
                         // also load the columns and rows when starting with a selected table
                         if (connectionContext.fqname.tableName !== undefined) {
-                            await loadColumns(repository, webview, viewModel);
-                            await loadRows(repository, webview, viewModel);
+                            await loadColumns(data.commandSessionId, repository, webview, viewModel);
+                            await loadRows(data.commandSessionId, repository, webview, viewModel);
                         }
                         break;
                     }
                     case 'loadColumns': {
-                        await loadColumns(repository, webview, viewModel);
+                        await loadColumns(data.commandSessionId, repository, webview, viewModel);
                         break;
                     }
                     case 'reorderColumns': {
-                        await reorderColumns(repository, webview, viewModel);
+                        await reorderColumns(data.commandSessionId, repository, webview, viewModel);
                         break;
                     }
                     case 'loadValues': {
-                        await loadValues(repository, webview, viewModel);
+                        await loadValues(data.commandSessionId, repository, webview, viewModel);
                         break;
                     }
                     case 'loadRows': {
-                        await loadRows(repository, webview, viewModel);
+                        await loadRows(data.commandSessionId, repository, webview, viewModel);
                         break;
                     }
                     case 'loadRowsCount': {
-                        await loadRowsCount(repository, webview, viewModel, data.index!);
+                        await loadRowsCount(data.commandSessionId, repository, webview, viewModel, data.index!);
                         break;
                     }
                     case 'copyText': {
@@ -162,7 +163,7 @@ const renderWebviewContent = async (webview: vscode.Webview, connectionContext: 
                                 }
                             }
                             viewModel.rowsPageIndex = pageIndex;
-                            await loadRows(repository, webview, viewModel);
+                            await loadRows(data.commandSessionId, repository, webview, viewModel);
                         }
                     }
                 }
@@ -291,7 +292,9 @@ const loadObjects = async (repository: IDbRepository, webview: azdata.DashboardW
         status: Status.GettingObjectsData,
     });
 
-    viewModel.objects = await repository.getDbObjects();
+    const results = await repository.getDbObjects('');
+
+    viewModel.objects = results.data;
     viewModel.objectsSchema = [...new Set(viewModel.objects.map(t => t.Schema))];
     viewModel.columns = undefined;
     viewModel.values = undefined;
@@ -337,17 +340,6 @@ const loadObjects = async (repository: IDbRepository, webview: azdata.DashboardW
         && viewModel.filterObjectsSchema !== '*') {
         viewModel.objects = viewModel.objects.filter(t => t.Schema === viewModel.filterObjectsSchema);
 
-        //viewModel.columns = undefined;
-        //viewModel.values = undefined;
-        //viewModel.rowsColumnsName = undefined;
-        //viewModel.rows = undefined
-        //viewModel.rowsCount = undefined;
-        //viewModel.selectedTableIndex = undefined;
-        //viewModel.selectedColumnIndex = undefined;
-        //viewModel.selectedValueIndex = undefined;
-        //viewModel.selectedRowRowIndex = undefined;
-        //viewModel.selectedRowColumnIndex = undefined;
-
         postMessage(webview, {
             status: Status.RenderingData,
             objects: viewModel.objects,
@@ -370,10 +362,19 @@ const loadObjects = async (repository: IDbRepository, webview: azdata.DashboardW
 };
 
 
-const loadColumns = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+var loadColumnsSessionId: string;
+
+const loadColumns = async (sessionId: string, repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     const object = viewModel.selectedObject!;
 
-    viewModel.columns = await repository.getDbColumns(object, viewModel.sortColumnNames);
+    loadColumnsSessionId = sessionId;
+
+    const results = await repository.getDbColumns(sessionId, object, viewModel.sortColumnNames);
+    if (results.sessionId !== loadColumnsSessionId) {
+        return;
+    }
+
+    viewModel.columns = results.data;
     viewModel.values = undefined;
     viewModel.selectedColumnIndex = undefined;
     viewModel.selectedValueIndex = undefined;
@@ -387,14 +388,21 @@ const loadColumns = async (repository: IDbRepository, webview: azdata.DashboardW
 };
 
 
-const reorderColumns = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const reorderColumns = async (sessionId: string, repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     const object = viewModel.selectedObject!;
 
     const selectedColumnName = (viewModel.columns != undefined && viewModel.selectedColumnIndex != undefined) ? 
         viewModel.columns![viewModel.selectedColumnIndex!].Name :
         undefined;
 
-    viewModel.columns = await repository.getDbColumns(object, viewModel.sortColumnNames);
+    loadColumnsSessionId = sessionId;
+
+    const results = await repository.getDbColumns(sessionId, object, viewModel.sortColumnNames);
+    if (results.sessionId !== loadColumnsSessionId) {
+        return;
+    }
+
+    viewModel.columns = results.data;
 
     viewModel.selectedColumnIndex = selectedColumnName != undefined ? 
         viewModel.columns.findIndex(c => c.Name === selectedColumnName) :
@@ -410,17 +418,27 @@ const reorderColumns = async (repository: IDbRepository, webview: azdata.Dashboa
 };
 
 
-const loadValues = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+var loadValuesSessionId: string;
+
+const loadValues = async (sessionId: string, repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     const object = viewModel.selectedObject!;
     const column = viewModel.selectedColumn!;
 
-    viewModel.values = await repository.getDbColumnValuesWithCount(
+    loadValuesSessionId = sessionId;
+
+    const results = await repository.getDbColumnValuesWithCount(
+        sessionId,
         object, column,
         viewModel.filter!,
         viewModel.sortAscendingColumnValues,
         viewModel.sortAscendingColumnValuesCount
     );
 
+    if (results.sessionId !== loadValuesSessionId) {
+        return;
+    }
+
+    viewModel.values = results.data;
     viewModel.selectedValueIndex = undefined;
 
     postMessage(webview, {
@@ -434,7 +452,9 @@ const loadValues = async (repository: IDbRepository, webview: azdata.DashboardWe
 };
 
 
-const loadRows = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+var loadRowsSessionId: string;
+
+const loadRows = async (sessionId: string, repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
     if (viewModel.selectedObject === undefined) {
         await setViewModel(webview, viewModel);
         return;
@@ -462,7 +482,14 @@ const loadRows = async (repository: IDbRepository, webview: azdata.DashboardWebv
         sortAscending = primaryKey?.map(p => true);
     }
 
-    const dbRows = await repository.getDbTableRows(object, viewModel.columns, viewModel.filter!, orderByColumns, sortAscending, viewModel.rowsPageIndex, viewModel.rowsPageSize);
+    loadRowsSessionId = sessionId;
+
+    const results = await repository.getDbTableRows(sessionId, object, viewModel.columns, viewModel.filter!, orderByColumns, sortAscending, viewModel.rowsPageIndex, viewModel.rowsPageSize);
+    if (results.sessionId !== loadRowsSessionId) {
+        return;
+    }
+
+    const dbRows = results.data;
     object.Count = dbRows.count.toString();
     let columnsName: string[] = [];
 
@@ -501,13 +528,22 @@ const loadRows = async (repository: IDbRepository, webview: azdata.DashboardWebv
 };
 
 
-const loadRowsCount = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel, index: number) => {
+var loadRowsCountSessionId: string;
+
+const loadRowsCount = async (sessionId: string, repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel, index: number) => {
     const object = viewModel.objects ? viewModel.objects[index] : undefined;
     if (object === undefined) {
         return;
     }
 
-    const dbRowsCount = await repository.getDbTableRowsCount(object, viewModel.filter!);
+    loadRowsCountSessionId = sessionId;
+
+    const results = await repository.getDbTableRowsCount(sessionId, object, viewModel.filter!);
+    if (results.sessionId !== loadRowsCountSessionId) {
+        return;
+    }
+
+    const dbRowsCount = results.data;
     object.Count = dbRowsCount.count.toString();
 
     postMessage(webview, {

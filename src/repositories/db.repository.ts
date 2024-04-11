@@ -1,4 +1,4 @@
-import { connection, dataprotocol, DataProviderType, QueryProvider, SimpleExecuteResult } from "azdata";
+import { connection, dataprotocol, DataProviderType, QueryExecuteCompleteNotificationResult, QueryProvider, SimpleExecuteResult } from "azdata";
 import { DatabaseColumn } from '../models/database-column.model';
 import { DatabaseColumnValue } from '../models/database-columnValue.model';
 import { DatabaseInfo } from "../models/database-info.model";
@@ -11,30 +11,39 @@ import { DbRepositoryPGSQL } from "./db.repository.pgsql";
 
 export type DbProviderType = "MSSQL" | "MySQL" | "PGSQL";
 
+export interface QueryResults<T> {
+    sessionId?: string;
+    data: T;
+}
+
 
 export interface IDbRepository {
 
     getDatabaseInfo(): Promise<DatabaseInfo>;
 
     getDbObjects(
+        sessionId: string,
         tables?: boolean,
         views?: boolean
-    ): Promise<DatabaseObject[]>;
+    ): Promise<QueryResults<DatabaseObject[]>>;
     
     getDbColumns(
+        sessionId: string,
         table: DatabaseObject,
         sortColumnNames?: string
-    ): Promise<DatabaseColumn[]>;
+    ): Promise<QueryResults<DatabaseColumn[]>>;
 
     getDbColumnValuesWithCount(
+        sessionId: string,
         table: DatabaseObject,
         column: DatabaseColumn,
         filter: string,
         sortAscendingColumnValues?: boolean,
         sortAscendingColumnValuesCount?: boolean
-    ): Promise<DatabaseColumnValue[]>;
+    ): Promise<QueryResults<DatabaseColumnValue[]>>;
 
     getDbTableRows(
+        sessionId: string,
         table: DatabaseObject,
         columns: DatabaseColumn[] | undefined,
         filter: string,
@@ -42,12 +51,13 @@ export interface IDbRepository {
         sortAscending?: boolean[],
         pageIndex?: number,
         pageSize?: number
-    ): Promise<{ rows: any[], count: number }>;
+    ): Promise<QueryResults<{ rows: any[], count: number }>>;
 
     getDbTableRowsCount(
+        sessionId: string,
         table: DatabaseObject,
         filter: string
-    ): Promise<{ count: number }>;
+    ): Promise<QueryResults<{ count: number }>>;
 }
 
 

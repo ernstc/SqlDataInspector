@@ -219,7 +219,19 @@
     let loadingCounters = 0;
 
 
+    function newGuid() {
+        const guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0,
+                v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+        return guid;
+    }
+
+
     function showLoading(operationsCount = 1) {
+        return;
+
         loadingCounters += operationsCount;
         $loadingOverlay.show();
         if (loadingTimer === undefined) {
@@ -232,6 +244,8 @@
 
 
     function hideLoading() {
+        return;
+
         loadingCounters--;
         if (loadingCounters < 0) { loadingCounters = 0; }
         if (loadingCounters === 0) {
@@ -307,7 +321,8 @@
         else {
             showLoading();
             sendMessage({
-                'command': 'loadObjects'
+                'command': 'loadObjects',
+                'commandSessionId': newGuid()
             });
         }
 
@@ -532,7 +547,8 @@
             'sortColumnNames': sort
         });
         sendMessage({
-            'command': 'reorderColumns|loadRows'
+            'command': 'reorderColumns|loadRows',
+            'commandSessionId': newGuid()
         });
     }
 
@@ -737,7 +753,8 @@
             'sortRowsByColumnAscending': sortAscending,
         });
         sendMessage({
-            'command': 'loadRows'
+            'command': 'loadRows',
+            'commandSessionId': newGuid()
         });
     }
 
@@ -920,7 +937,8 @@
             'sortRowsByColumnName': null
         });
         sendMessage({
-            'command': 'loadColumns|loadRows'
+            'command': 'loadColumns|loadRows',
+            'commandSessionId': newGuid()
         });
         renderValues([]);
         textToCopy = `${_databaseInfo.NameEncloserStart}${_selectedObject.Schema}${_databaseInfo.NameEncloserEnd}.${_databaseInfo.NameEncloserStart}${_selectedObject.Name}${_databaseInfo.NameEncloserEnd}`;
@@ -946,7 +964,8 @@
             'sortAscendingColumnValuesCount': null,
         });
         sendMessage({
-            'command': 'loadValues'
+            'command': 'loadValues',
+            'commandSessionId': newGuid()
         });
         textToCopy = `${_databaseInfo.NameEncloserStart}${_selectedColumn.Name}${_databaseInfo.NameEncloserEnd}`;
     }
@@ -1066,11 +1085,13 @@
             showLoading();
             sendMessage({
                 'command': 'loadValues',
+                'commandSessionId': newGuid()
             });
         }
         showLoading();
         sendMessage({
-            'command': 'loadRows'
+            'command': 'loadRows',
+            'commandSessionId': newGuid()
         });
     }
 
@@ -1119,7 +1140,8 @@
                 if (_selectedObject !== undefined) {
                     tasks.push({
                         'message': {
-                            'command': 'loadRows'
+                            'command': 'loadRows',
+                            'commandSessionId': newGuid()
                         }
                     });
                 }
@@ -1127,7 +1149,8 @@
                 if (_selectedColumn !== undefined) {
                     tasks.push({
                         'message': {
-                            'command': 'loadValues'
+                            'command': 'loadValues',
+                            'commandSessionId': newGuid()
                         }
                     });
                 }
@@ -1226,7 +1249,8 @@
         });
         showLoading(1);
         sendMessage({
-            'command': 'loadRows'
+            'command': 'loadRows',
+            'commandSessionId': newGuid()
         });
     }
 
@@ -1236,6 +1260,7 @@
         showLoading(1);
         sendMessage({
             'command': 'changeRowsPage',
+            'commandSessionId': newGuid(),
             'rowsPageIndex': page
         });
     }

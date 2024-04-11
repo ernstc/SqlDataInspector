@@ -1,4 +1,4 @@
-import { DbRepository, IDbRepository } from './db.repository';
+import { DbRepository, IDbRepository, QueryResults } from './db.repository';
 import { DatabaseColumn } from '../models/database-column.model';
 import { DatabaseColumnValue } from '../models/database-columnValue.model';
 import { DatabaseInfo } from '../models/database-info.model';
@@ -59,9 +59,10 @@ export class DbRepositoryMySQL implements IDbRepository{
 
 
     async getDbObjects(
+        sessionId: string,
         tables: boolean = true,
         views: boolean = true
-    ): Promise<DatabaseObject[]> {
+    ): Promise<QueryResults<DatabaseObject[]>> {
 
         const table_schema = this.connectionContext.fqname.databaseName;
 
@@ -110,7 +111,7 @@ export class DbRepositoryMySQL implements IDbRepository{
             null;
 
         if (query === null) {
-            return [];
+            return { sessionId, data: [] };
         }
        
         let dbResult = await DbRepository.runQuery<DbObjectResponse>(this.connectionContext, query);
@@ -127,17 +128,18 @@ export class DbRepositoryMySQL implements IDbRepository{
 
             result.push(dbTable);
         }
-        return result;
+        return { sessionId, data: result };
     }
 
 
     async getDbColumns(
+        sessionId: string,
         table: DatabaseObject,
         sortColumnNames?: string
-    ): Promise<DatabaseColumn[]> {
+    ): Promise<QueryResults<DatabaseColumn[]>> {
 
         if (table === undefined || table === null) {
-            return [];
+            return { sessionId, data: [] };
         }
     
         const vscodeSettings = VscodeSettings.getInstance();
@@ -205,23 +207,24 @@ export class DbRepositoryMySQL implements IDbRepository{
             };
             result.push(dbColumn);
         }
-        return result;
+        return { sessionId, data: result };
     }
 
 
     async getDbColumnValuesWithCount(
+        sessionId: string,
         table: DatabaseObject,
         column: DatabaseColumn,
         filter: string,
         sortAscendingColumnValues?: boolean,
         sortAscendingColumnValuesCount?: boolean
-    ): Promise<DatabaseColumnValue[]> {
+    ): Promise<QueryResults<DatabaseColumnValue[]>> {
 
         if (table === undefined || table === null 
             || column === undefined || column === null
             || DbRepository.hasPotentialSqlInjection(filter)
         ) {
-            return [];
+            return { sessionId, data: [] };
         }
     
         let query: string;
@@ -275,11 +278,12 @@ export class DbRepositoryMySQL implements IDbRepository{
             };
             result.push(dbColumnValue);
         }
-        return result;
+        return { sessionId, data: result };
     }
 
 
     async getDbTableRows(
+        sessionId: string,
         table: DatabaseObject,
         columns: DatabaseColumn[] | undefined,
         filter: string,
@@ -287,14 +291,17 @@ export class DbRepositoryMySQL implements IDbRepository{
         sortAscending?: boolean[],
         pageIndex: number = 1,
         pageSize: number = 20
-    ): Promise<{ rows: any[]; count: number; }> {
+    ): Promise<QueryResults<{ rows: any[]; count: number; }>> {
 
         if (table === undefined || table === null 
             || DbRepository.hasPotentialSqlInjection(filter)
         ) {
             return {
-                rows: [],
-                count: 0
+                sessionId,
+                data: {
+                    rows: [],
+                    count: 0
+                }
             };
         }
     
@@ -336,22 +343,29 @@ export class DbRepositoryMySQL implements IDbRepository{
         let dbCountResult = await DbRepository.runQuery<DbCountResponse>(this.connectionContext, queryCount);
     
         return {
-            rows: dbRowsResult,
-            count: dbCountResult.length > 0 ? dbCountResult[0].count : 0
+            sessionId,
+            data: {
+                rows: dbRowsResult,
+                count: dbCountResult.length > 0 ? dbCountResult[0].count : 0
+            }
         };
     }
 
 
     async getDbTableRowsCount(
+        sessionId: string,
         table: DatabaseObject,
         filter: string
-    ): Promise<{ count: number; }> {
+    ): Promise<QueryResults<{ count: number; }>> {
 
         if (table === undefined || table === null
             || DbRepository.hasPotentialSqlInjection(filter)
         ) {
             return {
-                count: 0
+                sessionId,
+                data: {
+                    count: 0
+                }
             };
         }
     
@@ -365,7 +379,10 @@ export class DbRepositoryMySQL implements IDbRepository{
         let dbCountResult = await DbRepository.runQuery<DbCountResponse>(this.connectionContext, queryCount);
     
         return {
-            count: dbCountResult.length > 0 ? dbCountResult[0].count : 0
+            sessionId,
+            data: {
+                count: dbCountResult.length > 0 ? dbCountResult[0].count : 0
+            }
         };
     }
 }
