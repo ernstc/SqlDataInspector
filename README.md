@@ -10,6 +10,7 @@ Please leave a ⭐ as motivation if this tool is helpful for you!
 
 ## Features
 
+* Supports Microsoft SQL Server, MySQL.
 * Start inspecting data from the server explorer or from the query editor.
 * Shows the list of tables and views of the database.
 * Shows the list of columns of the selected table or view.
