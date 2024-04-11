@@ -256,12 +256,9 @@ export class DbRepositoryMSSQL implements IDbRepository{
     ): Promise<DatabaseColumnValue[]> {
 
         if (table === undefined || table === null 
-            || column === undefined || column === null) {
-            return [];
-        }
-    
-        // Very simple SQL Injection prevention.
-        if (filter && filter.indexOf(';') >= 0) {
+            || column === undefined || column === null
+            || DbRepository.hasPotentialSqlInjection(filter)
+        ) {
             return [];
         }
     
@@ -330,7 +327,9 @@ export class DbRepositoryMSSQL implements IDbRepository{
         pageSize: number = 20
     ): Promise<{ rows: any[]; count: number; }> {
 
-        if (table === undefined || table === null) {
+        if (table === undefined || table === null
+            || DbRepository.hasPotentialSqlInjection(filter)
+        ) {
             return {
                 rows: [],
                 count: 0
@@ -394,7 +393,9 @@ export class DbRepositoryMSSQL implements IDbRepository{
         filter: string
     ): Promise<{ count: number; }> {
 
-        if (table === undefined || table === null) {
+        if (table === undefined || table === null
+            || DbRepository.hasPotentialSqlInjection(filter)
+        ) {
             return {
                 count: 0
             };
