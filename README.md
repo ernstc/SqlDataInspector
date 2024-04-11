@@ -10,7 +10,6 @@ Please leave a ⭐ as motivation if this tool is helpful for you!
 
 ## Features
 
-* Supports Microsoft SQL Server, MySQL and PostgresSQL.
 * Start inspecting data from the server explorer or from the query editor.
 * Shows the list of tables and views of the database.
 * Shows the list of columns of the selected table or view.
@@ -23,6 +22,9 @@ Please leave a ⭐ as motivation if this tool is helpful for you!
 * Live monitoring mode for periodically refreshing the views.
 * Each selectable element can be copied with CTRL+C.
 * All distinct values and counts for a column, can be copied in the clipboard. You can then paste the values in Excel for further analysis, for instance.
+* Support for **Microsoft SQL Server**.
+* Support for **MySQL** by installing the extension `Microsoft.azuredatastudio-mysql`.
+* Support for **PostgresSQL** by installing the extension `Microsoft.azuredatastudio-postgresql`.
 
 ### Inspecting data from the server explorer
 
