@@ -94,7 +94,7 @@ const loadVisualizationFromEditor = async (context: azdata.ObjectExplorerContext
         }
 
         // Get the active connection information
-        let connectionContext = await ConnectionContext.EditerContext(connProfile, fqname);
+        let connectionContext = await ConnectionContext.EditorContext(connProfile, fqname);
 
         // Create and show a new webview
         const panel = vscode.window.createWebviewPanel(

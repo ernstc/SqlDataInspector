@@ -16,10 +16,42 @@ export class ConnectionContext {
     public fqname: FQName;
     public repository?: IDbRepository;
 
+    private connectionProfile?: azdata.IConnectionProfile
+    private connectionUri?: string;
+    private queryProvider?: azdata.QueryProvider;
+
     public constructor(fqname: FQName, connection: azdata.connection.Connection) {
         this.fqname = fqname;
         this.connection = connection;
         this.connectionId = connection.connectionId;
+    }
+
+    public async renew() {
+        var newConnection = new ConnectionContext(this.fqname, this.connection);
+        await newConnection.refreshConnection();
+        return newConnection;
+    }
+
+    public async refreshConnection() {
+        this.connection = await ConnectionContext.getConnection(this.connectionId, this.fqname.databaseName);
+        //this.connectionUri = undefined;
+        //this.queryProvider = undefined;
+    }
+
+    public async getConnectionUri() {
+        if (this.connectionUri === undefined) {
+            this.connectionUri = await azdata.connection.getUriForConnection(this.connectionId);
+        }
+        return this.connectionUri;
+    }
+
+    public async runQueryAndReturn(query: string) {
+        if (this.queryProvider === undefined) {
+            this.queryProvider = azdata.dataprotocol.getProvider(this.connection.providerName, azdata.DataProviderType.QueryProvider);
+        }
+        const connectionUri = await this.getConnectionUri();
+        const result = await this.queryProvider.runQueryAndReturn(connectionUri, query);
+        return result;
     }
 
     // static factory method for Explorer context
@@ -35,14 +67,13 @@ export class ConnectionContext {
     }
 
     // static factory method for Editor context
-    public static async EditerContext(connProfile: azdata.connection.ConnectionProfile, fqname: FQName) {
+    public static async EditorContext(connProfile: azdata.connection.ConnectionProfile, fqname: FQName) {
         let connection = await this.getConnection(connProfile.connectionId, fqname.databaseName);
         return new this(fqname, connection);
     }
 
     public static async getConnection(connectionId: string, databaseName?: string) {
         let activeConnections = await azdata.connection.getActiveConnections();
-        //const iConnProfile = { ...connectionProfile, providerName: connectionProfile.providerId, id: '' };
 
         let connection: azdata.connection.Connection | undefined = activeConnections.filter(c => c.connectionId === connectionId)[0];
 
@@ -64,6 +95,7 @@ export class ConnectionContext {
             let activeConnections = await azdata.connection.getActiveConnections();
             return activeConnections.filter(c => c.connectionId === connection.connectionId)[0];
         }
+        connectionProvider.disconnect(connectionUri);
     }
 
     public static getSelectedEditorText() {

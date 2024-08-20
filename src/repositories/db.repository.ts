@@ -1,4 +1,4 @@
-import { connection, dataprotocol, DataProviderType, QueryExecuteCompleteNotificationResult, QueryProvider, SimpleExecuteResult } from "azdata";
+import { SimpleExecuteResult } from "azdata";
 import { DatabaseColumn } from '../models/database-column.model';
 import { DatabaseColumnValue } from '../models/database-columnValue.model';
 import { DatabaseInfo } from "../models/database-info.model";
@@ -99,16 +99,44 @@ export class DbRepository {
         }
     }
 
+
+    private static lockRunQuery: boolean = false;
+
     public static async runQuery<T>(connectionContext: ConnectionContext, query: string): Promise<T[]> {
+        const delayTime = 1000;
+        //const maxDelay = 5000;
+
+        var context = connectionContext;
+
+        //var totalDelay = 0;
+        while (this.lockRunQuery) {
+            await new Promise(resolve => setTimeout(resolve, delayTime));
+            /*
+            totalDelay += delayTime;
+            if (totalDelay >= maxDelay) {
+                context = await connectionContext.renew();
+                break;
+            }
+            */
+        }
+        
+        this.lockRunQuery = true;
+        
         try {
-            const connectionUri = await connection.getUriForConnection(connectionContext.connectionId);
-            const queryProvider: QueryProvider = dataprotocol.getProvider(connectionContext.connection.providerName, DataProviderType.QueryProvider);
-            const result = await queryProvider.runQueryAndReturn(connectionUri, query);
+            //const connectionUri = await connectionContext.getConnectionUri();
+            //const queryProvider: QueryProvider = dataprotocol.getProvider(connectionContext.connection.providerName, DataProviderType.QueryProvider);
+            //const result = await queryProvider.runQueryAndReturn(connectionUri, query);
+
+            const result = await context.runQueryAndReturn(query);
+            await new Promise(resolve => setTimeout(resolve, 500));
             return mapResult(result) as T[];
         }
         catch (e: any) {
             console.error(e.message);
             return [] as T[];
+        }
+        finally {
+            this.lockRunQuery = false;
         }
     }
 
