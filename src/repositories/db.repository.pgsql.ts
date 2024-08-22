@@ -180,29 +180,27 @@ export class DbRepositoryPGSQL implements IDbRepository{
                 cols.udt_name AS type,
                 cols.is_nullable AS is_nullable,
                 CASE 
-                    WHEN pk.column_name IS NOT NULL THEN 1 
+                    WHEN t.constraint_type = 'PRIMARY KEY' THEN 1 
                     ELSE 0
                 END AS is_primary_key,
                 cols.ordinal_position AS key_ordinal,
                 CASE 
-                    WHEN fk.column_name IS NOT NULL THEN 1 
+                    WHEN t.constraint_type = 'FOREIGN KEY' THEN 1 
                     ELSE 0
                 END AS has_foreign_key,
                 cols.ordinal_position AS column_id
             FROM 
                 information_schema.columns cols
             LEFT JOIN 
-                information_schema.key_column_usage AS pk 
+                information_schema.key_column_usage AS k 
             ON 
-                cols.table_name = pk.table_name 
-                AND cols.column_name = pk.column_name 
-                AND pk.constraint_name = 'PRIMARY'
-            LEFT JOIN 
-                information_schema.key_column_usage AS fk 
-            ON 
-                cols.table_name = fk.table_name 
-                AND cols.column_name = fk.column_name 
-                AND fk.constraint_name != 'PRIMARY'
+                cols.table_name = k.table_name
+                AND cols.table_schema = k.table_schema
+                AND cols.column_name = k.column_name 
+            LEFT JOIN
+                information_schema.table_constraints AS t
+            ON
+                k.constraint_name = t.constraint_name
             WHERE 
                 cols.table_schema = '${table.Schema}' AND cols.table_name = '${table.Name}'            
             ORDER BY
@@ -220,14 +218,25 @@ export class DbRepositoryPGSQL implements IDbRepository{
                 type += ' ?';
             }
 
-            const dbColumn: DatabaseColumn = {
-                Name: element.name,
-                Type: element.type,
-                IsPrimaryKey: element.is_primary_key === '1',
-                KeyOrdinal: parseInt(element.key_ordinal),
-                HasForeignKey: element.has_foreign_key === '1'
-            };
-            result.push(dbColumn);
+            let dbColumn = result.find(col => col.Name === element.name);
+            if (dbColumn !== undefined) {
+                if (!dbColumn.IsPrimaryKey && element.is_primary_key === '1') {
+                    dbColumn.IsPrimaryKey = true;
+                }
+                if (!dbColumn.HasForeignKey && element.has_foreign_key === '1') {
+                    dbColumn.HasForeignKey = true;
+                }
+            }
+            else {
+                dbColumn = {
+                    Name: element.name,
+                    Type: type,
+                    IsPrimaryKey: element.is_primary_key === '1',
+                    KeyOrdinal: parseInt(element.key_ordinal),
+                    HasForeignKey: element.has_foreign_key === '1'
+                };
+                result.push(dbColumn);
+            }
         }
 
         this.disposeClientConnections();
