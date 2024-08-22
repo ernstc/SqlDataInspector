@@ -370,11 +370,16 @@ const loadColumns = async (sessionId: string, repository: IDbRepository, webview
     loadColumnsSessionId = sessionId;
 
     const results = await repository.getDbColumns(sessionId, object, viewModel.sortColumnNames);
-    if (results.sessionId !== loadColumnsSessionId) {
+    if (
+        results.sessionId !== loadColumnsSessionId 
+        || viewModel.selectedObject?.Name !== object.Name
+        || viewModel.selectedObject?.Schema !== object.Schema
+    ) {
         return;
     }
 
     viewModel.columns = results.data;
+    viewModel.columnsRelativeToObject = object;
     viewModel.values = undefined;
     viewModel.selectedColumnIndex = undefined;
     viewModel.selectedValueIndex = undefined;
@@ -461,6 +466,14 @@ const loadRows = async (sessionId: string, repository: IDbRepository, webview: a
     }
 
     const object = viewModel.selectedObject;
+
+    if (
+        viewModel.columnsRelativeToObject?.Name !== object.Name
+        || viewModel.columnsRelativeToObject?.Schema !== object.Schema
+    )
+    {
+        return;
+    }
 
     let orderByColumns: string[] | undefined;
     let sortAscending: boolean[] | undefined;

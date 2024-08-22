@@ -13,6 +13,7 @@ export class ViewModel {
     objects?: DatabaseObject[];
     objectsSchema?: string[];
     columns?: DatabaseColumn[];
+    columnsRelativeToObject?: DatabaseObject;
     values?: DatabaseColumnValue[];
     rows?: DatabaseTableRow[];
     rowsCount?: number;
