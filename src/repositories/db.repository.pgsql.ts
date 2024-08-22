@@ -55,6 +55,8 @@ export class DbRepositoryPGSQL implements IDbRepository{
             version = match ? match[1] : '';
         }
 
+        this.disposeClientConnections();
+
         return {
             Provider: 'PGSQL',
             NameEncloserStart: '"',
@@ -139,6 +141,9 @@ export class DbRepositoryPGSQL implements IDbRepository{
 
             result.push(dbTable);
         }
+
+        this.disposeClientConnections();
+
         return { sessionId, data: result };
     }
 
@@ -224,6 +229,9 @@ export class DbRepositoryPGSQL implements IDbRepository{
             };
             result.push(dbColumn);
         }
+
+        this.disposeClientConnections();
+
         return { sessionId, data: result };
     }
 
@@ -297,6 +305,9 @@ export class DbRepositoryPGSQL implements IDbRepository{
             };
             result.push(dbColumnValue);
         }
+
+        this.disposeClientConnections();
+
         return { sessionId, data: result };
     }
 
@@ -360,6 +371,8 @@ export class DbRepositoryPGSQL implements IDbRepository{
     
         let dbRowsResult = await DbRepository.runQuery<any>(this.connectionContext, queryRows);
         let dbCountResult = await DbRepository.runQuery<DbCountResponse>(this.connectionContext, queryCount);
+
+        this.disposeClientConnections(2);
     
         return {
             sessionId,
@@ -396,6 +409,8 @@ export class DbRepositoryPGSQL implements IDbRepository{
             ${whereExpression}`;
     
         let dbCountResult = await DbRepository.runQuery<DbCountResponse>(this.connectionContext, queryCount);
+
+        this.disposeClientConnections();
     
         return {
             sessionId,
@@ -404,4 +419,28 @@ export class DbRepositoryPGSQL implements IDbRepository{
             }
         };
     }
+
+
+    private connectionsCount: number = 0;
+    private readonly maxConnectionsCount: number = 10;
+
+    private async disposeClientConnections(count: number = 1) {
+        this.connectionsCount += count;
+        if (this.connectionsCount >= this.maxConnectionsCount) {
+
+            // Terminate all connections that are not the current one and are not leaders of parallel queries.
+            const query = `
+                SELECT pg_terminate_backend(pid)
+                FROM pg_stat_activity
+                WHERE pid <> pg_backend_pid()
+                AND datname = '${this.connectionContext.fqname.databaseName}'
+                AND leader_pid IS NULL
+                AND "query" like 'SELECT "oid", "typname" FROM "pg_type" WHERE "oid"%'`;
+
+            await DbRepository.runQuery<DbColumnValuesResponse>(this.connectionContext, query);
+
+            this.connectionsCount = 0;
+        }
+    }
+
 }

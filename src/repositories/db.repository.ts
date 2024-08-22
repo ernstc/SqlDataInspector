@@ -103,30 +103,24 @@ export class DbRepository {
     private static lockRunQuery: boolean = false;
 
     public static async runQuery<T>(connectionContext: ConnectionContext, query: string): Promise<T[]> {
-        const delayTime = 1000;
-        //const maxDelay = 5000;
+        const delayTime = 100;
+        const maxDelay = 200 * delayTime;
 
         var context = connectionContext;
 
-        //var totalDelay = 0;
+        var totalDelay = 0;
         while (this.lockRunQuery) {
             await new Promise(resolve => setTimeout(resolve, delayTime));
-            /*
+            
             totalDelay += delayTime;
             if (totalDelay >= maxDelay) {
-                context = await connectionContext.renew();
                 break;
             }
-            */
         }
         
         this.lockRunQuery = true;
         
         try {
-            //const connectionUri = await connectionContext.getConnectionUri();
-            //const queryProvider: QueryProvider = dataprotocol.getProvider(connectionContext.connection.providerName, DataProviderType.QueryProvider);
-            //const result = await queryProvider.runQueryAndReturn(connectionUri, query);
-
             const result = await context.runQueryAndReturn(query);
             await new Promise(resolve => setTimeout(resolve, 500));
             return mapResult(result) as T[];

@@ -26,18 +26,6 @@ export class ConnectionContext {
         this.connectionId = connection.connectionId;
     }
 
-    public async renew() {
-        var newConnection = new ConnectionContext(this.fqname, this.connection);
-        await newConnection.refreshConnection();
-        return newConnection;
-    }
-
-    public async refreshConnection() {
-        this.connection = await ConnectionContext.getConnection(this.connectionId, this.fqname.databaseName);
-        //this.connectionUri = undefined;
-        //this.queryProvider = undefined;
-    }
-
     public async getConnectionUri() {
         if (this.connectionUri === undefined) {
             this.connectionUri = await azdata.connection.getUriForConnection(this.connectionId);
