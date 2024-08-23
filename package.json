@@ -151,10 +151,10 @@
         "mkdirp": "^3.0.1",
         "mocha": "^10.4.0",
         "ncp": "^2.0.0",
-        "rimraf": "^5.0.8",
+        "rimraf": "^6.0.0",
         "ts-loader": "^9.5.1",
         "typescript": "^5.5.3",
-        "webpack": "^5.92.1",
+        "webpack": "^5.94.0",
         "webpack-cli": "^5.1.4"
     }
 }
