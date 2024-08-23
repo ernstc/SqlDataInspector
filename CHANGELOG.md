@@ -4,6 +4,21 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
+## August 2024 Release (version 0.8.0)
+
+### New Features
+
+* Added support for **MySQL** databases. 
+* Added support for **PostgresSQL** databases.  
+* Ordering distinct values by Count or by Value does a reorder in place without reloading data from the database.
+* Removed loader spinner thanks to the new mechanism of query execution tracking.
+
+### Fixes
+
+* Minor fixes
+
+---
+
 ## January 2024 Release (version 0.7.2)
 
 ### New Features
