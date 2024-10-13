@@ -75,6 +75,7 @@ const renderWebviewContent = async (webview: vscode.Webview, connectionContext: 
         viewModel.rowsPageIndex = 1;
         viewModel.rowsPageSize = vscodeSettings.pageSize;
         viewModel.filtersPanelOpen = false;
+        viewModel.viewHorizontalSplit = vscodeSettings.viewHorizontalSplit;
 
         webview.onDidReceiveMessage(async (data: IIncomingMessage) => {
             const repository: IDbRepository = connectionContext.repository!;
@@ -269,6 +270,10 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
                 break;
             case 'databaseInfo':
                 viewModel.databaseInfo = vmUpdates?.databaseInfo;
+                break;
+            case 'viewHorizontalSplit':
+                vscodeSettings.setViewHorizontalSplit(vmUpdates?.viewHorizontalSplit);
+                viewModel.viewHorizontalSplit = vmUpdates?.viewHorizontalSplit;
                 break;
         }
     }

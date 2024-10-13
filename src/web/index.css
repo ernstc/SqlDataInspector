@@ -410,6 +410,20 @@ label {
 #navigation > div {
   padding: 8px;
 }
+#navigation .table {
+  margin: 8px 8px 6px 8px;
+}
+#dataSizer {
+  background: transparent;
+  height: 4px;
+  margin: 0 8px;
+  z-index: 9999;
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+#dataSizer:hover {
+  background-color: var(--vscode-titleBar-activeBackground);
+  cursor: row-resize;
+}
 #data {
   display: flex;
   flex-direction: column;
@@ -491,7 +505,7 @@ label {
 }
 #filtersHeader {
   cursor: pointer;
-  margin: 8px 8px 0 8px;
+  margin: 6px 8px 0 8px;
   transition: color 0.15s, background-color 0.15s;
 }
 #filtersHeader .btn-hide-filters {

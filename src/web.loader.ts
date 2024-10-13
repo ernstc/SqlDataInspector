@@ -8,7 +8,7 @@ export const loadWebView = () => {
         .toString();
 
     const jqueryScript = fs
-        .readFileSync(path.join(__dirname, 'web', 'jquery-3.7.0.min.js'))
+        .readFileSync(path.join(__dirname, 'web', 'jquery-3.7.1.min.js'))
         .toString();
 
     const indexScript = fs

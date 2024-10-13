@@ -47,6 +47,8 @@ export class ViewModel {
     searchObjectName?: string;
     filtersPanelOpen?: boolean;
 
+    viewHorizontalSplit?: number;
+    
 
     get selectedObject(): DatabaseObject | undefined {
         if (this.objects !== undefined && this.selectedObjectIndex !== undefined) {

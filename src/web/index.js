@@ -31,6 +31,10 @@
     const $btnCopyValues = $('#btnCopyValues');
     const $filtersHeader = $('#filtersHeader');
     const $filters = $('#filters');
+    //const $dataSizer = $('#dataSizer');
+    const $dataSizer = document.getElementById('dataSizer');
+    const $workspace = $('#workspace');
+    const $navigation = $('#navigation');
 
     $autofilter = $('#autofilter')
         .click(autoFilterClicked);
@@ -65,6 +69,19 @@
         .keyup(objectSearchInputChanged);
     $filtersHeader
         .click(filtersHeaderClicked);
+    $dataSizer
+        .addEventListener('mousedown', function (e) {
+            e.preventDefault();
+            dataSizerDragStart(e);
+            document.addEventListener('mousemove', dataSizerDragging);
+            document.addEventListener('mouseup', function (e) {
+                document.removeEventListener('mousemove', dataSizerDragging);
+                document.removeEventListener('mouseup', arguments.callee);
+                dataSizerChanged(e);
+            });
+        });
+
+
 
 
     // VSCode API for interacting with the extension back-end
@@ -365,6 +382,10 @@
 
         if (vm.showRecordDetails && _selectedRow && _columns) {
             showDatabaseTableRow(_selectedRow);
+        }
+
+        if (vm.viewHorizontalSplit !== undefined) {
+            setViewSplitSize(vm.viewHorizontalSplit);
         }
 
         $liveMonitoring.get(0).checked = vm.liveMonitoring === true;
@@ -874,6 +895,52 @@
 
     // Event handlers
     //*********************************************************** */
+
+    const $jDataSizer = $('#dataSizer');
+    let dataSizerOffsetFix = ($navigation.height() || 0) - $jDataSizer.offset().top;
+    let mouseYFix = 0;
+
+    const navigationMinPercentage = 15;
+    const navigationMaxPercentage = 85;
+
+
+    function dataSizerDragStart(e) {
+        mouseYFix = $jDataSizer.offset().top - e.clientY;
+    }
+
+
+    function dataSizerDragging(e) {
+        let mY = e.clientY;
+        let wHeight = $workspace.height();
+        let newPercentage = (mY + mouseYFix + dataSizerOffsetFix) / wHeight * 100;
+        setViewSplitSize(newPercentage, false);
+    }
+
+
+    function dataSizerChanged(e)
+    {
+        let mY = e.clientY;
+        let wHeight = $workspace.height();
+        let newPercentage = (mY + mouseYFix + dataSizerOffsetFix) / wHeight * 100;
+        setViewSplitSize(newPercentage, true);
+    }
+
+
+    function setViewSplitSize(newPercentage, saveSetting) {
+        if (newPercentage < navigationMinPercentage) {
+            newPercentage = navigationMinPercentage; 
+        }
+        else if (newPercentage > navigationMaxPercentage) {
+            newPercentage = navigationMaxPercentage; 
+        }
+        if (saveSetting) {
+            updateViewModel({
+                'viewHorizontalSplit': newPercentage
+            });
+        }
+        $workspace.css('grid-template-rows', `${newPercentage}% ${100 - newPercentage}%`);
+    }
+
 
     function filtersHeaderClicked() {
         toggleFiltersPanel();

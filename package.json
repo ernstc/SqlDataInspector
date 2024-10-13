@@ -110,6 +110,13 @@
                     "type": "boolean",
                     "default": true,
                     "markdownDescription": "Show views in the objects list."
+                },
+                "sqlDataInspector.viewHorizontalSplit": {
+                    "type": "integer",
+                    "default": 40,
+                    "minimum": 15,
+                    "maximum": 85,
+                    "markdownDescription": "Horizontal split percentage."
                 }
             }
         }
