@@ -4,6 +4,14 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
+## October 2024 Release (version 0.8.1)
+
+### New Features
+
+* Now is possible to adjust the height of the Rows area using drag and drop.
+
+---
+
 ## August 2024 Release (version 0.8.0)
 
 ### New Features
