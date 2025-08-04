@@ -1343,6 +1343,19 @@
     });
 
 
+    function detailDialogEscKeyHandler(e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            hideDetailDialog();
+            $(document).off('keydown', detailDialogEscKeyHandler);
+        }
+    }
+
+
+    function detailDialogOverlayClickHandler() {
+        hideDetailDialog();
+    }
+
+
     function showDetailDialog(data) {
         textToCopy = undefined;
         $overlay.removeClass('hidden');
@@ -1374,16 +1387,18 @@
             }
         );
         $('#dialogViewRecord').removeClass('hidden');
+        $(document).on('keydown', detailDialogEscKeyHandler);
+        $overlay.on('click', detailDialogOverlayClickHandler);
         updateViewModel({
             'showRecordDetails': true
         });
     }
 
-
     function hideDetailDialog() {
         $overlay.addClass('hidden');
         $('#dialogViewRecord').addClass('hidden');
-
+        $(document).off('keydown', detailDialogEscKeyHandler);
+        $overlay.off('click', detailDialogOverlayClickHandler);
         updateViewModel({
             'showRecordDetails': false
         });
