@@ -787,6 +787,13 @@ label {
   background-color: var(--vscode-input-foreground);
   color: var(--vscode-input-background);
 }
+#rowsBtnSqlQuery {
+  border: none;
+  padding: 1px;
+  position: relative;
+  top: 2px;
+  margin-left: 10px;
+}
 #rowsPageSize {
   display: inline-block;
   position: absolute;

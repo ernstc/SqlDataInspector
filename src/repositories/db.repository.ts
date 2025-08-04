@@ -58,6 +58,16 @@ export interface IDbRepository {
         table: DatabaseObject,
         filter: string
     ): Promise<QueryResults<{ count: number }>>;
+
+    getDbTableRowsQuery(
+        table: DatabaseObject,
+        columns: DatabaseColumn[] | undefined,
+        filter: string,
+        orderByColumns?: string[],
+        sortAscending?: boolean[],
+        pageIndex?: number,
+        pageSize?: number
+    ): string | undefined;
 }
 
 

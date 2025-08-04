@@ -60,7 +60,8 @@ const loadVisualizationFromExplorer = async (context: azdata.ObjectExplorerConte
         // And set its HTML content
         await VisualizationController(
             panel.webview,
-            connectionContext
+            connectionContext,
+            iConnProfile
         );
     }
     catch (e) {
@@ -109,7 +110,8 @@ const loadVisualizationFromEditor = async (context: azdata.ObjectExplorerContext
         // And set its HTML content
         await VisualizationController(
             panel.webview,
-            connectionContext
+            connectionContext,
+            context.connectionProfile!
         );
     }
     catch (e) {

@@ -293,9 +293,17 @@ export class DbRepositoryMySQL implements IDbRepository{
         pageSize: number = 20
     ): Promise<QueryResults<{ rows: any[]; count: number; }>> {
 
-        if (table === undefined || table === null 
-            || DbRepository.hasPotentialSqlInjection(filter)
-        ) {
+        const queryRows = this.getDbTableRowsQuery(
+            table,
+            columns,
+            filter,
+            orderByColumns,
+            sortAscending,
+            pageIndex,
+            pageSize
+        );
+
+        if (queryRows === undefined) {
             return {
                 sessionId,
                 data: {
@@ -304,36 +312,9 @@ export class DbRepositoryMySQL implements IDbRepository{
                 }
             };
         }
-    
-        if (pageIndex < 1) { pageIndex = 1; }
-        if (pageSize < 0) { pageSize = 20; }
-    
-        const hasOrderingColumns: boolean = orderByColumns !== undefined && orderByColumns.length > 0;
-        if (hasOrderingColumns && sortAscending !== undefined) {
-            orderByColumns = orderByColumns?.map((col, index) => sortAscending[index] ? `\`${col}\`` : `\`${col}\`` + ' DESC');
-        }
-    
+
         const whereExpression = filter ? 'WHERE ' + filter : '';
-        const orderBy = hasOrderingColumns ? `ORDER BY ${orderByColumns?.join(',')}` : '';
-    
-        let columnsExpression = '';
-        if (columns !== undefined && columns !== null && columns.length > 0) {
-            columnsExpression = columns.map(col => {
-                let statement = `\`${col.Name}\``;
-                return statement;
-            }).join(',');
-        }
-        else {
-            columnsExpression = '*';
-        }
-    
-        const queryRows = `
-            SELECT ${columnsExpression}
-            FROM \`${table.Schema}\`.\`${table.Name}\`
-            ${whereExpression}
-            ${orderBy}
-            LIMIT ${(pageIndex - 1) * pageSize}, ${pageSize}`;
-    
+
         const queryCount = `
             SELECT COUNT(*) as count
             FROM \`${table.Schema}\`.\`${table.Name}\`
@@ -384,5 +365,53 @@ export class DbRepositoryMySQL implements IDbRepository{
                 count: dbCountResult.length > 0 ? dbCountResult[0].count : 0
             }
         };
+    }
+
+
+    getDbTableRowsQuery(
+        table: DatabaseObject,
+        columns: DatabaseColumn[] | undefined,
+        filter: string,
+        orderByColumns?: string[],
+        sortAscending?: boolean[],
+        pageIndex: number = 1,
+        pageSize: number = 20
+    ): string | undefined {
+
+        if (table === undefined || table === null 
+            || DbRepository.hasPotentialSqlInjection(filter)
+        ) {
+            return undefined;
+        }
+    
+        if (pageIndex < 1) { pageIndex = 1; }
+        if (pageSize < 0) { pageSize = 20; }
+    
+        const hasOrderingColumns: boolean = orderByColumns !== undefined && orderByColumns.length > 0;
+        if (hasOrderingColumns && sortAscending !== undefined) {
+            orderByColumns = orderByColumns?.map((col, index) => sortAscending[index] ? `\`${col}\`` : `\`${col}\`` + ' DESC');
+        }
+    
+        const whereExpression = filter ? `\nWHERE\n    ${filter}` : '';
+        const orderBy = hasOrderingColumns ? `\nORDER BY\n    ${orderByColumns?.join(',')}` : '';
+    
+        let columnsExpression = '';
+        if (columns !== undefined && columns !== null && columns.length > 0) {
+            columnsExpression = columns.map(col => {
+                let statement = `\n    \`${col.Name}\``;
+                return statement;
+            }).join(',');
+        }
+        else {
+            columnsExpression = '*';
+        }
+    
+        const queryRows = `SELECT ${columnsExpression}` +
+            `\nFROM\n    \`${table.Schema}\`.\`${table.Name}\`` +
+            whereExpression +
+            orderBy +
+            `\nLIMIT ${(pageIndex - 1) * pageSize}, ${pageSize}`;
+
+        return queryRows;
     }
 }

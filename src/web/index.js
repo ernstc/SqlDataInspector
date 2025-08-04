@@ -26,6 +26,7 @@
     const $objectSearchInput = $('#objectSearch input');
     const $objectFilters = $('#objectFilters');
     const $objectSchemaFilter = $('#objectFilters select');
+    const $rowsBtnSqlQuery = $('#rowsBtnSqlQuery');
     const $rowsPageSize = $('#rowsPageSize select');
     const $rowsPager = $('#rowsPager');
     const $btnCopyValues = $('#btnCopyValues');
@@ -57,6 +58,8 @@
         .change(objectsChanged);
     $cbViews
         .change(objectsChanged);
+    $rowsBtnSqlQuery
+        .click(rowsBtnSqlQueryClicked);
     $rowsPageSize
         .change(setPageSize);
     $rowsPager.find('li')
@@ -1330,6 +1333,14 @@
             'command': 'changeRowsPage',
             'commandSessionId': newGuid(),
             'rowsPageIndex': page
+        });
+    }
+
+
+    function rowsBtnSqlQueryClicked() {
+        sendMessage({
+            'command': 'openNewQueryEditor',
+            'commandSessionId': newGuid()
         });
     }
 

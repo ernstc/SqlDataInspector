@@ -50,8 +50,12 @@ interface IOutgoingMessage {
     filterObjectsSchema?: string;
 }
 
-export const VisualizationController = async (webview: vscode.Webview, connectionContext: ConnectionContext) => {
-    await renderWebviewContent(webview, connectionContext);
+export const VisualizationController = async (
+    webview: vscode.Webview, 
+    connectionContext: ConnectionContext, 
+    connectionProfile: azdata.IConnectionProfile
+) => {
+    await renderWebviewContent(webview, connectionContext, connectionProfile);
 };
 
 
@@ -60,7 +64,11 @@ const postMessage = (webview: azdata.DashboardWebview | vscode.Webview, message:
 };
 
 
-const renderWebviewContent = async (webview: vscode.Webview, connectionContext: ConnectionContext) => {
+const renderWebviewContent = async (
+    webview: vscode.Webview, 
+    connectionContext: ConnectionContext,
+    connectionProfile: azdata.IConnectionProfile
+) => {
     webview.html = loadWebView();
     if (connectionContext.connectionId) {
 
@@ -166,6 +174,77 @@ const renderWebviewContent = async (webview: vscode.Webview, connectionContext: 
                             viewModel.rowsPageIndex = pageIndex;
                             await loadRows(data.commandSessionId, repository, webview, viewModel);
                         }
+                    }
+                    case 'openNewQueryEditor': {
+                        if (viewModel.selectedObject === undefined) {
+                            return;
+                        }
+
+                        const object = viewModel.selectedObject;
+
+                        if (
+                            viewModel.columnsRelativeToObject?.Name !== object.Name
+                            || viewModel.columnsRelativeToObject?.Schema !== object.Schema
+                        )
+                        {
+                            return;
+                        }
+
+                        let orderByColumns: string[] | undefined;
+                        let sortAscending: boolean[] | undefined;
+
+                        if (viewModel.sortRowsByColumnName) {
+                            orderByColumns = [viewModel.sortRowsByColumnName];
+                            if (viewModel.sortRowsByColumnAscending !== undefined) {
+                                sortAscending = [viewModel.sortRowsByColumnAscending];
+                            }
+                            else {
+                                sortAscending = [true];
+                            }
+                        }
+                        else {
+                            const primaryKey = viewModel.columns?.filter(c => c.IsPrimaryKey)
+                                .sort((c1, c2) => c1.KeyOrdinal <= c2.KeyOrdinal ? -1 : 1)
+                                .map(c => c.Name);
+                            orderByColumns = primaryKey;
+                            sortAscending = primaryKey?.map(p => true);
+                        }
+
+                        const query = repository.getDbTableRowsQuery(object, viewModel.columns, viewModel.filter!, orderByColumns, sortAscending, viewModel.rowsPageIndex, viewModel.rowsPageSize);
+
+                        try {
+                            const doc = await azdata.queryeditor.openQueryDocument({
+                                content: query,
+                            });
+
+                            const connProfile: azdata.connection.ConnectionProfile = {
+                                authenticationType: connectionProfile.authenticationType,
+                                connectionId: connectionContext.connectionId,
+                                connectionName: connectionProfile.connectionName!,
+                                databaseName: connectionProfile.databaseName!,
+                                groupFullName: connectionProfile.groupFullName!,
+                                groupId: connectionProfile.groupId!,
+                                options: {
+                                    ...connectionProfile.options,
+                                    database: connectionProfile.databaseName!,
+                                },
+                                password: "",
+                                providerId: connectionProfile.providerName,
+                                savePassword: connectionProfile.savePassword,
+                                saveProfile: connectionProfile.saveProfile,
+                                serverName: connectionProfile.serverName!,
+                                userName: "",
+                            };
+
+                            await doc.connect(connProfile);
+
+                        } catch (e) {
+                            vscode.window.showErrorMessage(
+                                `Error opening new query editor: ${(<Error>e).message}`
+                            );
+                        }
+                        
+                        break;
                     }
                 }
             }
