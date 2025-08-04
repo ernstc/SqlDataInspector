@@ -4,6 +4,15 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
+## August 2025 Release (version 0.8.2)
+
+### New Features
+
+* Added a new feature for opening a new query editor with the active query in the inspector.
+* Minor fixes and improvements.
+
+---
+
 ## October 2024 Release (version 0.8.1)
 
 ### New Features
