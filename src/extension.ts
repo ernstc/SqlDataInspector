@@ -7,8 +7,8 @@ import { DbRepository } from './repositories/db.repository';
 export const activate = (context: vscode.ExtensionContext) => {
     ConnectionContext.initialize(context);
     context.subscriptions.push(
-        vscode.commands.registerCommand('sql-data-inspector.inspect-data', node => loadVisualization(false, node)),
-        vscode.commands.registerCommand('sql-data-inspector.inspect-data-editor', () => loadVisualization(true))
+        vscode.commands.registerCommand('sql-data-inspector-mssql.inspect-data', node => loadVisualization(false, node)),
+        vscode.commands.registerCommand('sql-data-inspector-mssql.inspect-data-editor', () => loadVisualization(true))
     );
 };
 
@@ -29,7 +29,7 @@ const loadVisualization = async (useEditorSelection: boolean, objectExplorerNode
         DbRepository.create(connectionContext);
 
         const panel = vscode.window.createWebviewPanel(
-            'sql-data-inspector',
+            'sql-data-inspector-mssql',
             `Data Inspector - ${fqname.databaseName ?? connectionContext.connectionSelector}`,
             vscode.ViewColumn.One,
             {

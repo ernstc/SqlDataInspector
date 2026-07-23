@@ -1,8 +1,8 @@
 {
-    "name": "sql-data-inspector",
-    "displayName": "SQL Data Inspector",
+    "name": "sql-data-inspector-mssql",
+    "displayName": "SQL Data Inspector (MSSQL)",
     "description": "This extension makes it easy to inspect data with just a few clicks.",
-    "version": "0.9.0",
+    "version": "1.0.0",
     "publisher": "ernstc",
     "license": "MIT",
     "icon": "images/icon.png",
@@ -28,19 +28,19 @@
         "menus": {
             "view/item/context": [
                 {
-                    "command": "sql-data-inspector.inspect-data",
+                    "command": "sql-data-inspector-mssql.inspect-data",
                     "group": "2_SQLDataInspector@1",
                     "when": "view == objectExplorer && viewItem =~ /\\btype=Database\\b/"
                 },
                 {
-                    "command": "sql-data-inspector.inspect-data",
+                    "command": "sql-data-inspector-mssql.inspect-data",
                     "group": "2_SQLDataInspector@1",
                     "when": "view == objectExplorer && viewItem =~ /\\btype=Server\\b/ && !(viewItem =~ /\\bsubType=(Database|DockerContainerDatabase)\\b/)"
                 }
             ],
             "editor/context": [
                 {
-                    "command": "sql-data-inspector.inspect-data-editor",
+                    "command": "sql-data-inspector-mssql.inspect-data-editor",
                     "group": "data",
                     "when": "editorLangId == sql"
                 }
@@ -48,11 +48,11 @@
         },
         "commands": [
             {
-                "command": "sql-data-inspector.inspect-data",
+                "command": "sql-data-inspector-mssql.inspect-data",
                 "title": "Inspect Data"
             },
             {
-                "command": "sql-data-inspector.inspect-data-editor",
+                "command": "sql-data-inspector-mssql.inspect-data-editor",
                 "title": "Inspect Selected Data"
             }
         ],
