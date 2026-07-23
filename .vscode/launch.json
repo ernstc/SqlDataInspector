@@ -17,10 +17,6 @@
                 "${workspaceFolder}/dist/**/*.js",
                 "${workspaceFolder}/dist/**/*.js.map"
             ],
-            "sourceMapPathOverrides": {
-                "webpack://sql-data-inspector/./*": "${workspaceFolder}/*",
-                "webpack://sql-data-inspector/*": "${workspaceFolder}/*"
-            },
             "preLaunchTask": "build SQL Data Inspector for debug"
         },
         {
@@ -40,10 +36,6 @@
                 "${workspaceFolder}/dist/**/*.js",
                 "${workspaceFolder}/dist/**/*.js.map"
             ],
-            "sourceMapPathOverrides": {
-                "webpack://sql-data-inspector/./*": "${workspaceFolder}/*",
-                "webpack://sql-data-inspector/*": "${workspaceFolder}/*"
-            },
             "preLaunchTask": "npm: compile"
         }
     ]
