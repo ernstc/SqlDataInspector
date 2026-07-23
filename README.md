@@ -63,6 +63,8 @@ This extension has settings that customize its behavior:
 
 ## Installation
 
+> **Compatibility note:** The latest version available for Azure Data Studio is **0.8.2**. Starting with version **1.0.0**, this extension is available only for Visual Studio Code.
+
 The current release will be available through the Visual Studio Marketplace for Visual Studio Code. The SQL Server (mssql) extension is required and is installed automatically as an extension dependency.
 
 Current and Pre-releases will be available from the [Releases](https://github.com/ernstc/SqlDataInspector/releases) tab of the projects repository.
