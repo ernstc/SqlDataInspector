@@ -10,6 +10,7 @@ const configKeys = {
     PAGE_SIZE: "sqlDataInspector.pageSize",
     SHOW_TABLES: "sqlDataInspector.showTables",
     SHOW_VIEWS: "sqlDataInspector.showViews",
+    TRACE_SQL_COMMANDS: "sqlDataInspector.tracing.sqlCommands",
     VIEW_HORIZONTAL_SPLIT: "sqlDataInspector.viewHorizontalSplit",
 };
 
@@ -20,6 +21,7 @@ export interface IVscodeSettings {
     pageSize: number;
     showTables: boolean;
     showViews: boolean;
+    traceSqlCommands: boolean;
     viewHorizontalSplit: number;
     setLiveMonitoringRefreshInterval(value: boolean): Promise<void>;
     setPageSize(value: number | undefined): Promise<void>;
@@ -68,6 +70,10 @@ export class VscodeSettings implements IVscodeSettings {
 
     public get showViews(): boolean {
         return this.getConfigValue<boolean>(configKeys.SHOW_VIEWS);
+    }
+
+    public get traceSqlCommands(): boolean {
+        return this.getConfigValue<boolean>(configKeys.TRACE_SQL_COMMANDS) ?? true;
     }
 
     public get viewHorizontalSplit(): number {

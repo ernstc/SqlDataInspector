@@ -2,7 +2,7 @@
     "name": "sql-data-inspector",
     "displayName": "SQL Data Inspector",
     "description": "This extension makes it easy to inspect data with just a few clicks.",
-    "version": "0.8.2",
+    "version": "0.9.0",
     "publisher": "ernstc",
     "license": "MIT",
     "icon": "images/icon.png",
@@ -14,9 +14,16 @@
         "url": "https://github.com/ernstc/SqlDataInspector/issues"
     },
     "engines": {
-        "vscode": "^1.79.1",
-        "azdata": "*"
+        "vscode": "^1.79.1"
     },
+    "extensionDependencies": [
+        "mtxr.sqltools"
+    ],
+    "extensionPack": [
+        "mtxr.sqltools-driver-mssql",
+        "mtxr.sqltools-driver-pg",
+        "mtxr.sqltools-driver-mysql"
+    ],
     "categories": [
         "Other"
     ],
@@ -24,44 +31,22 @@
     "main": "./dist/extension.js",
     "contributes": {
         "menus": {
-            "objectExplorer/item/context": [
-                {
-                    "command": "sql-data-inspector.inspect-data",
-                    "when": "connectionProvider == MSSQL && nodeType && nodeType == Database",
-                    "group": "data"
-                },
-                {
-                    "command": "sql-data-inspector.inspect-data",
-                    "when": "connectionProvider == MSSQL && nodeType && nodeType == Server",
-                    "group": "data"
-                },
-                {
-                    "command": "sql-data-inspector.inspect-data",
-                    "when": "connectionProvider == MySQL && nodeType && nodeType == Database",
-                    "group": "data"
-                },
-                {
-                    "command": "sql-data-inspector.inspect-data",
-                    "when": "connectionProvider == PGSQL && nodeType && nodeType == Database",
-                    "group": "data"
-                }
-            ],
             "editor/context": [
                 {
                     "command": "sql-data-inspector.inspect-data-editor",
                     "group": "data",
-                    "when": "true"
+                    "when": "editorLangId == sql"
                 }
             ]
         },
         "commands": [
             {
                 "command": "sql-data-inspector.inspect-data",
-                "title": "Inspect data"
+                "title": "Inspect Database"
             },
             {
                 "command": "sql-data-inspector.inspect-data-editor",
-                "title": "Inspect data"
+                "title": "Inspect Selected Data"
             }
         ],
         "configuration": {
@@ -111,6 +96,11 @@
                     "default": true,
                     "markdownDescription": "Show views in the objects list."
                 },
+                "sqlDataInspector.tracing.sqlCommands": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "Trace SQL commands and their complete results in the **SQL Data Inspector** output channel. Disable this setting if query text or returned data must not be written to the output log."
+                },
                 "sqlDataInspector.viewHorizontalSplit": {
                     "type": "integer",
                     "default": 40,
@@ -126,7 +116,8 @@
         "compile": "tsc -p ./",
         "lint": "eslint src --ext ts",
         "watch": "npm run copy-web && webpack --watch",
-        "debug": "npm run copy-web && tsc -watch -p ./",
+        "debug:build": "npm run copy-web && webpack --mode development --devtool source-map",
+        "debug": "npm run copy-web && webpack --watch --mode development --devtool source-map",
         "package": "webpack --mode production --devtool hidden-source-map",
         "pretest": "npm run compile && npm run lint",
         "test": "node ./dist/test/runTest.js",
@@ -141,7 +132,6 @@
         "vscode-nls": "^5.2.0"
     },
     "devDependencies": {
-        "@types/azdata": "^1.46.6",
         "@types/fs-extra": "^11.0.4",
         "@types/glob": "^8.1.0",
         "@types/mocha": "^10.0.10",

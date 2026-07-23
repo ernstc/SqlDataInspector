@@ -10,7 +10,7 @@ Please leave a ⭐ as motivation if this tool is helpful for you!
 
 ## Features
 
-* Start inspecting data from the server explorer or from the query editor.
+* Start inspecting a configured database or a selected object from the query editor.
 * Shows the list of tables and views of the database.
 * Shows the list of columns of the selected table or view.
 * Shows all the distinct values of the selected column and their counts.
@@ -22,24 +22,32 @@ Please leave a ⭐ as motivation if this tool is helpful for you!
 * Live monitoring mode for periodically refreshing the views.
 * Each selectable element can be copied with CTRL+C.
 * All distinct values and counts for a column, can be copied in the clipboard. You can then paste the values in Excel for further analysis, for instance.
-* Support for **Microsoft SQL Server**.
-* Support for **MySQL** by installing the extension `Microsoft.azuredatastudio-mysql`.
-* Support for **PostgresSQL** by installing the extension `Microsoft.azuredatastudio-postgresql`.
+* Support for **Microsoft SQL Server**, **MySQL**, and **PostgreSQL** through SQLTools.
 
-### Inspecting data from the server explorer
+### Connection management
 
-1) Navigate in the server explorer to the database node you want to inspect.
-2) Right-click on the database node.
-3) Click on the menu item "Inspect data".
+SQL Data Inspector uses [SQLTools](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) for connection management and query execution. Configure connections in the SQLTools connection explorer and use the **SQLTools Driver Credentials** password mode to keep passwords out of VS Code settings. SQL Data Inspector stores no database credentials.
+
+Install the SQLTools driver for each database engine you use:
+
+* `mtxr.sqltools-driver-mssql`
+* `mtxr.sqltools-driver-pg`
+* `mtxr.sqltools-driver-mysql`
+
+### Inspecting a database
+
+1. Run **SQL Data Inspector: Inspect Database** from the Command Palette.
+2. Select a SQLTools connection.
+3. SQL Data Inspector opens the data inspector for that connection's database.
 
 ![Example of dashboard](https://raw.githubusercontent.com/ernstc/SqlDataInspector/main/images/screen-074.png)
 
 ### Inspecting data from the query editor
 
-1) Select the text that corresponds to the table name or the full qualified table name.
-2) Right-click on the selected text.
-3) Click on the menu item "Inspect data".
-4) The inspector will be opened and it will show immediately tha data of the selected table.
+1. Select the table name or fully qualified table name in a SQL editor.
+2. Right-click the selection.
+3. Select **Inspect Selected Data**.
+4. Select a SQLTools connection. The inspector opens with the selected table.
 
 ![Example of dashboard](https://raw.githubusercontent.com/ernstc/SqlDataInspector/main/images/screen-073.png)
 
@@ -53,15 +61,16 @@ This extension has the some custom settings that let the user to customize the e
 * The number of rows to show in the data inspector view.
 * Show tables in the objects list.
 * Show views in the objects list.
+* Trace SQL commands and their results in **Output: SQL Data Inspector**. Disable `sqlDataInspector.tracing.sqlCommands` to prevent query text and returned data from being logged.
 
 
 
 ## Installation
 
-The current release will be available through the Extensions Marketplace in Azure Data Studio.
+The current release will be available through the Visual Studio Marketplace for Visual Studio Code.
 
 Current and Pre-releases will be available from the [Releases](https://github.com/ernstc/SqlDataInspector/releases) tab of the projects repository.
-Simply download the VSIX of the release you want, and use the ***Install Extension from VSIX Package*** option in Azure Data Studio.
+Download the VSIX of the release you want and use the **Extensions: Install from VSIX...** command in Visual Studio Code.
 
 ## Change Log
 

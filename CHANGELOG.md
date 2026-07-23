@@ -4,6 +4,16 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
+## July 2026 Release (version 0.9.0)
+
+### New Features
+
+* Migrated connection management and query execution from Azure Data Studio to SQLTools for Visual Studio Code.
+* Added SQL command and result tracing to the **SQL Data Inspector** output channel.
+* Added `sqlDataInspector.tracing.sqlCommands` to disable SQL tracing when query text or returned data must not be logged.
+
+---
+
 ## August 2025 Release (version 0.8.2)
 
 ### New Features

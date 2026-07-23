@@ -1,4 +1,3 @@
-import { SimpleExecuteResult } from "azdata";
 import { DatabaseColumn } from '../models/database-column.model';
 import { DatabaseColumnValue } from '../models/database-columnValue.model';
 import { DatabaseInfo } from "../models/database-info.model";
@@ -26,7 +25,7 @@ export interface IDbRepository {
         tables?: boolean,
         views?: boolean
     ): Promise<QueryResults<DatabaseObject[]>>;
-    
+
     getDbColumns(
         sessionId: string,
         table: DatabaseObject,
@@ -72,20 +71,10 @@ export interface IDbRepository {
 
 
 
-const mapResult = <T>(result: SimpleExecuteResult): T[] => result.rows.map(element => {
-    const item: any = {};
-    for (let columnIndex = 0; columnIndex < result.columnInfo.length; columnIndex++) {
-        item[result.columnInfo[columnIndex].columnName] = undefinedOrValue(element[columnIndex].displayValue);
-    }
-    return item as T;
-});
-
-const undefinedOrValue = (value: string) => value !== 'NULL' ? value : undefined;
-
-// This regular expression works by looking for a semicolon (;) followed by any number of characters 
-// that are not a quote ([^"']), then a quote ((['"])), then any number of characters that are not 
-// a quote ([^"']), then the same quote that was matched before (\1), repeated any number of times ((?:...)*), 
-// followed by any number of characters that are not a quote ([^"']*), until the end of the string ($). 
+// This regular expression works by looking for a semicolon (;) followed by any number of characters
+// that are not a quote ([^"']), then a quote ((['"])), then any number of characters that are not
+// a quote ([^"']), then the same quote that was matched before (\1), repeated any number of times ((?:...)*),
+// followed by any number of characters that are not a quote ([^"']*), until the end of the string ($).
 // This ensures that the semicolon is not within quotes.
 const sqlInjectionTestRegex = /;(?=(?:[^"'`]*(['"`])[^"'`]*\1)*[^"'`]*$)/;
 
@@ -121,23 +110,22 @@ export class DbRepository {
         var totalDelay = 0;
         while (this.lockRunQuery) {
             await new Promise(resolve => setTimeout(resolve, delayTime));
-            
+
             totalDelay += delayTime;
             if (totalDelay >= maxDelay) {
                 break;
             }
         }
-        
+
         this.lockRunQuery = true;
-        
+
         try {
             const result = await context.runQueryAndReturn(query);
             await new Promise(resolve => setTimeout(resolve, 500));
-            return mapResult(result) as T[];
+            return result as T[];
         }
-        catch (e: any) {
-            console.error(e.message);
-            return [] as T[];
+        catch (error) {
+            throw error;
         }
         finally {
             this.lockRunQuery = false;

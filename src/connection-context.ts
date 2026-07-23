@@ -1,107 +1,188 @@
-import { IDbRepository } from './repositories/db.repository';
 import * as vscode from "vscode";
-import * as azdata from "azdata";
 import { FQName } from "./FQName";
+import { IDbRepository } from "./repositories/db.repository";
+import { VscodeSettings } from "./vscodeSettings";
 
-/*
-    Retrieve the connectiona and context from the context of the request:
-    - FQName: Server, Database, Schema and Table
-    - Connection to the database
-*/
+export type DbProviderType = "MSSQL" | "MySQL" | "PGSQL";
+
+export interface SqlToolsConnection {
+    id?: string;
+    name: string;
+    driver: string;
+    server?: string;
+    connectString?: string;
+    isConnected?: boolean;
+}
+
+interface SqlToolsQueryResult {
+    cols: string[];
+    results: Record<string, unknown>[];
+    error?: boolean;
+    rawError?: Error;
+}
 
 export class ConnectionContext {
 
-    public connection: azdata.connection.Connection;
-    public connectionId: string;
-    public fqname: FQName;
+    private static readonly output = vscode.window.createOutputChannel("SQL Data Inspector", { log: true });
+
+    public static initialize(context: vscode.ExtensionContext) {
+        context.subscriptions.push(ConnectionContext.output);
+        ConnectionContext.output.info("SQL Data Inspector activated.");
+    }
+
+    public readonly connection: { providerName: DbProviderType };
+    public readonly connectionId: string;
+    public readonly fqname: FQName;
     public repository?: IDbRepository;
 
-    private connectionProfile?: azdata.IConnectionProfile
-    private connectionUri?: string;
-    private queryProvider?: azdata.QueryProvider;
-
-    public constructor(fqname: FQName, connection: azdata.connection.Connection) {
+    public constructor(
+        public readonly connectionProfile: SqlToolsConnection,
+        fqname: FQName
+    ) {
         this.fqname = fqname;
-        this.connection = connection;
-        this.connectionId = connection.connectionId;
+        this.connectionId = ConnectionContext.getConnectionId(connectionProfile);
+        this.connection = {
+            providerName: ConnectionContext.getProvider(connectionProfile.driver)
+        };
     }
 
-    public async getConnectionUri() {
-        if (this.connectionUri === undefined) {
-            this.connectionUri = await azdata.connection.getUriForConnection(this.connectionId);
+    public async runQueryAndReturn(query: string): Promise<Record<string, unknown>[]> {
+        const traceSql = VscodeSettings.getInstance().traceSqlCommands;
+        if (traceSql) {
+            ConnectionContext.output.info(
+                `SQL command [${this.connectionProfile.name} / ${this.connectionId}]:\n${query}`
+            );
         }
-        return this.connectionUri;
+        let results: SqlToolsQueryResult[];
+        try {
+            results = await vscode.commands.executeCommand<SqlToolsQueryResult[]>(
+                "sqltools.executeQuery",
+                query,
+                { connNameOrId: this.connectionId }
+            );
+        }
+        catch (error) {
+            ConnectionContext.output.error(error as Error);
+            throw new Error(
+                `SQLTools query execution failed. ${(error as Error).message}`
+            );
+        }
+
+        if (!results) {
+            throw new Error("SQLTools did not return a query result.");
+        }
+
+        if (traceSql) {
+            ConnectionContext.output.info(
+                `SQL result:\n${JSON.stringify(results, null, 2)}`
+            );
+        }
+
+        const failedResult = results.find(result => result.error);
+        if (failedResult) {
+            throw failedResult.rawError ?? new Error("SQLTools query execution failed.");
+        }
+
+        const rows = results.flatMap(result => result.results);
+        return rows;
     }
 
-    public async runQueryAndReturn(query: string) {
-        if (this.queryProvider === undefined) {
-            this.queryProvider = azdata.dataprotocol.getProvider(this.connection.providerName, azdata.DataProviderType.QueryProvider);
-        }
-        const connectionUri = await this.getConnectionUri();
-        const result = await this.queryProvider.runQueryAndReturn(connectionUri, query);
-        return result;
-    }
+    public static async select(fqname: FQName): Promise<ConnectionContext | undefined> {
+        const connections = await vscode.commands.executeCommand<SqlToolsConnection[]>(
+            "sqltools.getConnections",
+            { connectedOnly: false, sort: "connectedFirst" }
+        );
 
-    // static factory method for Explorer context
-    public static async ExplorerContext(iConnProfile: azdata.IConnectionProfile, fqname: FQName) {
-        let activeConnections = await azdata.connection.getActiveConnections();
-        if (!activeConnections.some(c => c.connectionId === iConnProfile.id)) {
-            await azdata.connection.connect(iConnProfile!, false, false);
-            activeConnections = await azdata.connection.getActiveConnections();
-        }
-
-        let connection = await this.getConnection(iConnProfile.id, fqname.databaseName);
-        return new this(fqname, connection);
-    }
-
-    // static factory method for Editor context
-    public static async EditorContext(connProfile: azdata.connection.ConnectionProfile, fqname: FQName) {
-        let connection = await this.getConnection(connProfile.connectionId, fqname.databaseName);
-        return new this(fqname, connection);
-    }
-
-    public static async getConnection(connectionId: string, databaseName?: string) {
-        let activeConnections = await azdata.connection.getActiveConnections();
-
-        let connection: azdata.connection.Connection | undefined = activeConnections.filter(c => c.connectionId === connectionId)[0];
-
-        if (databaseName !== undefined && connection.options.database !== databaseName) {
-            connection = await this.changeDatabase(connection, databaseName);
+        if (!connections?.length) {
+            const addConnection = "Add SQLTools Connection";
+            const selection = await vscode.window.showInformationMessage(
+                "No SQLTools connections are configured.",
+                addConnection
+            );
+            if (selection === addConnection) {
+                await vscode.commands.executeCommand("sqltools.openAddConnectionScreen");
+            }
+            return undefined;
         }
 
-        if (connection === undefined) {
-            throw new Error("No active connection");
-        }
-        return connection;
-    }
+        const supportedConnections = connections.filter(connection => {
+            try {
+                ConnectionContext.getProvider(connection.driver);
+                return true;
+            }
+            catch {
+                return false;
+            }
+        });
 
-    public static async changeDatabase(connection: azdata.connection.Connection, databaseName: string) {
-        let connectionUri = await azdata.connection.getUriForConnection(connection.connectionId);
-        let connectionProvider: azdata.ConnectionProvider = azdata.dataprotocol.getProvider(connection.providerName, azdata.DataProviderType.ConnectionProvider);
-        let databaseChanged = await connectionProvider.changeDatabase(connectionUri, databaseName);
-        if (databaseChanged) {
-            let activeConnections = await azdata.connection.getActiveConnections();
-            return activeConnections.filter(c => c.connectionId === connection.connectionId)[0];
+        if (!supportedConnections.length) {
+            throw new Error("No supported SQLTools connection was found. Configure SQL Server, PostgreSQL, or MySQL.");
         }
-        connectionProvider.disconnect(connectionUri);
+
+        const selected = await vscode.window.showQuickPick(
+            supportedConnections.map(connection => ({
+                label: connection.name,
+                description: connection.isConnected ? "Connected" : undefined,
+                detail: [connection.server, connection.driver].filter(Boolean).join(" / "),
+                connection
+            })),
+            {
+                matchOnDescription: true,
+                matchOnDetail: true,
+                placeHolder: "Select a SQLTools connection"
+            }
+        );
+
+        if (!selected) {
+            return undefined;
+        }
+
+        fqname.serverName ??= selected.connection.server;
+        fqname.databaseName ??= selected.connection.name;
+        return new ConnectionContext(selected.connection, fqname);
     }
 
     public static getSelectedEditorText() {
-        // Get the current editor
         const editor = vscode.window.activeTextEditor;
-        if (editor === undefined) { //No active editor
+        if (editor === undefined) {
             return;
         }
-        // Retrieve selection or word under cursor.
+
         const textRange = !editor.selection.isEmpty
             ? editor.selection
             : editor.document.getWordRangeAtPosition(editor.selection.active);
-        if (textRange === undefined) { //No selected text
+        if (textRange === undefined) {
             return;
         }
         return editor.document.getText(textRange);
     }
 
+    private static getProvider(driver: string): DbProviderType {
+        const normalizedDriver = driver.toLowerCase();
+        if (normalizedDriver.includes("mssql") || normalizedDriver.includes("sql server")) {
+            return "MSSQL";
+        }
+        if (normalizedDriver.includes("mysql") || normalizedDriver.includes("maria")) {
+            return "MySQL";
+        }
+        if (normalizedDriver.includes("postgres") || normalizedDriver === "pg") {
+            return "PGSQL";
+        }
+        throw new Error(`SQLTools driver "${driver}" is not supported.`);
+    }
+
+    private static getConnectionId(connection: SqlToolsConnection): string {
+        if (connection.id) {
+            return connection.id;
+        }
+
+        const parts = connection.connectString
+            ? [connection.name, connection.driver, connection.connectString]
+            : [connection.name, connection.driver, connection.server, undefined];
+
+        return parts
+            .join("|")
+            .replace(/\./g, ":")
+            .replace(/\//g, "\\");
+    }
 }
-
-
