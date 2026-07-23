@@ -1,34 +1,22 @@
 import * as path from 'path';
-import Mocha = require('mocha');
-import { globSync } from 'glob';
+import Jasmine = require('jasmine');
 
-export function run(): Promise<void> {
-	// Create the mocha test
-	const mocha = new Mocha({
-		ui: 'tdd',
-		color: true
-	});
-
+export async function run(): Promise<void> {
 	const testsRoot = path.resolve(__dirname, '..');
+	const jasmine = new Jasmine({ projectBaseDir: testsRoot });
 
-	return new Promise((c, e) => {
-		try {
-			// Add files to the test suite
-			globSync('**/**.test.js', { cwd: testsRoot }).forEach(file =>
-				mocha.addFile(path.resolve(testsRoot, file))
-			);
-
-			// Run the mocha test
-			mocha.run(failures => {
-				if (failures > 0) {
-					e(new Error(`${failures} tests failed.`));
-				} else {
-					c();
-				}
-			});
-		} catch (err) {
-			console.error(err);
-			e(err);
-		}
+	jasmine.exitOnCompletion = false;
+	jasmine.loadConfig({
+		spec_dir: '.',
+		spec_files: ['**/**.test.js'],
+		helpers: [],
+		jsLoader: 'require'
 	});
+	jasmine.env.configure({ random: false });
+	jasmine.configureDefaultReporter({ showColors: true });
+
+	const result = await jasmine.execute();
+	if (result.overallStatus !== 'passed') {
+		throw new Error(`Jasmine tests ${result.overallStatus}.`);
+	}
 }

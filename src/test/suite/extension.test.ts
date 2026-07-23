@@ -5,15 +5,15 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { ConnectionContext } from '../../connection-context';
 
-suite('Extension Test Suite', () => {
+describe('Extension Test Suite', () => {
 	vscode.window.showInformationMessage('Start all tests.');
 
-	test('Sample test', () => {
+	it('Sample test', () => {
 		assert.equal(-1, [1, 2, 3].indexOf(5));
 		assert.equal(-1, [1, 2, 3].indexOf(0));
 	});
 
-	test('Uses the database selected in MSSQL Object Explorer', () => {
+	it('Uses the database selected in MSSQL Object Explorer', () => {
 		const connectionProfile = {
 			server: 'localhost',
 			database: 'master',
@@ -34,7 +34,7 @@ suite('Extension Test Suite', () => {
 		assert.equal(connectionProfile.database, 'master');
 	});
 
-	test('Falls back when the Object Explorer node is incompatible', () => {
+	it('Falls back when the Object Explorer node is incompatible', () => {
 		const selectedProfile = ConnectionContext.getObjectExplorerConnectionProfile({
 			metadata: {
 				name: 'AdventureWorks',
