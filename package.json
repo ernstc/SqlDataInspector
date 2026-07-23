@@ -105,7 +105,7 @@
                 },
                 "sqlDataInspector.tracing.sqlCommands": {
                     "type": "boolean",
-                    "default": true,
+                    "default": false,
                     "markdownDescription": "Trace SQL commands and their complete results in the **SQL Data Inspector** output channel. Disable this setting if query text or returned data must not be written to the output log."
                 },
                 "sqlDataInspector.viewHorizontalSplit": {
