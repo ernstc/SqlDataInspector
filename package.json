@@ -1,8 +1,8 @@
 {
-    "name": "sql-data-inspector",
-    "displayName": "SQL Data Inspector",
+    "name": "sql-data-inspector-mssql",
+    "displayName": "SQL Data Inspector (MSSQL)",
     "description": "This extension makes it easy to inspect data with just a few clicks.",
-    "version": "0.8.2",
+    "version": "1.0.0",
     "publisher": "ernstc",
     "license": "MIT",
     "icon": "images/icon.png",
@@ -14,9 +14,11 @@
         "url": "https://github.com/ernstc/SqlDataInspector/issues"
     },
     "engines": {
-        "vscode": "^1.79.1",
-        "azdata": "*"
+        "vscode": "^1.105.0"
     },
+    "extensionDependencies": [
+        "ms-mssql.mssql"
+    ],
     "categories": [
         "Other"
     ],
@@ -24,44 +26,34 @@
     "main": "./dist/extension.js",
     "contributes": {
         "menus": {
-            "objectExplorer/item/context": [
+            "view/item/context": [
                 {
-                    "command": "sql-data-inspector.inspect-data",
-                    "when": "connectionProvider == MSSQL && nodeType && nodeType == Database",
-                    "group": "data"
+                    "command": "sql-data-inspector-mssql.inspect-data",
+                    "group": "2_SQLDataInspector@1",
+                    "when": "view == objectExplorer && viewItem =~ /\\btype=Database\\b/"
                 },
                 {
-                    "command": "sql-data-inspector.inspect-data",
-                    "when": "connectionProvider == MSSQL && nodeType && nodeType == Server",
-                    "group": "data"
-                },
-                {
-                    "command": "sql-data-inspector.inspect-data",
-                    "when": "connectionProvider == MySQL && nodeType && nodeType == Database",
-                    "group": "data"
-                },
-                {
-                    "command": "sql-data-inspector.inspect-data",
-                    "when": "connectionProvider == PGSQL && nodeType && nodeType == Database",
-                    "group": "data"
+                    "command": "sql-data-inspector-mssql.inspect-data",
+                    "group": "2_SQLDataInspector@1",
+                    "when": "view == objectExplorer && viewItem =~ /\\btype=Server\\b/ && !(viewItem =~ /\\bsubType=(Database|DockerContainerDatabase)\\b/)"
                 }
             ],
             "editor/context": [
                 {
-                    "command": "sql-data-inspector.inspect-data-editor",
+                    "command": "sql-data-inspector-mssql.inspect-data-editor",
                     "group": "data",
-                    "when": "true"
+                    "when": "editorLangId == sql"
                 }
             ]
         },
         "commands": [
             {
-                "command": "sql-data-inspector.inspect-data",
-                "title": "Inspect data"
+                "command": "sql-data-inspector-mssql.inspect-data",
+                "title": "Inspect Data"
             },
             {
-                "command": "sql-data-inspector.inspect-data-editor",
-                "title": "Inspect data"
+                "command": "sql-data-inspector-mssql.inspect-data-editor",
+                "title": "Inspect Selected Data"
             }
         ],
         "configuration": {
@@ -111,6 +103,11 @@
                     "default": true,
                     "markdownDescription": "Show views in the objects list."
                 },
+                "sqlDataInspector.tracing.sqlCommands": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "Trace SQL commands and their complete results in the **SQL Data Inspector** output channel. Disable this setting if query text or returned data must not be written to the output log."
+                },
                 "sqlDataInspector.viewHorizontalSplit": {
                     "type": "integer",
                     "default": 40,
@@ -124,11 +121,11 @@
     "scripts": {
         "vscode:prepublish": "npm run clean && npm run copy-web && npm run package",
         "compile": "tsc -p ./",
-        "lint": "eslint src --ext ts",
-        "watch": "npm run copy-web && webpack --watch",
-        "debug": "npm run copy-web && tsc -watch -p ./",
-        "package": "webpack --mode production --devtool hidden-source-map",
-        "pretest": "npm run compile && npm run lint",
+        "watch": "npm run copy-web && vite build --watch --mode development",
+        "debug:build": "npm run copy-web && vite build --mode development",
+        "debug": "npm run copy-web && vite build --watch --mode development",
+        "package": "vite build --mode production",
+        "pretest": "npm run compile",
         "test": "node ./dist/test/runTest.js",
         "proposedapi": "node installTypings.js",
         "copy-web": "mkdirp ./dist/web && ncp ./src/web ./dist/web",
@@ -141,27 +138,19 @@
         "vscode-nls": "^5.2.0"
     },
     "devDependencies": {
-        "@types/azdata": "^1.46.6",
         "@types/fs-extra": "^11.0.4",
-        "@types/glob": "^8.1.0",
-        "@types/mocha": "^10.0.10",
-        "@types/node": "^20.19.9",
-        "@types/vscode": "^1.79.1",
-        "@typescript-eslint/eslint-plugin": "^7.5.0",
-        "@typescript-eslint/parser": "^7.5.0",
+        "@types/jasmine": "^6.0.0",
+        "@types/node": "^24",
+        "@types/vscode": "^1.105.0",
         "@vscode/test-electron": "^2.5.2",
-        "@vscode/vsce": "^2.29.0",
+        "@vscode/vsce": "^3.9.2",
         "ansi-regex": "6.0.1",
-        "eslint": "^8.57.1",
-        "glob": "^8.1.0",
+        "jasmine": "^6.3.0",
         "markdown-it": "^14.1.0",
         "mkdirp": "^3.0.1",
-        "mocha": "^10.8.2",
         "ncp": "^2.0.0",
         "rimraf": "^6.0.0",
-        "ts-loader": "^9.5.2",
-        "typescript": "^5.9.2",
-        "webpack": "^5.101.0",
-        "webpack-cli": "^5.1.4"
+        "typescript": "^7.0.2",
+        "vite": "^8.1.5"
     }
 }

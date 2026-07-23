@@ -72,8 +72,8 @@
         .keyup(objectSearchInputChanged);
     $filtersHeader
         .click(filtersHeaderClicked);
-    $dataSizer
-        .addEventListener('mousedown', function (e) {
+    if ($dataSizer) {
+        $dataSizer.addEventListener('mousedown', function (e) {
             e.preventDefault();
             dataSizerDragStart(e);
             document.addEventListener('mousemove', dataSizerDragging);
@@ -83,6 +83,7 @@
                 dataSizerChanged(e);
             });
         });
+    }
 
 
 

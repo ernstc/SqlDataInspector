@@ -4,4 +4,4 @@
 export const extensionConfigSectionName = 'sqldDataInsight';
 export const configLogDebugInfo = 'logDebugInfo';
 
-export const visualizationPanelName: string = 'sql-data-inspector-panel';
+export const visualizationPanelName: string = 'sql-data-inspector-mssql-panel';

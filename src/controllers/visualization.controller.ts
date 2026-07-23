@@ -1,4 +1,3 @@
-import * as azdata from "azdata";
 import * as vscode from 'vscode';
 import { DatabaseColumn } from "../models/database-column.model";
 import { DatabaseColumnValue } from '../models/database-columnValue.model';
@@ -52,22 +51,20 @@ interface IOutgoingMessage {
 
 export const VisualizationController = async (
     webview: vscode.Webview,
-    connectionContext: ConnectionContext,
-    connectionProfile: azdata.IConnectionProfile
+    connectionContext: ConnectionContext
 ) => {
-    await renderWebviewContent(webview, connectionContext, connectionProfile);
+    await renderWebviewContent(webview, connectionContext);
 };
 
 
-const postMessage = (webview: azdata.DashboardWebview | vscode.Webview, message: IOutgoingMessage) => {
+const postMessage = (webview: vscode.Webview, message: IOutgoingMessage) => {
     webview.postMessage(message);
 };
 
 
 const renderWebviewContent = async (
     webview: vscode.Webview,
-    connectionContext: ConnectionContext,
-    connectionProfile: azdata.IConnectionProfile
+    connectionContext: ConnectionContext
 ) => {
     webview.html = loadWebView();
     if (connectionContext.connectionId) {
@@ -86,10 +83,11 @@ const renderWebviewContent = async (
         viewModel.viewHorizontalSplit = vscodeSettings.viewHorizontalSplit;
 
         webview.onDidReceiveMessage(async (data: IIncomingMessage) => {
-            const repository: IDbRepository = connectionContext.repository!;
-            const commands = data.command.split('|');
-            for (let i = 0; i < commands.length; i++) {
-                switch (commands[i]) {
+            try {
+                const repository: IDbRepository = connectionContext.repository!;
+                const commands = data.command.split('|');
+                for (let i = 0; i < commands.length; i++) {
+                    switch (commands[i]) {
                     case 'viewIsReady': {
                         setViewModel(webview, viewModel);
                         break;
@@ -177,10 +175,14 @@ const renderWebviewContent = async (
                         break;
                     }
                     case 'openNewQueryEditor': {
-                        await openNewQueryEditor(connectionContext, connectionProfile, repository, viewModel);
+                        await openNewQueryEditor(connectionContext, repository, viewModel);
                         break;
                     }
+                    }
                 }
+            }
+            catch (error) {
+                vscode.window.showErrorMessage(`SQL Data Inspector: ${(error as Error).message}`);
             }
         });
     }
@@ -192,7 +194,7 @@ const renderWebviewContent = async (
 };
 
 
-const setViewModel = async (webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const setViewModel = async (webview: vscode.Webview, viewModel: ViewModel) => {
     postMessage(webview, {
         viewModel: {
             ...viewModel,
@@ -236,28 +238,6 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
             case 'refreshTimer':
                 viewModel.refreshTimer = vmUpdates?.refreshTimer;
                 break;
-            case 'showRecordDetails':
-                viewModel.showRecordDetails = vmUpdates?.showRecordDetails;
-                break;
-            case 'sortColumnNames':
-                viewModel.sortColumnNames = vmUpdates?.sortColumnNames;
-                break;
-            case 'values':
-                viewModel.values = vmUpdates?.values;
-                break;
-            case 'sortAscendingColumnValues':
-                viewModel.sortAscendingColumnValues = vmUpdates?.sortAscendingColumnValues;
-                break;
-            case 'sortAscendingColumnValuesCount':
-                viewModel.sortAscendingColumnValuesCount = vmUpdates?.sortAscendingColumnValuesCount;
-                break;
-            case 'filterObjectsSchema':
-                viewModel.filterObjectsSchema = vmUpdates?.filterObjectsSchema;
-                break;
-            case 'selectTables':
-                vscodeSettings.setShowTables(vmUpdates?.selectTables ?? true);
-                viewModel.selectTables = vmUpdates?.selectTables;
-                break;
             case 'selectViews':
                 vscodeSettings.setShowViews(vmUpdates?.selectViews ?? true);
                 viewModel.selectViews = vmUpdates?.selectViews;
@@ -293,7 +273,7 @@ const updateViewModel = (viewModel: ViewModel, vmUpdates?: ViewModel) => {
 };
 
 
-const getDatabaseInfo = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const getDatabaseInfo = async (repository: IDbRepository, webview: vscode.Webview, viewModel: ViewModel) => {
     if (viewModel.databaseInfo === undefined) {
         const databaseInfo = await repository.getDatabaseInfo();
         viewModel.databaseInfo = databaseInfo;
@@ -305,7 +285,7 @@ const getDatabaseInfo = async (repository: IDbRepository, webview: azdata.Dashbo
 };
 
 
-const loadObjects = async (repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const loadObjects = async (repository: IDbRepository, webview: vscode.Webview, viewModel: ViewModel) => {
     postMessage(webview, {
         status: Status.GettingObjectsData,
     });
@@ -382,7 +362,7 @@ const loadObjects = async (repository: IDbRepository, webview: azdata.DashboardW
 
 var loadColumnsSessionId: string;
 
-const loadColumns = async (sessionId: string, repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const loadColumns = async (sessionId: string, repository: IDbRepository, webview: vscode.Webview, viewModel: ViewModel) => {
     const object = viewModel.selectedObject!;
 
     loadColumnsSessionId = sessionId;
@@ -411,7 +391,7 @@ const loadColumns = async (sessionId: string, repository: IDbRepository, webview
 };
 
 
-const reorderColumns = async (sessionId: string, repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const reorderColumns = async (sessionId: string, repository: IDbRepository, webview: vscode.Webview, viewModel: ViewModel) => {
     const object = viewModel.selectedObject!;
 
     const selectedColumnName = (viewModel.columns != undefined && viewModel.selectedColumnIndex != undefined) ?
@@ -443,7 +423,7 @@ const reorderColumns = async (sessionId: string, repository: IDbRepository, webv
 
 var loadValuesSessionId: string;
 
-const loadValues = async (sessionId: string, repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const loadValues = async (sessionId: string, repository: IDbRepository, webview: vscode.Webview, viewModel: ViewModel) => {
     const object = viewModel.selectedObject!;
     const column = viewModel.selectedColumn!;
 
@@ -477,7 +457,7 @@ const loadValues = async (sessionId: string, repository: IDbRepository, webview:
 
 var loadRowsSessionId: string;
 
-const loadRows = async (sessionId: string, repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel) => {
+const loadRows = async (sessionId: string, repository: IDbRepository, webview: vscode.Webview, viewModel: ViewModel) => {
     if (viewModel.selectedObject === undefined) {
         await setViewModel(webview, viewModel);
         return;
@@ -560,7 +540,7 @@ const loadRows = async (sessionId: string, repository: IDbRepository, webview: a
 
 var loadRowsCountSessionId: string;
 
-const loadRowsCount = async (sessionId: string, repository: IDbRepository, webview: azdata.DashboardWebview | vscode.Webview, viewModel: ViewModel, index: number) => {
+const loadRowsCount = async (sessionId: string, repository: IDbRepository, webview: vscode.Webview, viewModel: ViewModel, index: number) => {
     const object = viewModel.objects ? viewModel.objects[index] : undefined;
     if (object === undefined) {
         return;
@@ -584,7 +564,7 @@ const loadRowsCount = async (sessionId: string, repository: IDbRepository, webvi
 };
 
 
-const openNewQueryEditor = async (connectionContext: ConnectionContext, connectionProfile: azdata.IConnectionProfile, repository: IDbRepository, viewModel: ViewModel) => {
+const openNewQueryEditor = async (connectionContext: ConnectionContext, repository: IDbRepository, viewModel: ViewModel) => {
     if (viewModel.selectedObject === undefined) {
         return;
     }
@@ -621,34 +601,16 @@ const openNewQueryEditor = async (connectionContext: ConnectionContext, connecti
     const query = repository.getDbTableRowsQuery(object, viewModel.columns, viewModel.filter!, orderByColumns, sortAscending, viewModel.rowsPageIndex, viewModel.rowsPageSize);
 
     try {
-        const doc = await azdata.queryeditor.openQueryDocument({
+        const document = await vscode.workspace.openTextDocument({
             content: query,
+            language: 'sql'
         });
-
-        const connProfile: azdata.connection.ConnectionProfile = {
-            authenticationType: connectionProfile.authenticationType,
-            connectionId: connectionContext.connectionId,
-            connectionName: connectionProfile.connectionName!,
-            databaseName: connectionProfile.databaseName!,
-            groupFullName: connectionProfile.groupFullName!,
-            groupId: connectionProfile.groupId!,
-            options: {
-                ...connectionProfile.options,
-                database: connectionProfile.databaseName!,
-            },
-            password: "",
-            providerId: connectionProfile.providerName,
-            savePassword: connectionProfile.savePassword,
-            saveProfile: connectionProfile.saveProfile,
-            serverName: connectionProfile.serverName!,
-            userName: "",
-        };
-
-        await doc.connect(connProfile);
+        await vscode.window.showTextDocument(document);
+        await vscode.commands.executeCommand('mssql.connect');
 
     } catch (e) {
         vscode.window.showErrorMessage(
             `Error opening new query editor: ${(<Error>e).message}`
         );
     }
-}
+};
