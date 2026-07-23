@@ -32,15 +32,18 @@ export class ConnectionContext {
 
     public readonly connection: { providerName: DbProviderType };
     public readonly connectionId: string;
+    public readonly connectionSelector: string;
     public readonly fqname: FQName;
     public repository?: IDbRepository;
 
     public constructor(
         public readonly connectionProfile: SqlToolsConnection,
-        fqname: FQName
+        fqname: FQName,
+        label: string
     ) {
         this.fqname = fqname;
         this.connectionId = ConnectionContext.getConnectionId(connectionProfile);
+        this.connectionSelector = connectionProfile.name || label;
         this.connection = {
             providerName: ConnectionContext.getProvider(connectionProfile.driver)
         };
@@ -50,7 +53,7 @@ export class ConnectionContext {
         const traceSql = VscodeSettings.getInstance().traceSqlCommands;
         if (traceSql) {
             ConnectionContext.output.info(
-                `SQL command [${this.connectionProfile.name} / ${this.connectionId}]:\n${query}`
+                `SQL command [${this.connectionSelector} / ${this.connectionId}]:\n${query}`
             );
         }
         let results: SqlToolsQueryResult[];
@@ -58,7 +61,7 @@ export class ConnectionContext {
             results = await vscode.commands.executeCommand<SqlToolsQueryResult[]>(
                 "sqltools.executeQuery",
                 query,
-                { connNameOrId: this.connectionId }
+                { connNameOrId: this.connectionSelector }
             );
         }
         catch (error) {
@@ -139,7 +142,7 @@ export class ConnectionContext {
 
         fqname.serverName ??= selected.connection.server;
         fqname.databaseName ??= selected.connection.name;
-        return new ConnectionContext(selected.connection, fqname);
+        return new ConnectionContext(selected.connection, fqname, selected.label);
     }
 
     public static getSelectedEditorText() {
@@ -176,9 +179,7 @@ export class ConnectionContext {
             return connection.id;
         }
 
-        const parts = connection.connectString
-            ? [connection.name, connection.driver, connection.connectString]
-            : [connection.name, connection.driver, connection.server, undefined];
+        const parts = [connection.name, connection.driver, connection.server, undefined];
 
         return parts
             .join("|")
