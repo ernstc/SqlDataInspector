@@ -29,7 +29,7 @@ const loadVisualization = async (useEditorSelection: boolean) => {
 
         const panel = vscode.window.createWebviewPanel(
             'sql-data-inspector',
-            `Data Inspector - ${fqname.databaseName ?? connectionContext.connectionProfile.name}`,
+            `Data Inspector - ${fqname.databaseName ?? connectionContext.connectionSelector}`,
             vscode.ViewColumn.One,
             {
                 enableScripts: true

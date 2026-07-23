@@ -5,20 +5,33 @@ import { VscodeSettings } from "./vscodeSettings";
 
 export type DbProviderType = "MSSQL" | "MySQL" | "PGSQL";
 
-export interface SqlToolsConnection {
-    id?: string;
-    name: string;
-    driver: string;
-    server?: string;
-    connectString?: string;
-    isConnected?: boolean;
+export interface MssqlConnectionInfo {
+    server: string;
+    database?: string;
+    profileName?: string;
+    [property: string]: unknown;
 }
 
-interface SqlToolsQueryResult {
-    cols: string[];
-    results: Record<string, unknown>[];
-    error?: boolean;
-    rawError?: Error;
+interface MssqlDbColumn {
+    columnName: string;
+}
+
+interface MssqlDbCellValue {
+    displayValue: string;
+    isNull: boolean;
+}
+
+interface MssqlSimpleExecuteResult {
+    columnInfo: MssqlDbColumn[];
+    rows: MssqlDbCellValue[][];
+}
+
+interface MssqlExtensionApi {
+    promptForConnection(ignoreFocusOut?: boolean): Promise<MssqlConnectionInfo | undefined>;
+    connect(connectionInfo: MssqlConnectionInfo, saveConnection?: boolean): Promise<string>;
+    connectionSharing: {
+        executeSimpleQuery(connectionUri: string, queryString: string): Promise<MssqlSimpleExecuteResult>;
+    };
 }
 
 export class ConnectionContext {
@@ -37,15 +50,17 @@ export class ConnectionContext {
     public repository?: IDbRepository;
 
     public constructor(
-        public readonly connectionProfile: SqlToolsConnection,
+        public readonly connectionProfile: MssqlConnectionInfo,
+        private readonly mssqlApi: MssqlExtensionApi,
+        connectionUri: string,
         fqname: FQName,
         label: string
     ) {
         this.fqname = fqname;
-        this.connectionId = ConnectionContext.getConnectionId(connectionProfile);
-        this.connectionSelector = connectionProfile.name || label;
+        this.connectionId = connectionUri;
+        this.connectionSelector = connectionProfile.profileName || label;
         this.connection = {
-            providerName: ConnectionContext.getProvider(connectionProfile.driver)
+            providerName: "MSSQL"
         };
     }
 
@@ -56,93 +71,56 @@ export class ConnectionContext {
                 `SQL command [${this.connectionSelector} / ${this.connectionId}]:\n${query}`
             );
         }
-        let results: SqlToolsQueryResult[];
+        let result: MssqlSimpleExecuteResult;
         try {
-            results = await vscode.commands.executeCommand<SqlToolsQueryResult[]>(
-                "sqltools.executeQuery",
-                query,
-                { connNameOrId: this.connectionSelector }
+            result = await this.mssqlApi.connectionSharing.executeSimpleQuery(
+                this.connectionId,
+                query
             );
         }
         catch (error) {
             ConnectionContext.output.error(error as Error);
             throw new Error(
-                `SQLTools query execution failed. ${(error as Error).message}`
+                `MSSQL query execution failed. ${(error as Error).message}`
             );
         }
 
-        if (!results) {
-            throw new Error("SQLTools did not return a query result.");
+        if (!result) {
+            throw new Error("The MSSQL extension did not return a query result.");
         }
 
         if (traceSql) {
             ConnectionContext.output.info(
-                `SQL result:\n${JSON.stringify(results, null, 2)}`
+                `SQL result:\n${JSON.stringify(result, null, 2)}`
             );
         }
 
-        const failedResult = results.find(result => result.error);
-        if (failedResult) {
-            throw failedResult.rawError ?? new Error("SQLTools query execution failed.");
-        }
-
-        const rows = results.flatMap(result => result.results);
-        return rows;
+        return result.rows.map(row => Object.fromEntries(
+            result.columnInfo.map((column, index) => [
+                column.columnName,
+                row[index]?.isNull ? null : row[index]?.displayValue
+            ])
+        ));
     }
 
     public static async select(fqname: FQName): Promise<ConnectionContext | undefined> {
-        const connections = await vscode.commands.executeCommand<SqlToolsConnection[]>(
-            "sqltools.getConnections",
-            { connectedOnly: false, sort: "connectedFirst" }
-        );
+        const extension = vscode.extensions.getExtension<MssqlExtensionApi>("ms-mssql.mssql");
+        if (!extension) {
+            throw new Error("The SQL Server (mssql) extension is not installed.");
+        }
 
-        if (!connections?.length) {
-            const addConnection = "Add SQLTools Connection";
-            const selection = await vscode.window.showInformationMessage(
-                "No SQLTools connections are configured.",
-                addConnection
-            );
-            if (selection === addConnection) {
-                await vscode.commands.executeCommand("sqltools.openAddConnectionScreen");
-            }
+        const mssqlApi = await extension.activate();
+        const connectionInfo = await mssqlApi.promptForConnection(true);
+        if (!connectionInfo) {
             return undefined;
         }
 
-        const supportedConnections = connections.filter(connection => {
-            try {
-                ConnectionContext.getProvider(connection.driver);
-                return true;
-            }
-            catch {
-                return false;
-            }
-        });
+        const connectionUri = await mssqlApi.connect(connectionInfo);
+        const label = connectionInfo.profileName || connectionInfo.database || connectionInfo.server;
 
-        if (!supportedConnections.length) {
-            throw new Error("No supported SQLTools connection was found. Configure SQL Server, PostgreSQL, or MySQL.");
-        }
-
-        const selected = await vscode.window.showQuickPick(
-            supportedConnections.map(connection => ({
-                label: connection.name,
-                description: connection.isConnected ? "Connected" : undefined,
-                detail: [connection.server, connection.driver].filter(Boolean).join(" / "),
-                connection
-            })),
-            {
-                matchOnDescription: true,
-                matchOnDetail: true,
-                placeHolder: "Select a SQLTools connection"
-            }
-        );
-
-        if (!selected) {
-            return undefined;
-        }
-
-        fqname.serverName ??= selected.connection.server;
-        fqname.databaseName ??= selected.connection.name;
-        return new ConnectionContext(selected.connection, fqname, selected.label);
+        fqname.serverName ??= connectionInfo.server;
+        fqname.databaseName ??= connectionInfo.database;
+        return new ConnectionContext(connectionInfo, mssqlApi, connectionUri, fqname, label);
     }
 
     public static getSelectedEditorText() {
@@ -160,30 +138,4 @@ export class ConnectionContext {
         return editor.document.getText(textRange);
     }
 
-    private static getProvider(driver: string): DbProviderType {
-        const normalizedDriver = driver.toLowerCase();
-        if (normalizedDriver.includes("mssql") || normalizedDriver.includes("sql server")) {
-            return "MSSQL";
-        }
-        if (normalizedDriver.includes("mysql") || normalizedDriver.includes("maria")) {
-            return "MySQL";
-        }
-        if (normalizedDriver.includes("postgres") || normalizedDriver === "pg") {
-            return "PGSQL";
-        }
-        throw new Error(`SQLTools driver "${driver}" is not supported.`);
-    }
-
-    private static getConnectionId(connection: SqlToolsConnection): string {
-        if (connection.id) {
-            return connection.id;
-        }
-
-        const parts = [connection.name, connection.driver, connection.server, undefined];
-
-        return parts
-            .join("|")
-            .replace(/\./g, ":")
-            .replace(/\//g, "\\");
-    }
 }

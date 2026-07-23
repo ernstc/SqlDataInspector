@@ -8,41 +8,6 @@
 		}
 	],
 	"settings": {
-		"typescript.tsc.autoDetect": "off",
-		"sqltools.connections": [
-			{
-				"connectionTimeout": 15,
-				"mssqlOptions": {
-					"appName": "SQLTools",
-					"useUTC": true,
-					"encrypt": true,
-					"trustServerCertificate": true
-				},
-				"ssh": "Disabled",
-				"previewLimit": 50,
-				"server": "localhost",
-				"port": 1433,
-				"driver": "MSSQL",
-				"name": "SQL Server 2022",
-				"username": "sa"
-			},
-			{
-				"connectionTimeout": 15,
-				"mssqlOptions": {
-					"appName": "SQLTools",
-					"useUTC": true,
-					"encrypt": true,
-					"trustServerCertificate": true
-				},
-				"ssh": "Disabled",
-				"previewLimit": 50,
-				"server": "localhost",
-				"port": 1433,
-				"driver": "MSSQL",
-				"name": "AdventureWorks2022",
-				"username": "sa",
-				"database": "AdventureWorks2022"
-			}
-		]
+		"typescript.tsc.autoDetect": "off"
 	}
 }

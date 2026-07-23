@@ -14,15 +14,10 @@
         "url": "https://github.com/ernstc/SqlDataInspector/issues"
     },
     "engines": {
-        "vscode": "^1.79.1"
+        "vscode": "^1.105.0"
     },
     "extensionDependencies": [
-        "mtxr.sqltools"
-    ],
-    "extensionPack": [
-        "mtxr.sqltools-driver-mssql",
-        "mtxr.sqltools-driver-pg",
-        "mtxr.sqltools-driver-mysql"
+        "ms-mssql.mssql"
     ],
     "categories": [
         "Other"
@@ -136,7 +131,7 @@
         "@types/glob": "^8.1.0",
         "@types/mocha": "^10.0.10",
         "@types/node": "^20.19.9",
-        "@types/vscode": "^1.79.1",
+        "@types/vscode": "^1.105.0",
         "@typescript-eslint/eslint-plugin": "^7.5.0",
         "@typescript-eslint/parser": "^7.5.0",
         "@vscode/test-electron": "^2.5.2",

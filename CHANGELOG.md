@@ -8,7 +8,8 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ### New Features
 
-* Migrated connection management and query execution from Azure Data Studio to SQLTools for Visual Studio Code.
+* Migrated connection management and query execution from Azure Data Studio to the SQL Server (mssql) extension for Visual Studio Code.
+* Microsoft SQL Server is the active database provider. The MySQL and PostgreSQL repository implementations remain available for future integrations.
 * Added SQL command and result tracing to the **SQL Data Inspector** output channel.
 * Added `sqlDataInspector.tracing.sqlCommands` to disable SQL tracing when query text or returned data must not be logged.
 

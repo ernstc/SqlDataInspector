@@ -22,22 +22,18 @@ Please leave a ⭐ as motivation if this tool is helpful for you!
 * Live monitoring mode for periodically refreshing the views.
 * Each selectable element can be copied with CTRL+C.
 * All distinct values and counts for a column, can be copied in the clipboard. You can then paste the values in Excel for further analysis, for instance.
-* Support for **Microsoft SQL Server**, **MySQL**, and **PostgreSQL** through SQLTools.
+* Support for **Microsoft SQL Server** through the SQL Server (mssql) extension.
 
 ### Connection management
 
-SQL Data Inspector uses [SQLTools](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) for connection management and query execution. Configure connections in the SQLTools connection explorer and use the **SQLTools Driver Credentials** password mode to keep passwords out of VS Code settings. SQL Data Inspector stores no database credentials.
+SQL Data Inspector uses the [SQL Server (mssql)](https://marketplace.visualstudio.com/items?itemName=ms-mssql.mssql) extension for both connection management and query execution. Configure connections in its SQL Server connection explorer. SQL Data Inspector stores no database credentials.
 
-Install the SQLTools driver for each database engine you use:
-
-* `mtxr.sqltools-driver-mssql`
-* `mtxr.sqltools-driver-pg`
-* `mtxr.sqltools-driver-mysql`
+The MySQL and PostgreSQL repository implementations remain in the codebase but are currently inactive.
 
 ### Inspecting a database
 
 1. Run **SQL Data Inspector: Inspect Database** from the Command Palette.
-2. Select a SQLTools connection.
+2. Select a SQL Server (mssql) connection.
 3. SQL Data Inspector opens the data inspector for that connection's database.
 
 ![Example of dashboard](https://raw.githubusercontent.com/ernstc/SqlDataInspector/main/images/screen-074.png)
@@ -47,7 +43,7 @@ Install the SQLTools driver for each database engine you use:
 1. Select the table name or fully qualified table name in a SQL editor.
 2. Right-click the selection.
 3. Select **Inspect Selected Data**.
-4. Select a SQLTools connection. The inspector opens with the selected table.
+4. Select a SQL Server (mssql) connection. The inspector opens with the selected table.
 
 ![Example of dashboard](https://raw.githubusercontent.com/ernstc/SqlDataInspector/main/images/screen-073.png)
 

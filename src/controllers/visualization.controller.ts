@@ -606,11 +606,7 @@ const openNewQueryEditor = async (connectionContext: ConnectionContext, reposito
             language: 'sql'
         });
         await vscode.window.showTextDocument(document);
-        await vscode.commands.executeCommand(
-            'sqltools.selectConnection',
-            connectionContext.connectionId,
-            false
-        );
+        await vscode.commands.executeCommand('mssql.connect');
 
     } catch (e) {
         vscode.window.showErrorMessage(
