@@ -7,20 +7,21 @@ import { DbRepository } from './repositories/db.repository';
 export const activate = (context: vscode.ExtensionContext) => {
     ConnectionContext.initialize(context);
     context.subscriptions.push(
-        vscode.commands.registerCommand('sql-data-inspector.inspect-data', () => loadVisualization(false)),
+        vscode.commands.registerCommand('sql-data-inspector.inspect-data', node => loadVisualization(false, node)),
         vscode.commands.registerCommand('sql-data-inspector.inspect-data-editor', () => loadVisualization(true))
     );
 };
 
 export const deactivate = () => { };
 
-const loadVisualization = async (useEditorSelection: boolean) => {
+const loadVisualization = async (useEditorSelection: boolean, objectExplorerNode?: unknown) => {
     try {
         const selectedText = useEditorSelection
             ? ConnectionContext.getSelectedEditorText()
             : undefined;
         const fqname = new FQName(selectedText);
-        const connectionContext = await ConnectionContext.select(fqname);
+        const selectedConnectionInfo = ConnectionContext.getObjectExplorerConnectionProfile(objectExplorerNode);
+        const connectionContext = await ConnectionContext.select(fqname, selectedConnectionInfo);
         if (!connectionContext) {
             return;
         }

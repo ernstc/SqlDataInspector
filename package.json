@@ -26,6 +26,18 @@
     "main": "./dist/extension.js",
     "contributes": {
         "menus": {
+            "view/item/context": [
+                {
+                    "command": "sql-data-inspector.inspect-data",
+                    "group": "2_SQLDataInspector@1",
+                    "when": "view == objectExplorer && viewItem =~ /\\btype=Database\\b/"
+                },
+                {
+                    "command": "sql-data-inspector.inspect-data",
+                    "group": "2_SQLDataInspector@1",
+                    "when": "view == objectExplorer && viewItem =~ /\\btype=Server\\b/ && !(viewItem =~ /\\bsubType=(Database|DockerContainerDatabase)\\b/)"
+                }
+            ],
             "editor/context": [
                 {
                     "command": "sql-data-inspector.inspect-data-editor",
@@ -37,7 +49,7 @@
         "commands": [
             {
                 "command": "sql-data-inspector.inspect-data",
-                "title": "Inspect Database"
+                "title": "Inspect Data"
             },
             {
                 "command": "sql-data-inspector.inspect-data-editor",

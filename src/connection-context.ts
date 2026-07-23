@@ -34,6 +34,15 @@ interface MssqlExtensionApi {
     };
 }
 
+interface MssqlObjectExplorerNode {
+    connectionProfile?: MssqlConnectionInfo;
+    metadata?: {
+        name?: string;
+        metadataTypeName?: string;
+    };
+    parentNode?: MssqlObjectExplorerNode;
+}
+
 export class ConnectionContext {
 
     private static readonly output = vscode.window.createOutputChannel("SQL Data Inspector", { log: true });
@@ -103,14 +112,44 @@ export class ConnectionContext {
         ));
     }
 
-    public static async select(fqname: FQName): Promise<ConnectionContext | undefined> {
+    public static getObjectExplorerConnectionProfile(node: unknown): MssqlConnectionInfo | undefined {
+        if (!node || typeof node !== "object") {
+            return undefined;
+        }
+
+        const objectExplorerNode = node as MssqlObjectExplorerNode;
+        const connectionProfile = objectExplorerNode.connectionProfile;
+        if (!connectionProfile || typeof connectionProfile.server !== "string" || !connectionProfile.server) {
+            return undefined;
+        }
+
+        let database = connectionProfile.database;
+        let currentNode: MssqlObjectExplorerNode | undefined = objectExplorerNode;
+        while (currentNode) {
+            if (currentNode.metadata?.metadataTypeName === "Database" && currentNode.metadata.name) {
+                database = currentNode.metadata.name;
+                break;
+            }
+            currentNode = currentNode.parentNode;
+        }
+
+        return {
+            ...connectionProfile,
+            database
+        };
+    }
+
+    public static async select(
+        fqname: FQName,
+        selectedConnectionInfo?: MssqlConnectionInfo
+    ): Promise<ConnectionContext | undefined> {
         const extension = vscode.extensions.getExtension<MssqlExtensionApi>("ms-mssql.mssql");
         if (!extension) {
             throw new Error("The SQL Server (mssql) extension is not installed.");
         }
 
         const mssqlApi = await extension.activate();
-        const connectionInfo = await mssqlApi.promptForConnection(true);
+        const connectionInfo = selectedConnectionInfo ?? await mssqlApi.promptForConnection(true);
         if (!connectionInfo) {
             return undefined;
         }
