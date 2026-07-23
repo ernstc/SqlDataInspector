@@ -4,7 +4,7 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
-## July 2026 Release (version 0.9.0)
+## July 2026 Release (version 1.0.0)
 
 ### New Features
 
