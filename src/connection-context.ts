@@ -6,6 +6,7 @@ import { VscodeSettings } from "./vscodeSettings";
 export type DbProviderType = "MSSQL" | "MySQL" | "PGSQL";
 
 export interface MssqlConnectionInfo {
+    id?: string;
     server: string;
     database?: string;
     profileName?: string;
@@ -27,9 +28,9 @@ interface MssqlSimpleExecuteResult {
 }
 
 interface MssqlExtensionApi {
-    promptForConnection(ignoreFocusOut?: boolean): Promise<MssqlConnectionInfo | undefined>;
-    connect(connectionInfo: MssqlConnectionInfo, saveConnection?: boolean): Promise<string>;
     connectionSharing: {
+        connect(extensionId: string, connectionId: string, database?: string): Promise<string | undefined>;
+        disconnect(connectionUri: string): void;
         executeSimpleQuery(connectionUri: string, queryString: string): Promise<MssqlSimpleExecuteResult>;
     };
 }
@@ -112,6 +113,10 @@ export class ConnectionContext {
         ));
     }
 
+    public dispose(): void {
+        this.mssqlApi.connectionSharing.disconnect(this.connectionId);
+    }
+
     public static getObjectExplorerConnectionProfile(node: unknown): MssqlConnectionInfo | undefined {
         if (!node || typeof node !== "object") {
             return undefined;
@@ -141,6 +146,7 @@ export class ConnectionContext {
 
     public static async select(
         fqname: FQName,
+        extensionId: string,
         selectedConnectionInfo?: MssqlConnectionInfo
     ): Promise<ConnectionContext | undefined> {
         const extension = vscode.extensions.getExtension<MssqlExtensionApi>("ms-mssql.mssql");
@@ -149,17 +155,60 @@ export class ConnectionContext {
         }
 
         const mssqlApi = await extension.activate();
-        const connectionInfo = selectedConnectionInfo ?? await mssqlApi.promptForConnection(true);
+        if (typeof mssqlApi?.connectionSharing?.connect !== "function"
+            || typeof mssqlApi.connectionSharing.executeSimpleQuery !== "function"
+            || typeof mssqlApi.connectionSharing.disconnect !== "function") {
+            throw new Error("The SQL Server (mssql) connection-sharing API is unavailable. Update the MSSQL extension and reload VS Code.");
+        }
+
+        const connectionInfo = selectedConnectionInfo ?? await ConnectionContext.promptForConnection();
         if (!connectionInfo) {
             return undefined;
         }
+        if (!connectionInfo.id) {
+            throw new Error("This MSSQL connection has no saved profile ID. Save the connection in SQL Server Object Explorer and try again.");
+        }
 
-        const connectionUri = await mssqlApi.connect(connectionInfo);
+        const database = fqname.databaseName ?? connectionInfo.database;
+        const connectionUri = await mssqlApi.connectionSharing.connect(extensionId, connectionInfo.id, database);
+        if (!connectionUri) {
+            throw new Error("The MSSQL extension did not establish a connection.");
+        }
         const label = connectionInfo.profileName || connectionInfo.database || connectionInfo.server;
 
         fqname.serverName ??= connectionInfo.server;
-        fqname.databaseName ??= connectionInfo.database;
-        return new ConnectionContext(connectionInfo, mssqlApi, connectionUri, fqname, label);
+        fqname.databaseName ??= database;
+        return new ConnectionContext({ ...connectionInfo, database }, mssqlApi, connectionUri, fqname, label);
+    }
+
+    private static async promptForConnection(): Promise<MssqlConnectionInfo | undefined> {
+        const settings = vscode.workspace.getConfiguration("mssql").inspect<unknown[]>("connections");
+        // MSSQL combines user and workspace profiles rather than overriding the user list.
+        const profiles = [...(settings?.globalValue ?? []), ...(settings?.workspaceValue ?? [])];
+        const connections = profiles.filter((profile): profile is MssqlConnectionInfo => {
+            if (!profile || typeof profile !== "object") {
+                return false;
+            }
+            const connection = profile as Partial<MssqlConnectionInfo>;
+            return typeof connection.id === "string" && connection.id.length > 0
+                && typeof connection.server === "string" && connection.server.length > 0;
+        });
+        if (connections.length === 0) {
+            throw new Error("No saved MSSQL connections are available. Create a connection in SQL Server Object Explorer and try again.");
+        }
+
+        const selected = await vscode.window.showQuickPick(connections.map(connection => ({
+            label: connection.profileName || connection.server,
+            description: connection.database,
+            detail: connection.server,
+            connection
+        })), {
+            placeHolder: "Select a SQL Server connection to inspect",
+            ignoreFocusOut: true,
+            matchOnDescription: true,
+            matchOnDetail: true
+        });
+        return selected?.connection;
     }
 
     public static getSelectedEditorText() {

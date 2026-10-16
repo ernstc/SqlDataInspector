@@ -28,9 +28,11 @@ Please leave a ⭐ as motivation if this tool is helpful for you!
 
 SQL Data Inspector uses the SQL Server (mssql) extension for both connection management and query execution. Configure connections in its SQL Server Object Explorer. SQL Data Inspector stores no database credentials.
 
+The integration uses MSSQL's connection-sharing API (verified against MSSQL 1.46.0). On first use, approve the MSSQL connection-sharing request for SQL Data Inspector. If access was previously denied, run **MSSQL: Edit Connection Sharing Permissions** to change it. Connections must be saved in MSSQL so they have a profile ID. Closing the inspector releases its shared connection.
+
 ### Inspecting a database
 
-1. In the SQL Server Object Explorer, right-click a connected server or database.
+1. In the SQL Server Object Explorer, right-click a database.
 2. Select **Inspect Data**.
 3. SQL Data Inspector opens the inspector for the selected SQL Server database.
 

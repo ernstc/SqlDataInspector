@@ -2,8 +2,8 @@
     "name": "sql-data-inspector-mssql",
     "displayName": "SQL Data Inspector (MSSQL)",
     "description": "This extension makes it easy to inspect data with just a few clicks.",
-    "version": "1.0.0",
-    "publisher": "ernstc",
+    "version": "1.1.0",
+    "publisher": "ErnestoCianciotta",
     "license": "MIT",
     "icon": "images/icon.png",
     "repository": {
@@ -30,12 +30,7 @@
                 {
                     "command": "sql-data-inspector-mssql.inspect-data",
                     "group": "2_SQLDataInspector@1",
-                    "when": "view == objectExplorer && viewItem =~ /\\btype=Database\\b/"
-                },
-                {
-                    "command": "sql-data-inspector-mssql.inspect-data",
-                    "group": "2_SQLDataInspector@1",
-                    "when": "view == objectExplorer && viewItem =~ /\\btype=Server\\b/ && !(viewItem =~ /\\bsubType=(Database|DockerContainerDatabase)\\b/)"
+                    "when": "view == objectExplorer && (viewItem =~ /\\btype=Database\\b/ || viewItem =~ /\\bsubType=Database\\b/) && !(viewItem =~ /\\bsubType=DockerContainerDatabase\\b/)"
                 }
             ],
             "editor/context": [
@@ -130,7 +125,8 @@
         "proposedapi": "node installTypings.js",
         "copy-web": "mkdirp ./dist/web && ncp ./src/web ./dist/web",
         "clean": "rimraf ./dist",
-        "pack": "vsce package"
+        "pack": "vsce package",
+        "publish": "npm run clean && npm run compile && npm run copy-web && npm run pack"
     },
     "dependencies": {
         "fs-extra": "^11.3.0",

@@ -4,6 +4,17 @@ All notable changes to the "SQL Data Inspector" extension will be documented in 
 
 ---
 
+## Unreleased
+
+### Fixes
+
+* Restored compatibility with MSSQL 1.46.0 by using the connection-sharing API instead of the removed top-level connection methods.
+* Added a saved-connection picker for Command Palette and query-editor inspection, using both user and workspace MSSQL profiles.
+* Preserved the selected Object Explorer database and connected to the database specified by a fully qualified editor selection.
+* Released shared connections when inspector panels are closed and added actionable errors for unavailable APIs and unsaved profiles.
+
+---
+
 ## July 2026 Release (version 1.0.0)
 
 ### New Features
